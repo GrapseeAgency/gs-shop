@@ -101,6 +101,7 @@ jobs:
           sed -i '' 's|static let repo = ".*"|static let repo = "${{ github.event.repository.name }}"|' GrapseeShop/Core/UpdateChecker.swift
 
       - name: Validate Xcode project (local gate, runs before Apple tools)
+        working-directory: grapsee-ios
         run: python3 scripts/validate_xcodeproj.py
 
       - name: Select Xcode 16
@@ -144,7 +145,7 @@ jobs:
             DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }}
           xcodebuild -exportArchive -archivePath build/GrapseeShop.xcarchive \
             -exportPath build/export -exportOptionsPlist ExportOptions.plist
-          cp build/export/GrapseeShop.ipa ../GrapseeShop-${{ steps.ver.outputs.tag }}.ipa
+          cp build/export/GrapseeShop.ipa GrapseeShop-${{ steps.ver.outputs.tag }}.ipa
 
       - name: Upload iOS artifacts
         uses: actions/upload-artifact@v4

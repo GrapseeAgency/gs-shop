@@ -9,7 +9,7 @@ struct EmiView: View {
     var body: some View {
         let principal = Double(amount) ?? 0
         let months = max(1, Int(tenure) ?? 1)
-        let monthly = (Double(rate) ?? 0) / 100 / 12
+        let monthly: Double = (Double(rate) ?? 0.0) / 100 / 12
         let emi = monthly == 0 ? principal / Double(months) : principal * monthly * pow(1 + monthly, Double(months)) / (pow(1 + monthly, Double(months)) - 1)
         let total = emi * Double(months)
         List {
@@ -100,7 +100,7 @@ struct CarbonView: View {
     @State private var distance = ""
     @State private var weight = ""
     var body: some View {
-        let carbon = ((Double(distance) ?? 0) * (Double(weight) ?? 0) * 0.0001 * 100).rounded() / 100
+        let carbon: Double = ((Double(distance) ?? 0.0) * (Double(weight) ?? 0.0) * 0.0001 * 100).rounded() / 100
         List {
             TextField("Distance (km)", text: $distance).keyboardType(.decimalPad)
             TextField("Weight (kg)", text: $weight).keyboardType(.decimalPad)
@@ -116,8 +116,8 @@ struct RoiCalcView: View {
     @State private var value = "500"
     var body: some View {
         let inv = Double(investment) ?? 0
-        let leads = ((Double(traffic) ?? 0) * (Double(conversion) ?? 0) / 100).rounded()
-        let revenue = leads * (Double(value) ?? 0)
+        let leads: Double = ((Double(traffic) ?? 0.0) * (Double(conversion) ?? 0.0) / 100).rounded()
+        let revenue: Double = leads * (Double(value) ?? 0.0)
         List {
             TextField("Investment", text: $investment).keyboardType(.decimalPad)
             TextField("Monthly traffic", text: $traffic).keyboardType(.decimalPad)
@@ -137,7 +137,7 @@ struct ResaleView: View {
     @State private var condition = "good"
     let rates = ["excellent": 0.8, "good": 0.6, "fair": 0.4, "poor": 0.2]
     var body: some View {
-        let current = ((Double(price) ?? 0) * pow(1 - 0.15, Double(Int(age) ?? 0)) * (rates[condition] ?? 0.6)).rounded()
+        let current: Double = ((Double(price) ?? 0.0) * pow(1.0 - 0.15, Double(Int(age) ?? 0)) * (rates[condition] ?? 0.6)).rounded()
         List {
             TextField("Purchase price", text: $price).keyboardType(.decimalPad)
             TextField("Age (years)", text: $age).keyboardType(.numberPad)

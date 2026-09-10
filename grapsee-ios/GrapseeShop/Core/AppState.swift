@@ -85,9 +85,9 @@ struct PriceText: View {
     let compare: Double?
     var body: some View {
         HStack(spacing: 6) {
-            Text("$\(price, specifier: "%.2f")").bold()
+            Text("$\(String(format: "%.2f", price))").bold()
             if let c = compare, c > price {
-                Text("$\(c, specifier: "%.2f")").strikethrough().foregroundColor(.secondary).font(.caption)
+                Text("$\(String(format: "%.2f", c))").strikethrough().foregroundColor(.secondary).font(.caption)
             }
         }
     }

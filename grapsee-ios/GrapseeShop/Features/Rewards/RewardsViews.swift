@@ -59,7 +59,7 @@ struct WalletView: View {
         Group {
             if loading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
             else if let b = balance {
-                List { Section { Text("Available balance").font(.caption).foregroundColor(.secondary); Text("$\(b, specifier: "%.2f")").font(.largeTitle).foregroundColor(.accentColor) } }
+                List { Section { Text("Available balance").font(.caption).foregroundColor(.secondary); Text("$\(String(format: "%.2f", b))").font(.largeTitle).foregroundColor(.accentColor) } }
             } else { ContentUnavailableView("Sign in to sync rewards", systemImage: "person.crop.circle") }
         }.navigationTitle("Wallet").task { balance = await API.wallet()?.balance; loading = false }
     }
@@ -139,7 +139,7 @@ struct GiftCardsView: View {
             Section("My cards") {
                 if cards.isEmpty { Text("No gift cards").foregroundColor(.secondary) }
                 ForEach(cards) { c in
-                    VStack(alignment: .leading) { Text(c.code).bold(); Text("$\(c.value, specifier: "%.2f")").font(.subheadline).foregroundColor(.secondary) }
+                    VStack(alignment: .leading) { Text(c.code).bold(); Text("$\(String(format: "%.2f", c.value))").font(.subheadline).foregroundColor(.secondary) }
                 }
             }
         }.navigationTitle("Gift Cards").task { cards = await API.giftCards() }

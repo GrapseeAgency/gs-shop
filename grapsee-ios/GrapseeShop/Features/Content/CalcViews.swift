@@ -17,10 +17,10 @@ struct EmiView: View {
             TextField("Tenure (months)", text: $tenure).keyboardType(.numberPad)
             TextField("Annual interest %", text: $rate).keyboardType(.decimalPad)
             Section("Result") {
-                KV("Monthly EMI", "$\(emi, specifier: "%.2f")")
-                KV("Total payment", "$\(total, specifier: "%.2f")")
-                KV("Total interest", "$\(total - principal, specifier: "%.2f")")
-                KV("Processing fee (2%)", "$\(principal * 0.02, specifier: "%.2f")")
+                KV("Monthly EMI", "$\(String(format: "%.2f", emi))")
+                KV("Total payment", "$\(String(format: "%.2f", total))")
+                KV("Total interest", "$\(String(format: "%.2f", total - principal))")
+                KV("Processing fee (2%)", "$\(String(format: "%.2f", principal * 0.02))")
             }
         }.navigationTitle("EMI Calculator")
     }
@@ -36,7 +36,7 @@ struct CurrencyView: View {
             TextField("Amount", text: $amount).keyboardType(.decimalPad)
             Picker("From", selection: $from) { ForEach(Array(rates.keys).sorted(), id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
             Button("Convert") { result = ((Double(amount) ?? 0) * (rates[from] ?? 1)).rounded() }.disabled(amount.isEmpty)
-            if let r = result { KV("Converted", "৳\(r, specifier: "%.0f")") }
+            if let r = result { KV("Converted", "৳\(String(format: "%.0f", r))") }
         }.navigationTitle("Currency Converter")
     }
 }
@@ -53,9 +53,9 @@ struct TipCalcView: View {
             TextField("Order total", text: $bill).keyboardType(.decimalPad)
             Picker("Tip", selection: $pct) { ForEach([5, 10, 15, 20], id: \.self) { Text("\($0)%").tag($0) } }.pickerStyle(.segmented)
             TextField("People", text: $people).keyboardType(.numberPad)
-            KV("Tip (\(pct)%)", "$\(tip, specifier: "%.0f")")
-            KV("Total", "$\(total, specifier: "%.2f")")
-            KV("Per person", "$\((total / Double(Int(people) ?? 1)).rounded(), specifier: "%.0f")")
+            KV("Tip (\(String(format: "%.0f", pct)%)", "$\(tip))")
+            KV("Total", "$\(String(format: "%.2f", total))")
+            KV("Per person", "$\(String(format: "%.0f", (total / Double(Int(people) ?? 1)).rounded()))")
         }.navigationTitle("Tip Calculator")
     }
 }
@@ -70,7 +70,7 @@ struct FuelView: View {
             TextField("Distance (km)", text: $distance).keyboardType(.decimalPad)
             Picker("Vehicle", selection: $vehicle) { ForEach(["bike", "car", "bus"], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
             Button("Calculate") { cost = ((Double(distance) ?? 0) * (rates[vehicle] ?? 0)).rounded() }.disabled(distance.isEmpty)
-            if let c = cost { KV("Trip cost", "$\(c, specifier: "%.0f")") }
+            if let c = cost { KV("Trip cost", "$\(String(format: "%.0f", c))") }
         }.navigationTitle("Fuel Cost")
     }
 }
@@ -103,7 +103,7 @@ struct CarbonView: View {
         List {
             TextField("Distance (km)", text: $distance).keyboardType(.decimalPad)
             TextField("Weight (kg)", text: $weight).keyboardType(.decimalPad)
-            KV("Carbon footprint", "\(carbon, specifier: "%.2f") kg")
+            KV("Carbon footprint", "\(String(format: "%.2f", carbon)) kg")
         }.navigationTitle("Carbon Footprint")
     }
 }
@@ -122,10 +122,10 @@ struct RoiCalcView: View {
             TextField("Monthly traffic", text: $traffic).keyboardType(.decimalPad)
             TextField("Conversion rate %", text: $conversion).keyboardType(.decimalPad)
             TextField("Customer value", text: $value).keyboardType(.decimalPad)
-            KV("Monthly leads", "\(leads, specifier: "%.0f")")
-            KV("Monthly revenue", "$\(revenue, specifier: "%.2f")")
-            KV("Payback (months)", revenue > 0 ? "\(inv / revenue, specifier: "%.1f")" : "—")
-            KV("Yearly ROI", inv > 0 ? "\((revenue * 12 - inv) / inv * 100, specifier: "%.1f")%" : "—")
+            KV("Monthly leads", "\(String(format: "%.0f", leads))")
+            KV("Monthly revenue", "$\(String(format: "%.2f", revenue))")
+            KV("Payback (months)", revenue > 0 ? "\(String(format: "%.1f", inv / revenue))" : "—")
+            KV("Yearly ROI", inv > 0 ? "\(String(format: "%.1f", (revenue * 12 - inv) / inv * 100))%" : "—")
         }.navigationTitle("ROI Calculator")
     }
 }
@@ -141,7 +141,7 @@ struct ResaleView: View {
             TextField("Purchase price", text: $price).keyboardType(.decimalPad)
             TextField("Age (years)", text: $age).keyboardType(.numberPad)
             Picker("Condition", selection: $condition) { ForEach(["excellent", "good", "fair", "poor"], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
-            KV("Current value", "$\(current, specifier: "%.0f")")
+            KV("Current value", "$\(String(format: "%.0f", current))")
         }.navigationTitle("Resale Value")
     }
 }
@@ -156,7 +156,7 @@ struct InstallmentCompareView: View {
             ForEach(Array(plans.enumerated()), id: \.offset) { _, plan in let (months, rate) = plan
                 let emi = ((amt + amt * rate / 100) / Double(months)).rounded()
                 let total = (amt + amt * rate / 100).rounded()
-                KV("\(months) mo · \(rate, specifier: "%.0f")%", "$\(emi, specifier: "%.0f")/mo · $\(total, specifier: "%.0f")")
+                KV("\(String(format: "%.0f", months) mo · \(rate))%", "$\(String(format: "%.0f", emi))/mo · $\(String(format: "%.0f", total))")
             }
         }.navigationTitle("Compare Installments")
     }

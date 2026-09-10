@@ -152,7 +152,7 @@ struct PriceAlertsView: View {
                 if alerts.isEmpty { Text("No alerts yet").foregroundColor(.secondary) }
                 ForEach(alerts) { a in
                     HStack {
-                        VStack(alignment: .leading) { Text(a.productName ?? String(a.productId.prefix(12))).font(.headline); Text("Target $\(a.targetPrice, specifier: "%.2f")").font(.caption).foregroundColor(.accentColor) }
+                        VStack(alignment: .leading) { Text(a.productName ?? String(a.productId.prefix(12))).font(.headline); Text("Target $\(String(format: "%.2f", a.targetPrice))").font(.caption).foregroundColor(.accentColor) }
                         Spacer()
                         Button("🗑") { Task { if await API.priceAlertDelete(id: a.id) { alerts.removeAll { $0.id == a.id } } } }
                     }
@@ -170,7 +170,7 @@ struct SubscriptionsView: View {
             if loading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
             else { List(plans) { p in
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack { Text(p.name).font(.headline); Spacer(); Text("$\(p.monthlyPrice, specifier: "%.0f")/mo").font(.headline).foregroundColor(.accentColor) }
+                    HStack { Text(p.name).font(.headline); Spacer(); Text("$\(String(format: "%.0f", p.monthlyPrice))/mo").font(.headline).foregroundColor(.accentColor) }
                     if let d = p.description { Text(d).font(.caption).foregroundColor(.secondary) }
                     ForEach(p.features, id: \.self) { Text("• \($0)").font(.subheadline) }
                 }.padding(.vertical, 4)
@@ -195,7 +195,7 @@ struct DigitalHubView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(i.displayTitle).font(.headline).lineLimit(2)
                         if let d = i.description { Text(d).font(.caption).foregroundColor(.secondary).lineLimit(2) }
-                        HStack { Text("$\(i.price, specifier: "%.0f")").font(.subheadline).foregroundColor(.accentColor); if let l = i.level { Text(l).font(.caption).foregroundColor(.secondary) } }
+                        HStack { Text("$\(String(format: "%.0f", i.price))").font(.subheadline).foregroundColor(.accentColor); if let l = i.level { Text(l).font(.caption).foregroundColor(.secondary) } }
                     }.padding(.vertical, 4)
                 }.listStyle(.plain) }
             }

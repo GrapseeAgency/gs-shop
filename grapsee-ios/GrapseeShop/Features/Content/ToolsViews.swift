@@ -11,9 +11,9 @@ struct TaxRefundView: View {
             else if items.isEmpty { ContentUnavailableView("No deductions found", systemImage: "doc.text", description: Text("Sign in to pull your order history")) }
             else {
                 List {
-                    Section { Text("Total deductible").font(.caption).foregroundColor(.secondary); Text("$\(items.reduce(0) { $0 + $1.amount }, specifier: "%.2f")").font(.largeTitle).foregroundColor(.accentColor) }
+                    Section { Text("Total deductible").font(.caption).foregroundColor(.secondary); Text("$\(String(format: "%.2f", items.reduce(0) { $0 + $1.amount }))").font(.largeTitle).foregroundColor(.accentColor) }
                     ForEach(items) { d in
-                        HStack { VStack(alignment: .leading) { Text(d.displayTitle).font(.headline); if let c = d.category { Text(c).font(.caption).foregroundColor(.secondary) } }; Spacer(); Text("$\(d.amount, specifier: "%.2f")").foregroundColor(.accentColor) }
+                        HStack { VStack(alignment: .leading) { Text(d.displayTitle).font(.headline); if let c = d.category { Text(c).font(.caption).foregroundColor(.secondary) } }; Spacer(); Text("$\(String(format: "%.2f", d.amount))").foregroundColor(.accentColor) }
                     }
                 }
             }
@@ -215,10 +215,10 @@ struct SubManagerView: View {
                     }
                     if items.isEmpty { Text("No subscriptions").foregroundColor(.secondary) }
                     else {
-                        Section("Monthly burn") { Text("$\(items.reduce(0) { $0 + $1.amount }, specifier: "%.2f")").font(.largeTitle).foregroundColor(.accentColor) }
+                        Section("Monthly burn") { Text("$\(String(format: "%.2f", items.reduce(0) { $0 + $1.amount }))").font(.largeTitle).foregroundColor(.accentColor) }
                         ForEach(items) { s in
                             HStack {
-                                VStack(alignment: .leading) { Text(s.name).font(.headline); Text("$\(s.amount, specifier: "%.2f") · \(s.frequency ?? "")").font(.caption).foregroundColor(.secondary) }
+                                VStack(alignment: .leading) { Text(s.name).font(.headline); Text("$\(String(format: "%.2f", s.amount)) · \(s.frequency ?? "")").font(.caption).foregroundColor(.secondary) }
                                 Spacer()
                                 Button("Cancel") { Task { if await API.managedSubscriptionCancel(id: s.id) { items.removeAll { $0.id == s.id } } } }.font(.caption).foregroundColor(.red)
                             }
@@ -281,8 +281,8 @@ struct DiscountStackView: View {
             Section {
                 let f = calc(original: original, picked: picked)
                 Text("You pay").font(.caption).foregroundColor(.secondary)
-                Text("$\(f, specifier: "%.0f")").font(.largeTitle).foregroundColor(.accentColor)
-                Text("You save $\(original - f, specifier: "%.0f")")
+                Text("$\(String(format: "%.0f", f))").font(.largeTitle).foregroundColor(.accentColor)
+                Text("You save $\(String(format: "%.0f", original - f))")
             }
         }.navigationTitle("Discount Stacking")
     }

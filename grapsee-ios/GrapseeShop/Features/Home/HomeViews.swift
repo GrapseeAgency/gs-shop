@@ -628,7 +628,7 @@ struct CartView: View {
                 } else {
                     List {
                         ForEach(state.cart) { line in
-                            HStack { VStack(alignment: .leading) { Text(line.name).lineLimit(1); Text("Qty \(line.quantity)").font(.caption).foregroundColor(.secondary) }; Spacer(); Text("$\(line.price * Double(line.quantity), specifier: "%.2f")").bold() }
+                            HStack { VStack(alignment: .leading) { Text(line.name).lineLimit(1); Text("Qty \(String(format: "%.2f", line.quantity)").font(.caption).foregroundColor(.secondary) }; Spacer(); Text("$\(line.price * Double(line.quantity)))").bold() }
                         }
                         NavigationLink(value: Route.web("/checkout/preview")) { Text("Checkout").bold().foregroundColor(.accentColor) }
                     }

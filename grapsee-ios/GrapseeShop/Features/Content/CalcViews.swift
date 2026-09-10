@@ -53,7 +53,7 @@ struct TipCalcView: View {
             TextField("Order total", text: $bill).keyboardType(.decimalPad)
             Picker("Tip", selection: $pct) { ForEach([5, 10, 15, 20], id: \.self) { Text("\($0)%").tag($0) } }.pickerStyle(.segmented)
             TextField("People", text: $people).keyboardType(.numberPad)
-            KV("Tip (\(String(format: "%.0f", pct)%)", "$\(tip))")
+            KV("Tip (\(pct)%)", "$\(String(format: "%.0f", tip))")
             KV("Total", "$\(String(format: "%.2f", total))")
             KV("Per person", "$\(String(format: "%.0f", (total / Double(Int(people) ?? 1)).rounded()))")
         }.navigationTitle("Tip Calculator")
@@ -156,7 +156,7 @@ struct InstallmentCompareView: View {
             ForEach(Array(plans.enumerated()), id: \.offset) { _, plan in let (months, rate) = plan
                 let emi = ((amt + amt * rate / 100) / Double(months)).rounded()
                 let total = (amt + amt * rate / 100).rounded()
-                KV("\(String(format: "%.0f", months) mo · \(rate))%", "$\(String(format: "%.0f", emi))/mo · $\(String(format: "%.0f", total))")
+                KV("\(months) mo · \(String(format: "%.0f", rate))%", "$\(String(format: "%.0f", emi))/mo · $\(String(format: "%.0f", total))")
             }
         }.navigationTitle("Compare Installments")
     }

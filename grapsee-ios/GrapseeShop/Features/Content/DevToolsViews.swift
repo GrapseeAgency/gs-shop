@@ -96,7 +96,7 @@ struct GuidesView: View {
         List(guides) { g in
             VStack(alignment: .leading, spacing: 4) {
                 Text("📘 \(g.name)").font(.headline)
-                Text("\(String(format: "%.1f", g.pages) pages · \(g.sales) sold · ⭐ \(g.rating))").font(.caption).foregroundColor(.secondary)
+                Text("\(g.pages) pages · \(g.sales) sold · ⭐ \(String(format: "%.1f", g.rating))").font(.caption).foregroundColor(.secondary)
                 HStack { Text("$\(g.price)").font(.headline).foregroundColor(.accentColor); Spacer(); Button("Buy") { bought = g.name } }
                 if bought == g.name { Text("✅ \(g.name) added to cart!").font(.caption).foregroundColor(.accentColor) }
             }.padding(.vertical, 4)
@@ -164,7 +164,7 @@ struct NotionView: View {
         List(notionTpls) { t in
             VStack(alignment: .leading, spacing: 4) {
                 Text("📄 \(t.name)").font(.headline)
-                Text("\(String(format: "%.1f", t.pages) pages · \(t.sales) sold · ⭐ \(t.rating))").font(.caption).foregroundColor(.secondary)
+                Text("\(t.pages) pages · \(t.sales) sold · ⭐ \(String(format: "%.1f", t.rating))").font(.caption).foregroundColor(.secondary)
                 Text(t.desc).font(.caption).foregroundColor(.secondary)
                 HStack { Text("$\(t.price)").font(.headline).foregroundColor(.accentColor); Spacer(); Button("Buy") { bought = t.name } }
                 if bought == t.name { Text("✅ added to cart!").font(.caption).foregroundColor(.accentColor) }
@@ -179,7 +179,7 @@ struct TutorialsView: View {
         List(tutorials) { t in
             VStack(alignment: .leading, spacing: 4) {
                 Text("🎬 \(t.title)").font(.headline)
-                Text("\(String(format: "%.1f", t.duration) · \(t.views) views · ⭐ \(t.rating))").font(.caption).foregroundColor(.secondary)
+                Text("\(t.duration) · \(t.views) views · ⭐ \(String(format: "%.1f", t.rating))").font(.caption).foregroundColor(.secondary)
                 HStack { Text("$\(t.price)").font(.headline).foregroundColor(.accentColor); Spacer(); Button("Buy") { bought = t.title } }
                 if bought == t.title { Text("✅ added to cart!").font(.caption).foregroundColor(.accentColor) }
             }.padding(.vertical, 4)

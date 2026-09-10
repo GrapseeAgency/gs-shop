@@ -100,6 +100,8 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
+    testImplementation("junit:junit:4.13.2")
+
     // Push is dormant until a google-services.json is dropped in (see README).
     // FirebaseApp init is guarded in code, so the build stays green without it.
     implementation("com.google.firebase:firebase-messaging:24.1.0")

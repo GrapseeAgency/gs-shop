@@ -72,14 +72,18 @@ fun UpdateGate(vm: UpdateViewModel = viewModel()) {
         is AppUpdater.State.Downloading -> {
             AlertDialog(
                 onDismissRequest = {},
-                title = { Text("Downloading update… ${s.percent}%") },
+                title = { Text(if (s.percent < 0) "Downloading update…" else "Downloading update… ${s.percent}%") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        LinearProgressIndicator(
-                            progress = { s.percent / 100f },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        Text("${s.percent} of 100", style = MaterialTheme.typography.bodySmall)
+                        if (s.percent < 0) {
+                            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        } else {
+                            LinearProgressIndicator(
+                                progress = { (s.percent.coerceIn(0, 100)) / 100f },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                        Text(if (s.percent < 0) "Fetching…" else "${s.percent.coerceIn(0, 100)} of 100", style = MaterialTheme.typography.bodySmall)
                     }
                 },
                 confirmButton = {},
@@ -125,7 +129,10 @@ fun UpdateSettingsRow(vm: UpdateViewModel = viewModel()) {
             Text(
                 when (state) {
                     is AppUpdater.State.Checking -> "Checking…"
-                    is AppUpdater.State.Downloading -> "Downloading… ${(state as AppUpdater.State.Downloading).percent}%"
+                    is AppUpdater.State.Downloading -> {
+                        val pct = (state as AppUpdater.State.Downloading).percent
+                        if (pct < 0) "Downloading…" else "Downloading… ${pct.coerceIn(0, 100)}%"
+                    }
                     is AppUpdater.State.UpToDate -> "Up to date ✓"
                     else -> "Check for updates"
                 },

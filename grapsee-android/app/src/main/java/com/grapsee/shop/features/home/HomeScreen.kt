@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -78,6 +79,9 @@ import com.grapsee.shop.core.network.DailyPickDto
 import com.grapsee.shop.core.network.Product
 import com.grapsee.shop.core.network.ReviewDto
 import com.grapsee.shop.core.network.ShopEventDto
+import com.grapsee.shop.core.network.TrendingTermDto
+import com.grapsee.shop.core.network.PublicStatsDto
+import com.grapsee.shop.core.network.TestimonialDto
 import com.grapsee.shop.ui.components.ErrorState
 import com.grapsee.shop.ui.components.PriceText
 import com.grapsee.shop.ui.components.ProductCard
@@ -99,6 +103,9 @@ data class HomeUiState(
     val recommended: List<Product> = emptyList(),
     val events: List<ShopEventDto> = emptyList(),
     val luxury: List<Product> = emptyList(),
+    val trendingTerms: List<TrendingTermDto> = emptyList(),
+    val stats: PublicStatsDto? = null,
+    val testimonials: List<TestimonialDto> = emptyList(),
     val collections: List<CollectionDto> = emptyList(),
     val posts: List<BlogPostDto> = emptyList(),
     val brands: List<BrandDto> = emptyList(),
@@ -133,6 +140,9 @@ class HomeViewModel : ViewModel() {
                     val recommended = async { ApiClient.recommended(6) }
                     val events = async { ApiClient.events() }
                     val luxury = async { ApiClient.luxuryProducts(3) }
+                    val trendingTerms = async { ApiClient.trendingSearches() }
+                    val stats = async { ApiClient.publicStats() }
+                    val testimonials = async { ApiClient.testimonials() }
                     val collections = async { ApiClient.collections(true) }
                     val posts = async { ApiClient.blogPosts(2) }
                     val brands = async { ApiClient.brands() }
@@ -149,6 +159,9 @@ class HomeViewModel : ViewModel() {
                         recommended = recommended.await(),
                         events = events.await(),
                         luxury = luxury.await(),
+                        trendingTerms = trendingTerms.await(),
+                        stats = stats.await(),
+                        testimonials = testimonials.await(),
                         collections = collections.await(),
                         posts = posts.await(),
                         brands = brands.await(),
@@ -197,6 +210,9 @@ data class HomeNav(
     val onWeb: (String) -> Unit,
     val onCollections: () -> Unit = {},
     val onCollection: (String) -> Unit = {},
+    val onSearchQuery: (String) -> Unit = {},
+    val onCart: () -> Unit = {},
+    val onWishlist: () -> Unit = {},
     /** Return true when the route was handled natively (fallback is WebView). */
     val onNative: ((String) -> Boolean)? = null,
 )
@@ -211,12 +227,15 @@ fun HomeScreen(
     onWeb: (String) -> Unit,
     onCollections: () -> Unit = {},
     onCollection: (String) -> Unit = {},
+    onSearchQuery: (String) -> Unit = {},
+    onCart: () -> Unit = {},
+    onWishlist: () -> Unit = {},
     onNative: ((String) -> Boolean)? = null,
     vm: HomeViewModel = viewModel(),
 ) {
     val state = vm.ui
-    val nav = remember(onProduct, onCategory, onSearch, onList, onWeb, onCollections, onCollection, onNative) {
-        HomeNav(onProduct, onCategory, onSearch, onList, onWeb, onCollections, onCollection, onNative)
+    val nav = remember(onProduct, onCategory, onSearch, onList, onWeb, onCollections, onCollection, onSearchQuery, onCart, onWishlist, onNative) {
+        HomeNav(onProduct, onCategory, onSearch, onList, onWeb, onCollections, onCollection, onSearchQuery, onCart, onWishlist, onNative)
     }
     // Content batch: route through native screens first, WebView as fallback.
     fun go(route: String) {
@@ -241,7 +260,7 @@ fun HomeScreen(
 
                 // 2. Categories
                 item {
-                    SectionBlock("Categories", "🛍") {
+                    SectionBlock("Shop by Category", "🛍", badge = "${state.categories.size}") {
                         LazyRow(
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -253,24 +272,26 @@ fun HomeScreen(
                     }
                 }
 
-                // 3. Trending searches
-                item {
-                    SectionBlock("Trending searches", "🔥") {
-                        LazyRow(
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            items(trendingSearches) { term ->
-                                Surface(
-                                    shape = RoundedCornerShape(20.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { nav.onSearch() },
-                                ) {
-                                    Text(
-                                        term,
-                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                                        style = MaterialTheme.typography.labelMedium,
-                                    )
+                // 3. Trending searches (real API; hidden when empty, like the web)
+                if (state.trendingTerms.isNotEmpty()) {
+                    item {
+                        SectionBlock("Trending Now", "🔥") {
+                            LazyRow(
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                items(state.trendingTerms, key = { it.term }) { item ->
+                                    Surface(
+                                        shape = RoundedCornerShape(20.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant,
+                                        modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { nav.onSearchQuery(item.term) },
+                                    ) {
+                                        Text(
+                                            item.term + item.countLabel,
+                                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                            style = MaterialTheme.typography.labelMedium,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -280,7 +301,7 @@ fun HomeScreen(
                 // 4. Flash deals with countdown
                 if (state.deals.isNotEmpty()) {
                     item {
-                        SectionBlock("Flash deals", "⚡", action = "See all", onAction = { nav.onList("deals", "Flash deals") }) {
+                        SectionBlock("Flash Deals", "⚡", action = "View All Deals", onAction = { nav.onList("deals", "Flash deals") }, subtitle = "Ends today!") {
                             CountdownBar()
                             Spacer(Modifier.height(8.dp))
                             LazyRow(
@@ -295,16 +316,15 @@ fun HomeScreen(
                     }
                 }
 
-                // 5. Personalized recommendations (web: Recommended For You)
-                val recommended = state.recommended.ifEmpty { state.trending }
-                if (recommended.isNotEmpty()) {
+                // 5. Personalized recommendations (web: Recommended For You, no CTA, hidden when empty)
+                if (state.recommended.isNotEmpty()) {
                     item {
-                        SectionBlock("Recommended For You", "🎯", action = "More", onAction = { nav.onSearch() }) {
+                        SectionBlock("Recommended For You", "🎯", subtitle = "Based on your preferences") {
                             LazyRow(
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
-                                items(recommended.take(6), key = { it.id }) { product ->
+                                items(state.recommended.take(6), key = { it.id }) { product ->
                                     ProductCardCompact(product) { nav.onProduct(product.id) }
                                 }
                             }
@@ -358,7 +378,7 @@ fun HomeScreen(
                 // 8. Trending products
                 if (state.trending.isNotEmpty()) {
                     item {
-                        SectionBlock("Trending now", "📈", action = "See all", onAction = { nav.onList("trending", "Trending now") }) {
+                        SectionBlock("Trending Now", "📈", action = "See All", onAction = { if (nav.onNative?.invoke("/category") != true) nav.onWeb("/category") }) {
                             LazyRow(
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -374,7 +394,7 @@ fun HomeScreen(
                 // 9. New arrivals
                 if (state.newArrivals.isNotEmpty()) {
                     item {
-                        SectionBlock("New arrivals", "✨", action = "See all new", onAction = { nav.onList("new", "New arrivals") }) {
+                        SectionBlock("New Arrivals", "✨", action = "See All New", badge = "${state.newArrivals.size} new", onAction = { nav.onSearch() }) {
                             LazyRow(
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -396,7 +416,6 @@ fun HomeScreen(
                     var myVotes by remember { mutableStateOf(setOf<String>()) }
                     SectionBlock(
                         "Today's Picks", "🗓",
-                        action = "Vote daily", onAction = { go("/daily-checkin") },
                         badge = if (picks.isNotEmpty()) "${picks.size} picks" else null,
                     ) {
                         NextPickCountdown()
@@ -429,7 +448,7 @@ fun HomeScreen(
                         }
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            "🗳 ${myVotes.size + 105} total votes today",
+                            "🗳 ${picks.sumOf { it.votes } + myVotes.size} total votes today",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 16.dp),
@@ -441,7 +460,7 @@ fun HomeScreen(
                 val luxury = state.luxury.ifEmpty { state.featured.filter { (it.comparePrice ?: it.price) >= it.price }.take(3) }
                 if (luxury.isNotEmpty()) {
                     item {
-                        SectionBlock("Luxury Zone", "👑", action = "Explore Luxury", onAction = { nav.onList("luxury", "Luxury Zone") }) {
+                        SectionBlock("Luxury Zone", "👑", subtitle = "Premium tier excellence", action = "View All", onAction = { nav.onList("luxury", "Luxury Zone") }) {
                             Column(
                                 Modifier.padding(horizontal = 16.dp),
                                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -470,7 +489,7 @@ fun HomeScreen(
                                             }
                                             Surface(color = Color(0xFFF59E0B), shape = RoundedCornerShape(8.dp)) {
                                                 Text(
-                                                    "Premium",
+                                                    "PREMIUM",
                                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                                     style = MaterialTheme.typography.labelSmall,
                                                     color = Color.White,
@@ -534,7 +553,7 @@ fun HomeScreen(
                 // 14. Featured products
                 if (state.featured.isNotEmpty()) {
                     item {
-                        SectionBlock("Featured Products", "⭐", action = "View all", onAction = { nav.onList("featured", "Featured") }) {
+                        SectionBlock("Featured Products", "⭐", action = "View All", onAction = { nav.onList("featured", "Featured") }) {
                             ProductGrid(state.featured.take(4), nav.onProduct)
                         }
                     }
@@ -546,7 +565,7 @@ fun HomeScreen(
                 }
 
                 // 16. Stats
-                item { StatsGrid(state.products.size) }
+                item { StatsGrid(state.stats) }
 
                 // 17. All products
                 item {
@@ -571,55 +590,17 @@ fun HomeScreen(
                     }
                 }
 
-                // 18. Testimonials — real reviews from /api/reviews
-                if (state.reviews.isNotEmpty()) {
+                // 18. Testimonials — real carousel from /api/testimonials (arrows + dots)
+                if (state.testimonials.isNotEmpty()) {
                     item {
-                        SectionBlock("What members say", "💬") {
-                            LazyRow(
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                items(state.reviews, key = { it.id.ifEmpty { it.body.orEmpty() } }) { review ->
-                                    Surface(
-                                        shape = RoundedCornerShape(16.dp),
-                                        color = MaterialTheme.colorScheme.surface,
-                                        tonalElevation = 1.dp,
-                                        modifier = Modifier.width(240.dp),
-                                    ) {
-                                        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                                repeat(review.rating.toInt().coerceIn(0, 5)) {
-                                                    Icon(
-                                                        Icons.Filled.Star,
-                                                        contentDescription = null,
-                                                        tint = Color(0xFFFBBF24),
-                                                        modifier = Modifier.size(12.dp),
-                                                    )
-                                                }
-                                            }
-                                            Text(
-                                                review.body.orEmpty(),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                maxLines = 4,
-                                                overflow = TextOverflow.Ellipsis,
-                                            )
-                                            Text(
-                                review.author.orEmpty(),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.primary,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        TestimonialsCarousel(state.testimonials)
                     }
                 }
 
                 // Blog preview (web: BlogPreview — 2 latest posts)
                 if (state.posts.isNotEmpty()) {
                     item {
-                        SectionBlock("From the Blog", "📰", action = "Read All", onAction = { go("/blog") }) {
+                        SectionBlock("From Our Blog", "📰", subtitle = "Tips, news & insights", action = "Read More", onAction = { go("/blog") }) {
                             Column(
                                 Modifier.padding(horizontal = 16.dp),
                                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -697,7 +678,7 @@ fun HomeScreen(
                 // 20b. Brand carousel (web: BrandCarousel — hidden when no valid brands)
                 if (state.brands.isNotEmpty()) {
                     item {
-                        SectionBlock("Top Brands", "🏢", action = "All Brands", onAction = { go("/brands") }) {
+                        SectionBlock("Shop by Brand", "🏢", subtitle = "Top brands you trust", action = "View All", onAction = { go("/brands") }) {
                             LazyRow(
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -747,19 +728,9 @@ fun HomeScreen(
                 // 23. Rewards program
                 item { RewardsCard(nav) }
 
-                // Quick Help (web: HelpQuickLinks — orders / cart / wishlist / rewards)
+                // Quick Actions (web: HelpQuickLinks — live badges + stats)
                 item {
-                    SectionBlock("Quick Help", "🆘", action = "Help Center", onAction = { go("/help") }) {
-                        IconTileGrid(
-                            null,
-                            listOf(
-                                TileSpec("Orders", "", "📦", Color(0xFF3B82F6)) { go("/orders") },
-                                TileSpec("Returns", "", "↩️", Color(0xFFF97316)) { go("/returns") },
-                                TileSpec("Contact", "", "💬", Color(0xFF10B981)) { go("/contact") },
-                                TileSpec("Rewards", "", "🏆", Color(0xFFEAB308)) { go("/rewards") },
-                            ),
-                        )
-                    }
+                    QuickActionsSection(nav)
                 }
 
                 // 24. Customer reviews
@@ -788,6 +759,7 @@ fun HomeScreen(
 
                 // 26. Group buy
                 item {
+                    SectionHeaderRow("Group Buy", "🤝")
                     ListBanner(
                         emoji = "🤝",
                         title = "Buy Together, Save Together",
@@ -904,7 +876,6 @@ fun HomeScreen(
     }
 }
 
-private val trendingSearches = listOf("websites", "mobile apps", "devops", "UI/UX design", "AI/ML", "dashboards", "eBooks", "branding")
 
 // ---------------------------------------------------------------- components
 
@@ -914,6 +885,7 @@ private fun SectionBlock(
     emoji: String,
     action: String? = null,
     badge: String? = null,
+    subtitle: String? = null,
     onAction: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
@@ -934,11 +906,19 @@ private fun SectionBlock(
                 Text(emoji, style = MaterialTheme.typography.labelLarge)
             }
             Spacer(Modifier.width(10.dp))
-            Text(
-                title,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f),
-            )
+            Column(Modifier.weight(1f)) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                if (subtitle != null) {
+                    Text(
+                        subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             if (badge != null) {
                 Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f), shape = RoundedCornerShape(50)) {
                     Text(
@@ -970,30 +950,68 @@ private fun HeroCarousel() {
     // Faithful port of the web hero: same 4 slides, badges, dual CTAs and
     // animated artwork, redrawn natively (the web uses animated SVG; we use
     // Compose Canvas — the "liquid aurora" / WebGL feel included).
+    // Verbatim port of web hero.tsx slides 1–10 (badges, titles, descriptions
+    // incl. original spacing, dual CTAs, accents). Artwork redrawn natively.
     val slides = listOf(
         HeroSlide(
             id = 1, badge = "Welcome to Grapsee Mall", title = "Build Your", highlight = "Digital Empire",
-            description = "Premium websites, apps & DevOps — crafted by elite engineers. Your one-stop digital shopping mall.",
+            description = "Premium websites, apps & DevOps  crafted by elite engineers. Your one-stop digital shopping mall.",
             cta = "Shop Now", ctaSecondary = "Browse All Products", accent = Color(0xFF10B981), art = HeroArt.WINDOWS,
-            onCta = { 0 },
-        ),
-        HeroSlide(
-            id = 2, badge = "Flash Deals Live", title = "Up to", highlight = "50% OFF",
-            description = "Limited-time deals on digital services. Don't miss the biggest sale of the season!",
-            cta = "Grab Deals", ctaSecondary = "View All Deals", accent = Color(0xFFF97316), art = HeroArt.BOLT,
             onCta = { 1 },
         ),
         HeroSlide(
-            id = 3, badge = "New Arrivals", title = "Next-Gen Tech,", highlight = "Built for You",
-            description = "AI-powered tools and next-gen applications — the sharpest digital products in one marketplace.",
-            cta = "Explore Tech", ctaSecondary = "Browse AI Tools", accent = Color(0xFF8B5CF6), art = HeroArt.CHIP,
+            id = 2, badge = "Flash Deals Live", title = "Up to", highlight = "50% OFF",
+            description = "Limited-time deals on Digital services. Don't miss out on the biggest sale of the season!",
+            cta = "Grab Deals", ctaSecondary = "View All Deals", accent = Color(0xFFF97316), art = HeroArt.BOLT,
             onCta = { 2 },
         ),
         HeroSlide(
-            id = 4, badge = "Creative Studio", title = "Design That", highlight = "Actually Sells",
-            description = "UI kits, brand templates & design systems built by professionals.",
-            cta = "Shop Designs", ctaSecondary = "Browse UI Kits", accent = Color(0xFFE879F9), art = HeroArt.PALETTE,
+            id = 3, badge = "New Arrivals", title = "Next-Gen Tech,", highlight = "Built for You",
+            description = "AI-powered tools and next-gen applications  the sharpest digital products now in one marketplace.",
+            cta = "Explore Tech", ctaSecondary = "Browse AI Tools", accent = Color(0xFF8B5CF6), art = HeroArt.CHIP,
             onCta = { 3 },
+        ),
+        HeroSlide(
+            id = 4, badge = "Creative Studio", title = "Design That", highlight = "Actually Sells",
+            description = "UI kits, brand templates & design systems built by professionals. Make your product impossible to ignore.",
+            cta = "Shop Designs", ctaSecondary = "Browse UI Kits", accent = Color(0xFFE879F9), art = HeroArt.PALETTE,
+            onCta = { 4 },
+        ),
+        HeroSlide(
+            id = 5, badge = "Ship Faster", title = "Launch Faster.", highlight = "Grow Bigger.",
+            description = "Ready-to-deploy solutions for startups and enterprises. Go from idea to live product in days, not months.",
+            cta = "Get Started", ctaSecondary = "View Enterprise", accent = Color(0xFF38BDF8), art = HeroArt.ROCKET,
+            onCta = { 5 },
+        ),
+        HeroSlide(
+            id = 6, badge = "Live Auctions", title = "Bid Smart.", highlight = "Win Big.",
+            description = "Real-time auctions on premium digital products. Place your bid, track live countdowns, and claim exclusive deals.",
+            cta = "Join Auction", ctaSecondary = "Browse Lots", accent = Color(0xFFF59E0B), art = HeroArt.GAVEL,
+            onCta = { 6 },
+        ),
+        HeroSlide(
+            id = 7, badge = "Trusted Community", title = "Rated by", highlight = "Real Buyers",
+            description = "Over 2,400 verified reviews from real customers. Every product rated, every seller accountable.",
+            cta = "Read Reviews", ctaSecondary = "Write a Review", accent = Color(0xFFEAB308), art = HeroArt.STARS,
+            onCta = { 7 },
+        ),
+        HeroSlide(
+            id = 8, badge = "Secure Checkout", title = "Pay Your Way,", highlight = "Always Safe.",
+            description = "Card, wallet, gift card  every payment method, fully encrypted and protected. Zero-risk checkout.",
+            cta = "Shop Safely", ctaSecondary = "Payment Options", accent = Color(0xFF22C55E), art = HeroArt.CARD,
+            onCta = { 8 },
+        ),
+        HeroSlide(
+            id = 9, badge = "Digital Downloads", title = "Buy Once.", highlight = "Use Forever.",
+            description = "Instant download on all digital products  software, templates, ebooks, and more. Delivered in seconds.",
+            cta = "Browse Downloads", ctaSecondary = "View All Files", accent = Color(0xFF6366F1), art = HeroArt.DOWNLOAD,
+            onCta = { 9 },
+        ),
+        HeroSlide(
+            id = 10, badge = "Loyalty Rewards", title = "Every Purchase", highlight = "Earns Points.",
+            description = "Earn points on every order. Unlock Bronze, Silver, Gold tiers and redeem rewards in the Loyalty Mall.",
+            cta = "Earn Points", ctaSecondary = "View Rewards", accent = Color(0xFFA855F7), art = HeroArt.TROPHY,
+            onCta = { 10 },
         ),
     )
     val nav = LocalHeroNav.current
@@ -1034,7 +1052,7 @@ private fun HeroCarousel() {
                             Modifier
                                 .size(6.dp)
                                 .clip(CircleShape)
-                                .background(if (slide.id <= 2) MaterialTheme.colorScheme.error else slide.accent),
+                                .background(if (slide.id == 2 || slide.id == 6) MaterialTheme.colorScheme.error else slide.accent),
                         )
                         Text(
                             slide.badge,
@@ -1059,23 +1077,54 @@ private fun HeroCarousel() {
                     )
                     Spacer(Modifier.height(4.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Mirrors web handleCta/handleSecondaryCta (hero.tsx): 2→deals,
+                        // 6→auctions, 7→reviews, 9→digital-downloads, 10→rewards,
+                        // else primary→/category, secondary→/search.
                         HeroButton(slide.cta, filled = true, accent = slide.accent) {
-                            when (slide.onCta()) {
-                                1 -> nav.onList("deals", "Flash deals")
-                                2 -> nav.onList("new", "New arrivals")
-                                3 -> if (nav.onNative?.invoke("/digital-downloads") != true) nav.onWeb("/digital-downloads")
+                            when (slide.id) {
+                                2 -> nav.onList("deals", "Flash deals")
+                                6 -> nav.onList("auctions", "Auctions")
+                                7 -> if (nav.onNative?.invoke("/reviews") != true) nav.onWeb("/reviews")
+                                9 -> if (nav.onNative?.invoke("/digital-downloads") != true) nav.onWeb("/digital-downloads")
+                                10 -> if (nav.onNative?.invoke("/rewards") != true) nav.onWeb("/rewards")
                                 else -> if (nav.onNative?.invoke("/category") != true) nav.onWeb("/category")
                             }
                         }
                         HeroButton(slide.ctaSecondary, filled = false, accent = slide.accent) {
-                            when (slide.onCta()) {
-                                1 -> nav.onList("deals", "Flash deals")
-                                else -> if (nav.onNative?.invoke("/category") != true) nav.onSearch()
+                            when (slide.id) {
+                                2 -> nav.onList("deals", "Flash deals")
+                                6 -> nav.onList("auctions", "Auctions")
+                                7 -> if (nav.onNative?.invoke("/reviews") != true) nav.onWeb("/reviews")
+                                9 -> if (nav.onNative?.invoke("/digital-downloads") != true) nav.onWeb("/digital-downloads")
+                                10 -> if (nav.onNative?.invoke("/rewards") != true) nav.onWeb("/rewards")
+                                else -> nav.onSearch()
                             }
                         }
                     }
                 }
                 HeroArtwork(slide.art, slide.accent, Modifier.weight(1f))
+            }
+        }
+    }
+    // Slide counter + dots, like the web 01/10 chrome.
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            "%02d/%02d".format(pagerState.currentPage + 1, slides.size),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Bold,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            repeat(slides.size) { i ->
+                Box(
+                    Modifier.padding(0.dp).size(width = if (i == pagerState.currentPage) 16.dp else 6.dp, height = 6.dp)
+                        .clip(CircleShape)
+                        .background(if (i == pagerState.currentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
+                )
             }
         }
     }
@@ -1104,7 +1153,7 @@ private fun HeroButton(label: String, filled: Boolean, accent: Color, onClick: (
     }
 }
 
-enum class HeroArt { WINDOWS, BOLT, CHIP, PALETTE }
+enum class HeroArt { WINDOWS, BOLT, CHIP, PALETTE, ROCKET, GAVEL, STARS, CARD, DOWNLOAD, TROPHY }
 
 @Composable
 private fun HeroArtwork(art: HeroArt, accent: Color, modifier: Modifier = Modifier) {
@@ -1196,6 +1245,68 @@ private fun HeroArtwork(art: HeroArt, accent: Color, modifier: Modifier = Modifi
                 }
                 drawRoundRect(Color.White, Offset(w * 0.15f, h * 0.68f), Size(w * 0.7f, h * 0.14f), CornerRadius(16f))
                 drawRoundRect(accent.copy(alpha = 0.6f * blink), Offset(w * 0.2f, h * 0.72f), Size(w * 0.35f, 8f), CornerRadius(4f))
+            }
+            HeroArt.ROCKET -> {
+                // Rocket: body + window + fins + flame.
+                val body = Path().apply {
+                    moveTo(w * 0.5f, h * 0.08f)
+                    lineTo(w * 0.62f, h * 0.45f)
+                    lineTo(w * 0.38f, h * 0.45f)
+                    close()
+                }
+                drawPath(body, accent)
+                drawCircle(Color.White.copy(alpha = blink), w * 0.05f, Offset(w * 0.5f, h * 0.26f))
+                val flame = Path().apply {
+                    moveTo(w * 0.42f, h * 0.48f)
+                    lineTo(w * 0.5f, h * (0.72f + 0.08f * t))
+                    lineTo(w * 0.58f, h * 0.48f)
+                    close()
+                }
+                drawPath(flame, Brush.verticalGradient(listOf(Color(0xFFFBBF24), Color(0xFFEF4444))))
+                drawLine(accent.copy(alpha = 0.5f), Offset(w * 0.2f, h * 0.85f), Offset(w * 0.8f, h * 0.85f), 6f)
+            }
+            HeroArt.GAVEL -> {
+                // Gavel: head + handle, slight rock.
+                val rock = 0.12f * sin(t * 6.28f)
+                drawLine(accent, Offset(w * (0.3f + rock), h * 0.3f), Offset(w * (0.7f + rock), h * 0.18f), 22f)
+                drawLine(accent, Offset(w * (0.42f + rock), h * 0.38f), Offset(w * (0.62f + rock), h * 0.82f), 12f)
+                drawRoundRect(accent.copy(alpha = 0.85f), Offset(w * 0.3f, h * 0.86f), Size(w * 0.4f, h * 0.06f), CornerRadius(8f))
+                drawCircle(Color(0xFFFBBF24).copy(alpha = blink), 9f, Offset(w * 0.78f, h * 0.3f))
+            }
+            HeroArt.STARS -> {
+                // Rating burst: 5 stars arc + big center star.
+                listOf(0.2f, 0.35f, 0.5f, 0.65f, 0.8f).forEachIndexed { i, fx ->
+                    val fy = 0.3f + 0.18f * kotlin.math.abs(fx - 0.5f) * 2f
+                    drawCircle(Color(0xFFFBBF24).copy(alpha = 0.5f + 0.4f * blink), w * (0.05f + 0.02f * (i == 2).compareTo(false)), Offset(w * fx, h * fy))
+                }
+                drawCircle(accent, w * 0.14f, Offset(w * 0.5f, h * 0.62f))
+                drawCircle(Color.White.copy(alpha = 0.9f), w * 0.06f, Offset(w * 0.5f, h * 0.62f))
+            }
+            HeroArt.CARD -> {
+                // Credit card + shield check.
+                drawRoundRect(accent, Offset(w * 0.12f, h * 0.3f), Size(w * 0.66f, h * 0.4f), CornerRadius(18f))
+                drawRoundRect(Color.White.copy(alpha = 0.85f), Offset(w * 0.18f, h * 0.38f), Size(w * 0.2f, h * 0.08f), CornerRadius(6f))
+                drawRoundRect(Color.White.copy(alpha = 0.5f * blink), Offset(w * 0.18f, h * 0.54f), Size(w * 0.4f, 7f), CornerRadius(4f))
+                drawCircle(Color(0xFF22C55E), w * 0.13f, Offset(w * 0.78f, h * 0.62f))
+            }
+            HeroArt.DOWNLOAD -> {
+                // Download tray + arrow.
+                drawLine(accent, Offset(w * 0.5f, h * 0.1f), Offset(w * 0.5f, h * (0.45f + 0.08f * t)), 12f)
+                val head = Path().apply {
+                    moveTo(w * 0.36f, h * 0.36f)
+                    lineTo(w * 0.5f, h * (0.5f + 0.08f * t))
+                    lineTo(w * 0.64f, h * 0.36f)
+                    close()
+                }
+                drawPath(head, accent)
+                drawRoundRect(accent.copy(alpha = 0.8f), Offset(w * 0.2f, h * 0.66f), Size(w * 0.6f, h * 0.1f), CornerRadius(8f))
+            }
+            HeroArt.TROPHY -> {
+                // Trophy cup + base + sparkles.
+                drawRoundRect(accent, Offset(w * 0.32f, h * 0.14f), Size(w * 0.36f, h * 0.34f), CornerRadius(14f))
+                drawCircle(Color(0xFFFBBF24).copy(alpha = 0.6f + 0.3f * blink), w * 0.3f, Offset(w * 0.5f, h * 0.3f), style = Stroke(width = 5f))
+                drawRoundRect(accent.copy(alpha = 0.85f), Offset(w * 0.44f, h * 0.5f), Size(w * 0.12f, h * 0.18f), CornerRadius(6f))
+                drawRoundRect(accent, Offset(w * 0.34f, h * 0.7f), Size(w * 0.32f, h * 0.08f), CornerRadius(8f))
             }
         }
     }
@@ -1444,7 +1555,7 @@ private fun MallDirectory(nav: HomeNav) {
                         }
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
-                                "FLOOR ${floor.id} ›",
+                                "Floor ${floor.id}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.ExtraBold,
@@ -1456,18 +1567,22 @@ private fun MallDirectory(nav: HomeNav) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Spacer(Modifier.height(4.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                floor.tags.take(2).forEach { tag ->
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                                        shape = RoundedCornerShape(6.dp),
-                                    ) {
-                                        Text(
-                                            tag,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                floor.tags.chunked(2).forEach { pair ->
+                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        pair.forEach { tag ->
+                                            Surface(
+                                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                                shape = RoundedCornerShape(6.dp),
+                                            ) {
+                                                Text(
+                                                    tag,
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -1482,10 +1597,10 @@ private fun MallDirectory(nav: HomeNav) {
 private data class Floor(val id: Int, val name: String, val subtitle: String, val emoji: String, val tint: Color, val tags: List<String>)
 
 private val floors = listOf(
-    Floor(1, "Electronics & Tech", "Websites, Apps & DevOps", "💻", Color(0xFF06B6D4), listOf("Websites", "Mobile Apps")),
-    Floor(2, "Fashion & Lifestyle", "Design & Branding", "👕", Color(0xFFEC4899), listOf("UI/UX", "Branding")),
-    Floor(3, "Home & Living", "Productivity & Tools", "🏠", Color(0xFF10B981), listOf("Dashboards", "Automation")),
-    Floor(4, "Premium & Luxury", "Enterprise Solutions", "👑", Color(0xFFF59E0B), listOf("Enterprise", "AI/ML")),
+    Floor(1, "Electronics & Tech", "Websites, Apps & DevOps", "💻", Color(0xFF06B6D4), listOf("Websites", "Mobile Apps", "DevOps", "APIs")),
+    Floor(2, "Fashion & Lifestyle", "Design & Branding", "👕", Color(0xFFEC4899), listOf("UI/UX Design", "Brand Identity", "Social Media", "Graphics")),
+    Floor(3, "Home & Living", "Productivity & Tools", "🏠", Color(0xFF10B981), listOf("Dashboards", "Analytics", "Automation", "CRM")),
+    Floor(4, "Premium & Luxury", "Enterprise Solutions", "👑", Color(0xFFF59E0B), listOf("Enterprise Apps", "Cloud Infra", "AI/ML", "Consulting")),
 )
 
 @Composable
@@ -1494,10 +1609,10 @@ private fun PromoCarousel(nav: HomeNav) {
     val promos = listOf(
         PromoSpec("🔥", "HOT", "Mega Sale", "This Weekend Only", "Save up to 50% on all digital services. Premium quality at unbeatable prices.", "Shop Sale", Color(0xFFF59E0B), { nav.onList("deals", "Flash deals") }),
         PromoSpec("🚚", "FREE", "Free Delivery", "Limited Time Offer", "Free delivery on all orders this week. No minimum purchase required!", "Order Now", Color(0xFF10B981), { nav.onSearch() }),
-        PromoSpec("🎁", "BOGO", "Buy 1 Get 1", "BOGO Deals", "Buy any service and get a second one free. Mix and match across categories!", "Claim Offer", Color(0xFFF43F5E), { nav.onList("deals", "Flash deals") }),
-        PromoSpec("📦", "BUNDLE", "Bundle & Save", "Custom Packages", "Bundle services together and save up to 40% on custom packages.", "Build Bundle", Color(0xFF8B5CF6), { nav.onSearch() }),
-        PromoSpec("⚡", "FLASH", "Flash Deal", "Ends in Hours", "Lightning deals refresh every few hours. Grab them before they're gone.", "Shop Flash", Color(0xFFEF4444), { nav.onList("deals", "Flash deals") }),
-        PromoSpec("👑", "CLUB", "Premium Club", "Join & Save 20%", "Members save 20% on every order plus early access to new drops.", "Join Club", Color(0xFFEAB308), { if (nav.onNative?.invoke("/vip") != true) nav.onWeb("/vip") }),
+        PromoSpec("🎁", "BOGO", "Buy 1 Get 1", "BOGO Deals", "Buy any service and get a second one free. Mix and match across categories!", "Grab Deal", Color(0xFFF43F5E), { nav.onList("deals", "Flash deals") }),
+        PromoSpec("📦", "BUNDLE", "Bundle & Save", "Custom Packages", "Combine any 3+ services and save 30%. Build your complete digital suite.", "Build Bundle", Color(0xFF8B5CF6), { nav.onSearch() }),
+        PromoSpec("⚡", "FLASH", "Flash Deal", "Ends in Hours", "Fast deal on premium services. Only available for the next few hours!", "Flash Sale", Color(0xFFEF4444), { nav.onList("deals", "Flash deals") }),
+        PromoSpec("👑", "VIP", "Premium Club", "Join & Save 20%", "Get exclusive deals, early access, and VIP support with our membership.", "Join Now", Color(0xFFEAB308), { nav.onList("luxury", "Luxury Zone") }),
     )
     val pagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { promos.size })
     Column {
@@ -1579,10 +1694,65 @@ private fun RecentlyViewedSection(nav: HomeNav) {
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(history.reversed(), key = { it.id }) { product ->
+                items(history, key = { it.id }) { product ->
                     ProductCardCompact(product) { nav.onProduct(product.id) }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TestimonialsCarousel(testimonials: List<TestimonialDto>) {
+    val pagerState = rememberPagerState(pageCount = { testimonials.size })
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    Column(Modifier.padding(vertical = 8.dp)) {
+        SectionHeaderRow("What Clients Say", "💬")
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 32.dp),
+            pageSpacing = 12.dp,
+        ) { index ->
+            val item = testimonials[index]
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 1.dp,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        repeat(item.rating.toInt().coerceIn(0, 5)) {
+                            Icon(Icons.Filled.Star, contentDescription = null, tint = Color(0xFFFBBF24), modifier = Modifier.size(14.dp))
+                        }
+                    }
+                    Text(item.text, style = MaterialTheme.typography.bodyMedium, maxLines = 5, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        item.name + listOfNotNull(item.role, item.company).joinToString(", ", prefix = " — "),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+        }
+        Row(
+            Modifier.fillMaxWidth().padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            Text("‹", modifier = Modifier.clip(CircleShape).clickable {
+                scope.launch { pagerState.animateScrollToPage((pagerState.currentPage - 1 + testimonials.size) % testimonials.size) }
+            }.padding(horizontal = 12.dp, vertical = 4.dp), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+            repeat(testimonials.size.coerceAtMost(10)) { i ->
+                Box(
+                    Modifier.padding(horizontal = 3.dp).size(if (i == pagerState.currentPage) 8.dp else 6.dp).clip(CircleShape)
+                        .background(if (i == pagerState.currentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
+                )
+            }
+            Text("›", modifier = Modifier.clip(CircleShape).clickable {
+                scope.launch { pagerState.animateScrollToPage((pagerState.currentPage + 1) % testimonials.size) }
+            }.padding(horizontal = 12.dp, vertical = 4.dp), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
         }
     }
 }
@@ -1615,7 +1785,7 @@ private fun EmptyHistoryCard(onBrowse: () -> Unit) {
                 modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable(onClick = onBrowse),
             ) {
                 Text(
-                    "🔍  Browse Products",
+                    "🔍 Browse Products",
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
@@ -1626,14 +1796,17 @@ private fun EmptyHistoryCard(onBrowse: () -> Unit) {
 }
 
 @Composable
-private fun StatsGrid(productCount: Int) {
+private fun StatsGrid(stats: PublicStatsDto?) {
+    // Web parity (stats-section buildStats): Happy Customers, Products, 99.9%
+    // Uptime, 24/7 Support, x.x Rating, Reviews — all server-driven.
+    val rating = if ((stats?.averageRating ?: 0.0) > 0) "%.1f".format(stats!!.averageRating) else "—"
     val cells = listOf(
-        Triple("😊", productCount.toString(), "PRODUCTS"),
-        Triple("🌐", "99.9%", "UPTIME"),
-        Triple("🎧", "24/7", "SUPPORT"),
-        Triple("⭐", "4.8", "RATING"),
-        Triple("💬", "0", "REVIEWS"),
-        Triple("👥", "0", "MEMBERS"),
+        Triple("😊", (stats?.users ?: 0).toString(), "Happy Customers"),
+        Triple("🌐", (stats?.products ?: 0).toString(), "Products"),
+        Triple("📶", "99.9%", "Uptime"),
+        Triple("🎧", "24/7", "Support"),
+        Triple("⭐", rating, "Rating"),
+        Triple("💬", (stats?.totalReviews ?: 0).toString(), "Reviews"),
     )
     Surface(
         modifier = Modifier
@@ -1728,7 +1901,44 @@ private fun TwoTiles(a: TileSpec, b: TileSpec) {
     }
 }
 
-data class TileSpec(val title: String, val subtitle: String, val emoji: String, val tint: Color, val onClick: () -> Unit)
+data class TileSpec(
+    val title: String,
+    val subtitle: String,
+    val emoji: String,
+    val tint: Color,
+    val badge: Int = 0,
+    val onClick: () -> Unit,
+)
+
+@Composable
+private fun QuickActionsSection(nav: HomeNav) {
+    val cartCount by com.grapsee.shop.core.cart.CartStore.count.collectAsState(initial = 0)
+    val wishlist by com.grapsee.shop.core.wishlist.WishlistStore.items.collectAsState()
+    var unread by mutableStateOf(0)
+    LaunchedEffect(Unit) {
+        com.grapsee.shop.core.wishlist.WishlistStore.start()
+        unread = runCatching { ApiClient.notifications().count { !it.seen } }.getOrDefault(0)
+    }
+    SectionBlock("Quick Actions", "⚡", action = "Help Center", onAction = { go2(nav, "/help") }) {
+        IconTileGrid(
+            null,
+            listOf(
+                TileSpec("Track Order", if (cartCount > 0) "$cartCount active" else "Check delivery updates", "📦", Color(0xFF3B82F6), badge = cartCount) { go2(nav, "/orders") },
+                TileSpec("Cart", if (cartCount > 0) "$cartCount items waiting" else "Empty", "🛒", Color(0xFFF97316), badge = cartCount, nav.onCart),
+                TileSpec("Wishlist", if (wishlist.isNotEmpty()) "${wishlist.size} saved items" else "Empty", "❤️", Color(0xFFEC4899), badge = wishlist.size, nav.onWishlist),
+                TileSpec("Notifications", "Updates & alerts", "🔔", Color(0xFFEAB308), badge = unread) { go2(nav, "/notifications") },
+                TileSpec("Returns", "", "↩️", Color(0xFFF97316)) { go2(nav, "/returns") },
+                TileSpec("Support", "", "💬", Color(0xFF10B981)) { go2(nav, "/contact") },
+                TileSpec("View Help Center", "", "❓", Color(0xFF6366F1)) { go2(nav, "/help") },
+            ),
+        )
+    }
+}
+
+/** Route through native screens first (usable outside HomeScreen body). */
+private fun go2(nav: HomeNav, route: String) {
+    if (nav.onNative?.invoke(route) != true) nav.onWeb(route)
+}
 
 @Composable
 private fun FeatureTile(spec: TileSpec, modifier: Modifier = Modifier) {
@@ -1791,6 +2001,26 @@ private fun IconTileGrid(title: String?, specs: List<TileSpec>, columns: Int = 4
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
+                                if (spec.subtitle.isNotBlank()) {
+                                    Text(
+                                        spec.subtitle,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                                if (spec.badge > 0) {
+                                    Surface(color = MaterialTheme.colorScheme.error, shape = RoundedCornerShape(50)) {
+                                        Text(
+                                            if (spec.badge > 99) "99+" else spec.badge.toString(),
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 1.dp),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -1836,9 +2066,9 @@ private fun FaqSection(nav: HomeNav) {
         "Can I customize a package?",
         "Is there a loyalty program?",
     )
-    SectionBlock("Help Center", "❓", action = "Contact Support", onAction = { if (nav.onNative?.invoke("/help") != true) nav.onWeb("/help") }) {
+    SectionBlock("Help Center", "❓", subtitle = "Frequently asked questions", action = "Contact Support", onAction = { if (nav.onNative?.invoke("/contact") != true) nav.onWeb("/contact") }) {
         Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            questions.forEach { q -> FaqItem(q) { if (nav.onNative?.invoke("/help") != true) nav.onWeb("/help") } }
+            questions.forEach { q -> FaqItem(q) { if (nav.onNative?.invoke("/contact") != true) nav.onWeb("/contact") } }
             Text(
                 "View all 27 answers →",
                 modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { if (nav.onNative?.invoke("/faq") != true) nav.onWeb("/faq") }.padding(8.dp),
@@ -1887,12 +2117,19 @@ private fun NewsletterCard(nav: HomeNav) {
         tonalElevation = 1.dp,
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("📬  Stay in the Loop", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+            Text("📬 Stay in the Loop", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
             Text(
                 "Get exclusive deals, new arrivals & 10% off your first order.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("🎁 10% Off First Order", "✨ Early Access").forEach { perk ->
+                    Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f), shape = RoundedCornerShape(50)) {
+                        Text(perk, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     value = email,
@@ -1925,9 +2162,10 @@ private fun NewsletterCard(nav: HomeNav) {
             }
             subscribed?.let {
                 Text(
-                    if (it) "✅ You're in! Check your inbox." else "❌ Failed — try again",
+                    if (it) "✅ Subscribed! Your code: WELCOME10" else "❌ Failed — try again",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (it) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    fontWeight = if (it) FontWeight.Bold else FontWeight.Normal,
                 )
             }
         }
@@ -1947,7 +2185,7 @@ private fun RewardsCard(nav: HomeNav) {
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Column {
-                Text("🏅  Grapsee Rewards", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                Text("🏅 Grapsee Rewards", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                 Text(
                     "Join & unlock exclusive benefits",
                     style = MaterialTheme.typography.bodySmall,
@@ -1980,7 +2218,7 @@ private fun RewardsCard(nav: HomeNav) {
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("🛡 Bronze", "⭐ Silver", "👑 Gold", "💎 Diamond").forEach { tier ->
+                listOf("🛡 Bronze", "⭐ Silver", "👑 Gold", "🏆 Platinum", "💎 Diamond").forEach { tier ->
                     Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(8.dp)) {
                         Text(
                             tier,
@@ -1996,7 +2234,7 @@ private fun RewardsCard(nav: HomeNav) {
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)),
             ) {
                 Text(
-                    "🏆  Start Earning Points →",
+                    "🏆 Start Earning Points →",
                     modifier = Modifier.padding(vertical = 12.dp),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
@@ -2014,7 +2252,7 @@ private fun MallFooter(nav: HomeNav) {
         "SHOP" to listOf("All Products" to "/category", "Featured" to "/category", "New Arrivals" to "/category", "Best Deals" to "/flash-sale"),
         "SERVICES" to listOf("Web Development" to "/services", "Mobile Apps" to "/services", "DevOps" to "/services", "UI/UX Design" to "/services"),
         "SUPPORT" to listOf("Help Center" to "/help", "Contact Us" to "/contact", "Privacy Policy" to "/privacy-policy", "Terms of Service" to "/terms-of-service"),
-        "OUR PRODUCTS" to listOf("Anuxeve" to "/products/anuxeve", "GS Shop" to "/category", "Multi GS Agent" to "/products/multi-gs-agent", "GS Console" to "/products/gs-console"),
+        "OUR PRODUCTS" to listOf("Anuxeve" to "/products/anuxeve", "GS Shop" to "/category", "Multi GS Agent" to "/products/multi-gs-agent", "TaskBar-Reborn" to "/products/taskbar-reborn", "GS Console" to "/products/gs-console"),
     )
     Surface(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -2025,7 +2263,14 @@ private fun MallFooter(nav: HomeNav) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("🏬", style = MaterialTheme.typography.titleMedium)
-                Text("Grapsee Mall", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Column {
+                    Text("Grapsee Shop", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Websites, apps & digital services — one mall",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             groups.chunked(2).forEach { row ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -2057,6 +2302,11 @@ private fun MallFooter(nav: HomeNav) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            Text(
+                "© ${java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)} Grapsee Shop · Powered by captainpiracy.shop",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

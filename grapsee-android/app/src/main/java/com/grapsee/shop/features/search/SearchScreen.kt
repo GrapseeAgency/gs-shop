@@ -77,9 +77,18 @@ class SearchViewModel : ViewModel() {
 @Composable
 fun SearchScreen(
     onProduct: (String) -> Unit,
+    initialQuery: String = "",
     vm: SearchViewModel = viewModel(),
 ) {
     val state = vm.ui
+
+    // Deep link from trending pills: run once per query.
+    LaunchedEffect(initialQuery) {
+        if (initialQuery.isNotBlank() && state.query != initialQuery) {
+            vm.onQueryChange(initialQuery)
+            vm.search(initialQuery)
+        }
+    }
 
     // Debounced as-you-type search, like the web header search.
     LaunchedEffect(state.query) {

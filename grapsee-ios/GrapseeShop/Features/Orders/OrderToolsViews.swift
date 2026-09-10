@@ -277,7 +277,10 @@ struct ProductDetailView: View {
     @EnvironmentObject var state: AppState
     let id: String
     @State private var product: Product?
+    @State private var stock: Inventory?
+    @State private var qty = 1
     @State private var loading = true
+    private var cap: Int { stock.map { max($0.inventory, 1) } ?? 99 }
     var body: some View {
         Group {
             if loading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
@@ -286,11 +289,23 @@ struct ProductDetailView: View {
                     Text(p.name).font(.title2).bold()
                     PriceText(price: p.price, compare: p.comparePrice)
                     if let d = p.description { Text(d).font(.body) }
-                    Text("Stock: \(p.inventory)").font(.caption).foregroundColor(.secondary)
-                    Button("Add to cart") { state.addToCart(product: p) }
-                    Button(state.wishlist.contains(p.id) ? "♥ Wishlisted" : "♡ Wishlist") { state.toggleWishlist(p.id) }
+                    if let s = stock {
+                        Text(s.isSoldOut ? "Out of stock" : (s.inventory <= 5 ? "Only \(s.inventory) left" : "In stock"))
+                            .font(.caption).foregroundColor(s.isSoldOut ? .red : .accentColor)
+                    } else {
+                        Text("Checking availability…").font(.caption).foregroundColor(.secondary)
+                    }
+                    Stepper("Quantity: \(qty)", value: $qty, in: 1...cap)
+                    Button("Add to cart") { state.addToCart(product: p, qty: qty) }
+                        .disabled(stock == nil || stock?.isSoldOut == true || stock?.isAvailable == false)
+                    Button(state.wishlist.contains(p.id) ? "♥ Wishlisted" : "♡ Wishlist") { state.toggleWishlist(p) }
                 }
             } else { ContentUnavailableView("Product not found", systemImage: "bag") }
-        }.navigationTitle("Product").task { product = await API.product(id: id); loading = false; if let pr = product { state.recordView(pr) } }
+        }.navigationTitle("Product").task {
+            product = await API.product(id: id)
+            stock = await API.inventory(productId: id)
+            loading = false
+            if let pr = product { state.recordView(pr) }
+        }
     }
 }

@@ -57,6 +57,7 @@ object Routes {
     const val HOME = "home"
     const val EXPLORE = "explore"
     const val SEARCH = "search"
+    const val SEARCH_QUERY_PATTERN = "search/query/{query}"
     const val CART = "cart"
     const val ORDERS = "orders"
     const val PROFILE = "profile"
@@ -190,6 +191,7 @@ object Routes {
     fun forumTopic(id: String) = "forumtopic/$id"
     fun videoPlayer(title: String, url: String, productId: String) =
         "videoplayer?title=${android.net.Uri.encode(title)}&url=${android.net.Uri.encode(url)}&productId=${android.net.Uri.encode(productId)}"
+    fun searchQuery(query: String) = "search/query/${android.net.Uri.encode(query)}"
     fun web(url: String) = "web?url=${android.net.Uri.encode(url)}"
 }
 
@@ -317,6 +319,9 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 route == "/settings" -> navController.navigate(Routes.SETTINGS)
                 route == "/affiliate" -> navController.navigate(Routes.AFFILIATE)
                 route == "/email-subscribe" -> navController.navigate(Routes.EMAILSUB)
+                route == "/cart" -> navController.navigate(Routes.CART)
+                route == "/checkout" || route.startsWith("/checkout/") -> navController.navigate(Routes.CHECKOUT)
+                route.startsWith("/order-success") -> navController.navigate(Routes.ORDERS)
                 route == "/category" -> navController.navigate(Routes.ALLCATEGORIES)
                 route == "/orders" -> navController.navigate(Routes.ORDERS)
                 route == "/style-guide" -> navController.navigate(Routes.STYLEGUIDE)
@@ -391,6 +396,9 @@ fun GrapseeAppRoot(navController: NavHostController) {
             onWeb = { navController.navigate(Routes.web(it)) },
             onCollections = { navController.navigate(Routes.collections()) },
             onCollection = { navController.navigate(Routes.collection(it)) },
+            onSearchQuery = { navController.navigate(Routes.searchQuery(it)) },
+            onCart = { navController.navigate(Routes.CART) },
+            onWishlist = { navController.navigate(Routes.WISHLIST) },
             onNative = ::resolveContent,
         )
         androidx.compose.runtime.CompositionLocalProvider(
@@ -410,6 +418,9 @@ fun GrapseeAppRoot(navController: NavHostController) {
                     onWeb = { navController.navigate(Routes.web(it)) },
                     onCollections = { navController.navigate(Routes.collections()) },
                     onCollection = { navController.navigate(Routes.collection(it)) },
+                    onSearchQuery = { navController.navigate(Routes.searchQuery(it)) },
+                    onCart = { navController.navigate(Routes.CART) },
+                    onWishlist = { navController.navigate(Routes.WISHLIST) },
                     onNative = ::resolveContent,
                 )
             }
@@ -427,6 +438,16 @@ fun GrapseeAppRoot(navController: NavHostController) {
 
             composable(Routes.SEARCH) {
                 SearchScreen(onProduct = { navController.navigate(Routes.product(it)) })
+            }
+
+            composable(
+                Routes.SEARCH_QUERY_PATTERN,
+                arguments = listOf(navArgument("query") { type = NavType.StringType; defaultValue = "" }),
+            ) { entry ->
+                SearchScreen(
+                    onProduct = { navController.navigate(Routes.product(it)) },
+                    initialQuery = entry.arguments?.getString("query").orEmpty(),
+                )
             }
 
             composable(Routes.CART) {

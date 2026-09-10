@@ -263,6 +263,33 @@ enum API {
         return items.first
     }
 
+    static func inventory(productId: String) async -> Inventory? {
+        guard let data = await get("/api/inventory/\(productId)") else { return nil }
+        return try? Wire.json.decode(Inventory.self, from: data)
+    }
+
+    static func testimonials() async -> [Testimonial] {
+        guard let data = await get("/api/testimonials"),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let arr = obj["testimonials"],
+              let dd = try? JSONSerialization.data(withJSONObject: arr) else { return [] }
+        return (try? Wire.json.decode([Testimonial].self, from: dd)) ?? []
+    }
+
+    static func trendingSearches() async -> [TrendingTerm] {
+        guard let data = await get("/api/trending-searches"),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              (obj["success"] as? Bool) == true,
+              let arr = obj["searches"],
+              let dd = try? JSONSerialization.data(withJSONObject: arr) else { return [] }
+        return ((try? Wire.json.decode([TrendingTerm].self, from: dd)) ?? []).filter { !$0.term.isEmpty }.prefix(10).map { $0 }
+    }
+
+    static func publicStats() async -> PublicStats? {
+        guard let data = await get("/api/public-stats") else { return nil }
+        return try? Wire.json.decode(PublicStats.self, from: data)
+    }
+
     static func order(id: String) async -> Order? {
         guard let data = await get("/api/orders/\(id)") else { return nil }
         return try? Wire.json.decode(Order.self, from: data)

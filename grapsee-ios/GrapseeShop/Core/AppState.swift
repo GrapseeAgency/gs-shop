@@ -3,8 +3,13 @@ import SwiftUI
 import WebKit
 
 // MARK: - Local cart (mirrors Android CartStore / web zustand shape)
-struct CartLine: Codable, Identifiable, Hashable {
-    var productId: String
+struct WishMeta: Codable, Hashable {
+    var name: String
+    var price: Double
+    var compare: Double?
+}
+
+struct CartLine: Codable, Identifiable, Hashable {    var productId: String
     var name: String
     var price: Double
     var quantity: Int = 1
@@ -35,6 +40,15 @@ final class AppState: ObservableObject {
         if wishlist.contains(id) { wishlist.removeAll { $0 == id } } else { wishlist.append(id) }
         persist()
     }
+
+    /// Web parity: wishlist keeps price snapshots (comparePrice included).
+    func toggleWishlist(_ product: Product) {
+        if wishlist.contains(product.id) { wishlist.removeAll { $0 == product.id } }
+        else { wishlist.append(product.id); wishmeta[product.id] = WishMeta(name: product.name, price: product.price, compare: product.comparePrice) }
+        persist()
+    }
+
+    @Published var wishmeta: [String: WishMeta] = [:]
 
     func recordView(_ product: Product) {
         recent.removeAll { $0.id == product.id }

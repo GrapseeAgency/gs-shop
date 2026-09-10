@@ -79,7 +79,14 @@ object CartStore {
         val updated = if (quantity <= 0) {
             _lines.value.filterNot { it.productId == productId }
         } else {
-            _lines.value.map { if (it.productId == productId) it.copy(quantity = quantity) else it }
+            // Re-check stock on every change: clamp to inventory, drop when gone.
+            val stock = runCatching { com.grapsee.shop.core.network.ApiClient.inventory(productId).inventory }.getOrNull()
+            val clamped = if (stock != null) minOf(quantity, stock) else quantity
+            if (clamped <= 0) {
+                _lines.value.filterNot { it.productId == productId }
+            } else {
+                _lines.value.map { if (it.productId == productId) it.copy(quantity = clamped) else it }
+            }
         }
         save(updated)
     }
@@ -91,7 +98,9 @@ object CartStore {
     /** Web-shaped zustand persist payload for the checkout handoff. */
     fun zustandPayload(items: List<CartLine>): String {
         val itemsJson = Wire.json.encodeToString(ListSerializer(CartLine.serializer()), items)
-        return """{"state":{"items":$itemsJson},"version":0}"""
+        // Key MUST be "cart": the web store persists {state:{cart,...}} and the
+        // checkout preview reads state.cart (empty otherwise).
+        return """{"state":{"cart":$itemsJson},"version":0}"""
     }
 
     private suspend fun save(updated: List<CartLine>) {

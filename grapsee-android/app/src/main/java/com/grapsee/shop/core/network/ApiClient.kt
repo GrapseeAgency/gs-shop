@@ -91,9 +91,11 @@ object ApiClient {
             .build()
         val body = get(url.toString())
         val envelope = runCatching { Wire.json.decodeFromString(ProductsEnvelope.serializer(), body) }.getOrNull()
+        // Fall back to a bare array (the web handles both shapes).
+        val items = envelope?.data ?: Wire.parseProducts(body)
         PagedProducts(
-            items = envelope?.data.orEmpty(),
-            total = envelope?.total ?: 0,
+            items = items,
+            total = envelope?.total ?: items.size,
             page = envelope?.page ?: page,
             totalPages = envelope?.totalPages ?: 1,
         )
@@ -733,6 +735,32 @@ object ApiClient {
     }
 
     /** Tools wave-3 (fail-soft). */
+    suspend fun testimonials(): List<TestimonialDto> = withContext(Dispatchers.IO) {
+        val body = runCatching { get("/api/testimonials") }.getOrNull() ?: return@withContext emptyList()
+        val el = runCatching { Wire.json.parseToJsonElement(body) }.getOrNull() as? kotlinx.serialization.json.JsonObject
+            ?: return@withContext emptyList()
+        val arr = (el["testimonials"] as? kotlinx.serialization.json.JsonArray) ?: return@withContext emptyList()
+        runCatching { Wire.json.decodeFromString(ListSerializer(TestimonialDto.serializer()), arr.toString()) }.getOrElse { emptyList() }
+    }
+
+    /** Home-fidelity endpoints (fail-soft). */
+    suspend fun trendingSearches(): List<TrendingTermDto> = withContext(Dispatchers.IO) {
+        val body = runCatching { get("/api/trending-searches") }.getOrNull() ?: return@withContext emptyList()
+        val el = runCatching { Wire.json.parseToJsonElement(body) }.getOrNull() as? kotlinx.serialization.json.JsonObject
+            ?: return@withContext emptyList()
+        if ((el["success"] as? kotlinx.serialization.json.JsonPrimitive)?.content != "true") return@withContext emptyList()
+        val arr = (el["searches"] as? kotlinx.serialization.json.JsonArray) ?: return@withContext emptyList()
+        runCatching { Wire.json.decodeFromString(ListSerializer(TrendingTermDto.serializer()), arr.toString()) }
+            .getOrElse { emptyList() }
+            .filter { it.term.isNotBlank() }
+            .take(10)
+    }
+
+    suspend fun publicStats(): PublicStatsDto? = withContext(Dispatchers.IO) {
+        val body = runCatching { get("/api/public-stats") }.getOrNull() ?: return@withContext null
+        runCatching { Wire.json.decodeFromString(PublicStatsDto.serializer(), body) }.getOrNull()
+    }
+
     /** Tools wave-4 (fail-soft). */
     suspend fun smsOrder(phone: String, message: String): String? = withContext(Dispatchers.IO) {
         val body = runCatching {
@@ -880,12 +908,40 @@ object ApiClient {
             .addQueryParameter("email", email)
             .build()
         val body = get(url.toString())
-        runCatching { Wire.json.decodeFromString(ListSerializer(OrderDto.serializer()), body) }.getOrElse { emptyList() }
+        parseOrderList(body)
     }
 
     suspend fun order(orderId: String): OrderDto = withContext(Dispatchers.IO) {
         val body = get("/api/orders/$orderId")
-        Wire.json.decodeFromString(OrderDto.serializer(), body)
+        parseOrder(body)
+    }
+
+    /** Tolerates bare arrays, {data:[]}, and {orders:[]} envelopes like the web. */
+    private fun parseOrderList(body: String): List<OrderDto> {
+        val el = runCatching { Wire.json.parseToJsonElement(body) }.getOrNull()
+        val arr = when (el) {
+            is kotlinx.serialization.json.JsonArray -> el
+            is kotlinx.serialization.json.JsonObject ->
+                (el["data"] ?: el["orders"]) as? kotlinx.serialization.json.JsonArray
+            else -> null
+        } ?: return runCatching {
+            Wire.json.decodeFromString(ListSerializer(OrderDto.serializer()), body)
+        }.getOrElse { emptyList() }
+        return runCatching {
+            Wire.json.decodeFromString(ListSerializer(OrderDto.serializer()), arr.toString())
+        }.getOrElse { emptyList() }
+    }
+
+    /** Tolerates bare objects and {data:{}} / {order:{}} wrappers. */
+    private fun parseOrder(body: String): OrderDto {
+        val el = runCatching { Wire.json.parseToJsonElement(body) }.getOrNull()
+        val obj = when (el) {
+            is kotlinx.serialization.json.JsonObject ->
+                ((el["data"] ?: el["order"]) as? kotlinx.serialization.json.JsonObject) ?: el
+            else -> null
+        } ?: return Wire.json.decodeFromString(OrderDto.serializer(), body)
+        return runCatching { Wire.json.decodeFromString(OrderDto.serializer(), obj.toString()) }
+            .getOrElse { Wire.json.decodeFromString(OrderDto.serializer(), body) }
     }
 
     // -------------------------------------------------------------------- auth

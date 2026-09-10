@@ -29,6 +29,7 @@ object WishlistStore {
         val productId: String,
         val name: String,
         val price: Double,
+        val comparePrice: Double? = null,
         val imageUrl: String? = null,
     )
 
@@ -57,7 +58,7 @@ object WishlistStore {
         val updated = if (existing != null) {
             _items.value.filterNot { it.productId == product.id }
         } else {
-            _items.value + WishItem(product.id, product.name, product.price, product.imageUrl)
+            _items.value + WishItem(product.id, product.name, product.price, product.comparePrice, product.imageUrl)
         }
         save(updated)
         existing == null

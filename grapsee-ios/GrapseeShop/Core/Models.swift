@@ -28,6 +28,35 @@ struct Category: Codable, Identifiable, Hashable {
     var imageUrl: String?
 }
 
+struct Inventory: Codable {
+    var inventory: Int = 0
+    var isAvailable: Bool = true
+    var isSoldOut: Bool = false
+}
+
+struct Testimonial: Codable, Identifiable {
+    var id: String = ""
+    var name: String = ""
+    var role: String?
+    var company: String?
+    var rating: Double = 5
+    var text: String = ""
+}
+
+struct TrendingTerm: Codable, Identifiable {
+    var term: String = ""
+    var hitCount: Int = 0
+    var id: String { term }
+    var countLabel: String { hitCount > 1000 ? String(format: "%.1fK", Double(hitCount) / 1000) : "\(hitCount)" }
+}
+
+struct PublicStats: Codable {
+    var products: Int = 0
+    var users: Int = 0
+    var averageRating: Double = 0
+    var totalReviews: Int = 0
+}
+
 struct ProductsEnvelope: Codable {
     var data: [Product]?
     var total: Int?

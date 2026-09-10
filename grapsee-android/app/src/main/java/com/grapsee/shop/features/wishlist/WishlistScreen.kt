@@ -101,7 +101,7 @@ fun WishlistScreen(
                             }
                             Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Text(item.name, style = MaterialTheme.typography.titleSmall, maxLines = 2)
-                                PriceText(item.price, null)
+                                PriceText(item.price, item.comparePrice)
                             }
                         }
                     }

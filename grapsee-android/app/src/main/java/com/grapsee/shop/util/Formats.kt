@@ -16,14 +16,12 @@ object Media {
 }
 
 object Format {
+    /** Web parity: Intl.NumberFormat('en-US', USD) — always 2 decimals. */
     fun price(value: Double): String {
-        val whole = value.toInt()
-        val hasCents = (value - whole) > 0.004
-        val formatted = java.text.NumberFormat.getIntegerInstance().apply {
-            maximumFractionDigits = if (hasCents) 2 else 0
-            minimumFractionDigits = if (hasCents) 2 else 0
+        return "$" + java.text.NumberFormat.getNumberInstance(java.util.Locale.US).apply {
+            maximumFractionDigits = 2
+            minimumFractionDigits = 2
         }.format(value)
-        return "$$formatted"
     }
 
     fun compactCount(value: Int): String = when {

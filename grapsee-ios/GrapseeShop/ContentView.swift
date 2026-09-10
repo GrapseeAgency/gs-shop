@@ -25,8 +25,9 @@ struct ContentView: View {
                     .badge(state.cartCount > 0 ? state.cartCount : 0).tag(Tab.cart)
                 WishlistView().tabItem { Label("Wishlist", systemImage: "heart") }.tag(Tab.wishlist)
                 ProfileView().tabItem { Label("Profile", systemImage: "person") }.tag(Tab.profile)
-            }.tint(Color(red: 0, green: 0.66, blue: 0.42)) // jade #00A86B
+            }.tint(Theme.brand)
             UpdateBanner()
         }
+        .accentColor(Theme.brand)
     }
 }

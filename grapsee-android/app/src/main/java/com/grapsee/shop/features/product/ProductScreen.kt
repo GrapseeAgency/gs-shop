@@ -2,6 +2,8 @@ package com.grapsee.shop.features.product
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -69,9 +71,9 @@ import com.grapsee.shop.util.Media
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** Native share sheet — `context` is resolved in the composable. */
+/** Native share sheet — links the live web product URL, like the web share. */
 private fun shareProduct(context: android.content.Context, product: Product) {
-    val deepLink = "https://captainpiracy.shop/product/${product.slug ?: product.id}"
+    val deepLink = "${com.grapsee.shop.BuildConfig.WEB_BASE_URL.trimEnd('/')}/product/${product.slug ?: product.id}"
     val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(android.content.Intent.EXTRA_SUBJECT, product.name)
@@ -264,11 +266,16 @@ fun ProductScreen(
                         ) {
                             QuantityStepper(
                                 quantity = quantity,
-                                onIncrease = { quantity++ },
+                                // Fail closed: clamp to known stock; unknown stock caps at 99.
+                                onIncrease = {
+                                    val cap = state.inventory?.inventory?.takeIf { it > 0 } ?: 99
+                                    if (quantity < cap) quantity++
+                                },
                                 onDecrease = { if (quantity > 1) quantity-- },
                             )
                             AddToCartButton(
-                                enabled = state.inventory?.isSoldOut != true,
+                                // Unknown stock (null) stays disabled until inventory resolves.
+                                enabled = state.inventory?.let { it.isAvailable && !it.isSoldOut } == true,
                                 loading = state.adding,
                                 onClick = {
                                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -329,6 +336,7 @@ fun ProductScreen(
 @Composable
 private fun Gallery(product: Product) {
     val images = product.imageUrls()
+    var selected by remember { mutableStateOf(0) }
     Column {
         Box(
             Modifier
@@ -337,7 +345,7 @@ private fun Gallery(product: Product) {
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             AsyncImage(
-                model = Media.resolve(images.firstOrNull()),
+                model = Media.resolve(images.getOrNull(selected)),
                 contentDescription = product.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
@@ -350,7 +358,7 @@ private fun Gallery(product: Product) {
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                images.drop(1).take(8).forEach { url ->
+                images.take(9).forEachIndexed { index, url ->
                     AsyncImage(
                         model = Media.resolve(url),
                         contentDescription = null,
@@ -358,7 +366,13 @@ private fun Gallery(product: Product) {
                         modifier = Modifier
                             .size(64.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { selected = index }
+                            .border(
+                                width = if (index == selected) 2.dp else 0.dp,
+                                color = if (index == selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                shape = RoundedCornerShape(10.dp),
+                            ),
                     )
                 }
             }

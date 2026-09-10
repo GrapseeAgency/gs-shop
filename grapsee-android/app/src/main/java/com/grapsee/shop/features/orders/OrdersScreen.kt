@@ -151,7 +151,8 @@ private fun OrderCard(order: OrderDto, onProduct: (String) -> Unit, onOrder: (St
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(52.dp)
-                            .clip(RoundedCornerShape(10.dp)),
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable(enabled = !item.productId.isNullOrBlank()) { onProduct(item.productId.orEmpty()) },
                     )
                 }
                 Box(Modifier.weight(1f))

@@ -313,7 +313,7 @@ fun RecentlyViewedFullScreen(onBack: () -> Unit, onProduct: (String) -> Unit, on
                     item {
                         Button(onClick = { scope.launch { RecentlyViewedStore.clear() } }, modifier = Modifier.fillMaxWidth()) { Text("Clear history") }
                     }
-                    items(history.reversed(), key = { it.id }) { product ->
+                    items(history, key = { it.id }) { product ->
                         ProductCard(product) { onProduct(product.id) }
                     }
                     item {

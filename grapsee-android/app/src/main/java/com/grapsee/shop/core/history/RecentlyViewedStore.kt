@@ -41,7 +41,8 @@ object RecentlyViewedStore {
     }
 
     suspend fun record(product: Product): Unit = mutex.withLock {
-        val updated = (_items.value.filterNot { it.id == product.id } + product).takeLast(MAX)
+        // Web parity: prepend, dedupe, keep 10 (store.ts addToRecentlyViewed).
+        val updated = (listOf(product) + _items.value.filterNot { it.id == product.id }).take(MAX)
         _items.value = updated
         AppContext.get().historyDataStore.edit { prefs ->
             prefs[key] = Wire.json.encodeToString(ListSerializer(Product.serializer()), updated)

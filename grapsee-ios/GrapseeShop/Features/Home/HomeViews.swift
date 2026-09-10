@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Home (full parity with web page.tsx §1–23 + Android HomeScreen)
+// MARK: - Home (full parity with web page.tsx + Android HomeScreen)
 struct HomeView: View {
     @EnvironmentObject var state: AppState
     @State private var categories: [Category] = []
@@ -13,7 +13,7 @@ struct HomeView: View {
     @State private var allPages = 1
     @State private var picks: [DailyPick] = []
     @State private var myVotes: Set<String> = []
-    @State private var reviews: [ReviewItem] = []
+    @State private var testimonials: [Testimonial] = []
     @State private var recommended: [Product] = []
     @State private var luxury: [Product] = []
     @State private var events: [ShopEvent] = []
@@ -22,16 +22,40 @@ struct HomeView: View {
     @State private var brands: [Brand] = []
     @State private var groupBuys: [GroupBuy] = []
     @State private var drops: [Product] = []
+    @State private var terms: [TrendingTerm] = []
+    @State private var stats: PublicStats?
+    @State private var unread = 0
     @State private var email = ""
     @State private var subscribed: Bool?
+    @State private var heroPage = 0
+
+    let heroes: [(badge: String, title: String, hi: String, desc: String, cta: String, cta2: String, route: Route, route2: Route)] = [
+        ("Welcome to Grapsee Mall", "Build Your", "Digital Empire", "Premium websites, apps & DevOps  crafted by elite engineers. Your one-stop digital shopping mall.", "Shop Now", "Browse All Products", .categories, .search("")),
+        ("Flash Deals Live", "Up to", "50% OFF", "Limited-time deals on Digital services. Don't miss out on the biggest sale of the season!", "Grab Deals", "View All Deals", .list(.deals), .list(.deals)),
+        ("New Arrivals", "Next-Gen Tech,", "Built for You", "AI-powered tools and next-gen applications  the sharpest digital products now in one marketplace.", "Explore Tech", "Browse AI Tools", .categories, .search("")),
+        ("Creative Studio", "Design That", "Actually Sells", "UI kits, brand templates & design systems built by professionals. Make your product impossible to ignore.", "Shop Designs", "Browse UI Kits", .categories, .search("")),
+        ("Ship Faster", "Launch Faster.", "Grow Bigger.", "Ready-to-deploy solutions for startups and enterprises. Go from idea to live product in days, not months.", "Get Started", "View Enterprise", .categories, .search("")),
+        ("Live Auctions", "Bid Smart.", "Win Big.", "Real-time auctions on premium digital products. Place your bid, track live countdowns, and claim exclusive deals.", "Join Auction", "Browse Lots", .list(.auctions), .list(.auctions)),
+        ("Trusted Community", "Rated by", "Real Buyers", "Over 2,400 verified reviews from real customers. Every product rated, every seller accountable.", "Read Reviews", "Write a Review", .reviews, .reviews),
+        ("Secure Checkout", "Pay Your Way,", "Always Safe.", "Card, wallet, gift card  every payment method, fully encrypted and protected. Zero-risk checkout.", "Shop Safely", "Payment Options", .categories, .search("")),
+        ("Digital Downloads", "Buy Once.", "Use Forever.", "Instant download on all digital products  software, templates, ebooks, and more. Delivered in seconds.", "Browse Downloads", "View All Files", .downloads, .downloads),
+        ("Loyalty Rewards", "Every Purchase", "Earns Points.", "Earn points on every order. Unlock Bronze, Silver, Gold tiers and redeem rewards in the Loyalty Mall.", "Earn Points", "View Rewards", .rewards, .rewards),
+    ]
 
     let faqs: [(String, String)] = [
-        ("How long does delivery take?", "Most digital services deliver in 5–14 business days. Enterprise packages may take 3–4 weeks."),
-        ("What payment methods do you accept?", "Cash on Delivery, Bank Transfer, and Online Payments (credit/debit cards)."),
-        ("Can I request a refund?", "Yes — 30-day money-back guarantee on all products."),
-        ("Do you offer ongoing support?", "30 days free with every purchase; VIP members get 24/7 priority support."),
-        ("Can I customize a package?", "Use Bundle & Save on any 3+ services, or contact us for enterprise solutions."),
-        ("Is there a loyalty program?", "Join Grapsee Rewards to earn points redeemable for discounts and perks."),
+        ("How long does delivery take?", "Delivery times vary by product. Most digital services are delivered within 5-14 business days."),
+        ("What payment methods do you accept?", "We accept Cash on Delivery, Bank Transfer, and Online Payments (credit/debit cards)."),
+        ("Can I request a refund?", "Yes! We offer a 30-day money-back guarantee on all products."),
+        ("Do you offer ongoing support?", "All purchases include 30 days of free support. Premium members get 24/7 priority support."),
+        ("Can I customize a package?", "Absolutely! Use our Bundle & Save feature to combine any 3+ services and save 30%."),
+        ("Is there a loyalty program?", "Yes! Join Grapsee Rewards to earn points on every purchase."),
+    ]
+
+    let floors: [(String, String, String, [String], Route)] = [
+        ("💻", "Electronics & Tech", "Websites, Apps & DevOps", ["Websites", "Mobile Apps", "DevOps", "APIs"], .categories),
+        ("👕", "Fashion & Lifestyle", "Design & Branding", ["UI/UX Design", "Brand Identity", "Social Media", "Graphics"], .categories),
+        ("🏠", "Home & Living", "Productivity & Tools", ["Dashboards", "Analytics", "Automation", "CRM"], .categories),
+        ("👑", "Premium & Luxury", "Enterprise Solutions", ["Enterprise Apps", "Cloud Infra", "AI/ML", "Consulting"], .list(.luxury)),
     ]
 
     var body: some View {
@@ -39,16 +63,29 @@ struct HomeView: View {
             List {
                 // 1. Hero
                 Section {
-                    TabView {
-                        HeroSlide(badge: "Welcome to Grapsee Mall", title: "Build Your Digital Empire", desc: "Premium websites, apps & DevOps — your one-stop digital mall.", cta: "Shop Now", route: .categories)
-                        HeroSlide(badge: "Flash Deals Live", title: "Up to 50% OFF", desc: "Limited-time deals on digital services.", cta: "Grab Deals", route: .list(.flashSale))
-                        HeroSlide(badge: "New Arrivals", title: "Next-Gen Tech, Built for You", desc: "AI-powered tools and next-gen applications.", cta: "Explore Tech", route: .list(.new))
-                        HeroSlide(badge: "Creative Studio", title: "Design That Actually Sells", desc: "UI kits, brand templates & design systems.", cta: "Shop Designs", route: .downloads)
-                    }.tabViewStyle(.page).frame(height: 170)
+                    TabView(selection: $heroPage) {
+                        ForEach(heroes.indices, id: \.self) { i in
+                            let h = heroes[i]
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(h.badge).font(.caption).bold().foregroundColor(.accentColor)
+                                Text(h.title + " ").font(.title2) + Text(h.hi).font(.title2).bold().foregroundColor(.accentColor)
+                                Text(h.desc).font(.subheadline).foregroundColor(.secondary).lineLimit(3)
+                                HStack {
+                                    NavigationLink(value: h.route) { Text(h.cta).font(.subheadline).bold().padding(.horizontal, 14).padding(.vertical, 8).background(Color.accentColor).foregroundColor(.white).cornerRadius(10) }
+                                    NavigationLink(value: h.route2) { Text(h.cta2).font(.caption).foregroundColor(.accentColor) }
+                                }
+                            }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.thinMaterial).cornerRadius(16).tag(i)
+                        }
+                    }.tabViewStyle(.page(indexDisplayMode: .never)).frame(height: 210)
+                    HStack {
+                        Text(String(format: "%02d/%02d", heroPage + 1, heroes.count)).font(.caption).bold().foregroundColor(.secondary)
+                        Spacer()
+                        HStack(spacing: 4) { ForEach(heroes.indices, id: \.self) { i in Circle().fill(i == heroPage ? Color.accentColor : Color.secondary.opacity(0.3)).frame(width: i == heroPage ? 16 : 6, height: 6) } }
+                    }
                 }
                 // 2. Categories
                 if !categories.isEmpty {
-                    Section("Categories") {
+                    Section("Shop by Category") {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 10) {
                                 ForEach(categories.prefix(12)) { c in
@@ -63,26 +100,28 @@ struct HomeView: View {
                     }
                 }
                 // 3. Trending searches
-                Section("Trending Searches") {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack { ForEach(["websites","mobile apps","devops","UI/UX design","AI/ML"], id: \.self) { t in
-                            NavigationLink(value: Route.search(t)) { Text(t).padding(8).background(.thinMaterial).cornerRadius(14) }
-                        } }
+                if !terms.isEmpty {
+                    Section("Trending Now") {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack { ForEach(terms) { t in
+                                NavigationLink(value: Route.search(t.term)) { Text(t.term + t.countLabel).padding(8).background(.thinMaterial).cornerRadius(14) }
+                            } }
+                        }
                     }
                 }
                 // 4. Flash deals
                 if !deals.isEmpty {
                     Section("Flash Deals") {
-                        Text("Ends at midnight").font(.caption).foregroundColor(.red)
+                        Text("Ends today!").font(.caption).foregroundColor(.red)
                         ForEach(deals.prefix(4)) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
-                        NavigationLink(value: Route.list(.deals)) { Text("See all").foregroundColor(.accentColor) }
+                        NavigationLink(value: Route.list(.deals)) { Text("View All Deals").foregroundColor(.accentColor) }
                     }
                 }
                 // 5. Recommended
-                let recs = recommended.isEmpty ? Array(trending.prefix(4)) : Array(recommended.prefix(4))
-                if !recs.isEmpty {
+                if !recommended.isEmpty {
                     Section("Recommended For You") {
-                        ForEach(recs) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
+                        Text("Based on your preferences").font(.caption).foregroundColor(.secondary)
+                        ForEach(recommended.prefix(6)) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
                     }
                 }
                 // 6. Live events
@@ -99,34 +138,42 @@ struct HomeView: View {
                 }
                 // 7. Shop by Floor
                 Section("Shop by Floor") {
-                    NavigationLink(value: Route.list(.luxury)) { Label("Premium & Luxury", systemImage: "crown") }
-                    NavigationLink(value: Route.collections) { Label("Curated Collections", systemImage: "square.grid.2x2") }
-                    NavigationLink(value: Route.categories) { Label("All Departments", systemImage: "building.2") }
+                    Text("Browse like a real mall").font(.caption).foregroundColor(.secondary)
+                    ForEach(floors, id: \.1) { emoji, name, sub, tags, route in
+                        NavigationLink(value: route) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack { Text(emoji); VStack(alignment: .leading) { Text("Floor").font(.caption).bold().foregroundColor(.secondary); Text(name).font(.headline); Text(sub).font(.caption).foregroundColor(.secondary) } }
+                                HStack { ForEach(tags, id: \.self) { t in Text(t).font(.caption).padding(.horizontal, 8).padding(.vertical, 4).background(Color.accentColor.opacity(0.1)).foregroundColor(.accentColor).cornerRadius(8) } }
+                            }.padding(.vertical, 6)
+                        }
+                    }
                 }
-                // 8–9. Trending + New
+                // 8-9. Trending + New
                 if !trending.isEmpty {
                     Section("Trending Now") {
                         ForEach(trending.prefix(4)) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
-                        NavigationLink(value: Route.list(.trending)) { Text("See all").foregroundColor(.accentColor) }
+                        NavigationLink(value: Route.categories) { Text("See All").foregroundColor(.accentColor) }
                     }
                 }
                 if !arrivals.isEmpty {
                     Section("New Arrivals") {
+                        Text("\(arrivals.count) new").font(.caption).foregroundColor(.accentColor)
                         ForEach(arrivals.prefix(4)) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
-                        NavigationLink(value: Route.list(.new)) { Text("See all new").foregroundColor(.accentColor) }
+                        NavigationLink(value: Route.search("")) { Text("See All New").foregroundColor(.accentColor) }
                     }
                 }
-                // 10. Promo carousel
+                // 10. Promo
                 Section("Mega Sale") {
                     TabView {
-                        ForEach([("🔥 Mega Sale — up to 50% off", Route.list(.deals)), ("🚚 Free Delivery week", Route.search("")), ("🎁 Buy 1 Get 1", Route.list(.deals)), ("⚡ Flash deals", Route.list(.flashSale)), ("👑 Premium Club", Route.vip)], id: \.0) { title, route in
+                        ForEach([("🔥 Mega Sale — up to 50% off", Route.list(.deals)), ("🚚 Free Delivery week", Route.search("")), ("🎁 Buy 1 Get 1", Route.list(.deals)), ("📦 Bundle & Save — 30%", Route.search("")), ("⚡ Flash Deal", Route.list(.deals)), ("👑 Premium Club", Route.list(.luxury))], id: \.0) { title, route in
                             NavigationLink(value: route) { Text(title).font(.headline).frame(maxWidth: .infinity).padding().background(.thinMaterial).cornerRadius(14) }
                         }
-                    }.tabViewStyle(.page).frame(height: 90)
+                    }.tabViewStyle(.page(indexDisplayMode: .never)).frame(height: 90)
                 }
                 // 11. Daily picks
                 if !picks.isEmpty {
                     Section("Today's Picks") {
+                        Text("\(picks.count) picks").font(.caption).foregroundColor(.accentColor)
                         ForEach(picks.prefix(2)) { pick in
                             if let p = pick.product {
                                 HStack {
@@ -138,18 +185,21 @@ struct HomeView: View {
                                 }
                             }
                         }
+                        Text("🗳 \(picks.reduce(0) { $0 + $1.votes } + myVotes.count) total votes today").font(.caption).foregroundColor(.secondary)
                     }
                 }
                 // 12. Luxury
                 if !luxury.isEmpty {
                     Section("Luxury Zone") {
+                        Text("Premium tier excellence").font(.caption).foregroundColor(.secondary)
                         ForEach(luxury.prefix(3)) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
-                        NavigationLink(value: Route.list(.luxury)) { Text("Explore Luxury").foregroundColor(.accentColor) }
+                        NavigationLink(value: Route.list(.luxury)) { Text("View All").foregroundColor(.accentColor) }
                     }
                 }
                 // Collections
                 if !collections.isEmpty {
                     Section("Curated Collections") {
+                        Text("Hand-picked for you").font(.caption).foregroundColor(.secondary)
                         ForEach(collections.prefix(4)) { c in
                             NavigationLink(value: Route.collection(c.id)) {
                                 VStack(alignment: .leading) { Text("✨ \(c.displayTitle)").font(.headline); Text("\(c.productCount) items").font(.caption).foregroundColor(.accentColor) }
@@ -160,17 +210,18 @@ struct HomeView: View {
                 }
                 // Voucher + VIP
                 Section("Rewards") {
-                    NavigationLink(value: Route.voucher) { Label("Voucher Center", systemImage: "tag") }
-                    NavigationLink(value: Route.vip) { Label("VIP Club", systemImage: "crown") }
+                    NavigationLink(value: Route.voucher) { Label("Voucher Center · Save more with coupons", systemImage: "tag") }
+                    NavigationLink(value: Route.vip) { Label("VIP Club · Exclusive perks & rewards", systemImage: "crown") }
                     NavigationLink(value: Route.rewards) { Label("My Rewards", systemImage: "trophy") }
                 }
-                // 13–14. Featured + Recently viewed
+                // Featured
                 if !featured.isEmpty {
                     Section("Featured Products") {
                         ForEach(featured.prefix(4)) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
                         NavigationLink(value: Route.list(.featured)) { Text("View All").foregroundColor(.accentColor) }
                     }
                 }
+                // Recently viewed
                 if !state.recent.isEmpty {
                     Section("Recently Viewed") {
                         ForEach(state.recent.reversed().prefix(5)) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
@@ -178,105 +229,134 @@ struct HomeView: View {
                 }
                 // Stats
                 Section("Trusted Worldwide") {
+                    Text("Numbers that speak for themselves").font(.caption).foregroundColor(.secondary)
                     HStack {
-                        StatCell(value: "\(allProducts.count)+", label: "Products")
+                        StatCell(value: "\(stats?.users ?? 0)", label: "Happy Customers")
+                        StatCell(value: "\(stats?.products ?? allProducts.count)", label: "Products")
                         StatCell(value: "99.9%", label: "Uptime")
+                    }
+                    HStack {
                         StatCell(value: "24/7", label: "Support")
+                        StatCell(value: stats.map { String(format: "%.1f", $0.averageRating) } ?? "—", label: "Rating")
+                        StatCell(value: "\(stats?.totalReviews ?? 0)", label: "Reviews")
                     }
                 }
-                // 16. All products
+                // All products
                 if !allProducts.isEmpty {
                     Section("All Products") {
+                        Text("\(allProducts.count) items").font(.caption).foregroundColor(.accentColor)
                         ForEach(allProducts) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
                         if allPage < allPages {
                             Button("Load more") {
-                                Task {
-                                    let next = allPage + 1
-                                    let res = await API.products(page: next)
-                                    allProducts += res.items; allPage = next
-                                }
+                                Task { let next = allPage + 1; let res = await API.products(page: next); allProducts += res.items; allPage = next }
                             }
                         }
                     }
                 }
-                // 17. Testimonials
-                if !reviews.isEmpty {
-                    Section("What Members Say") {
-                        ForEach(reviews.prefix(3)) { r in
-                            VStack(alignment: .leading) {
-                                Text(r.body ?? "").font(.subheadline).lineLimit(2)
-                                Text(r.author ?? "Member").font(.caption).foregroundColor(.secondary)
+                // Testimonials
+                if !testimonials.isEmpty {
+                    Section("What Clients Say") {
+                        TabView {
+                            ForEach(testimonials) { t in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(String(repeating: "★", count: max(0, min(5, Int(t.rating))))).font(.caption).foregroundColor(.yellow)
+                                    Text(t.text).font(.subheadline).lineLimit(5)
+                                    Text("\(t.name)\([t.role, t.company].compactMap { $0 }.joined(separator: ", "))").font(.caption).foregroundColor(.accentColor)
+                                }.padding().background(.thinMaterial).cornerRadius(14)
                             }
-                        }
-                        NavigationLink(value: Route.reviews) { Text("All reviews · 4.8 ★").foregroundColor(.accentColor) }
+                        }.tabViewStyle(.page(indexDisplayMode: .never)).frame(height: 170)
                     }
                 }
                 // Blog
                 if !posts.isEmpty {
-                    Section("From the Blog") {
+                    Section("From Our Blog") {
+                        Text("Tips, news & insights").font(.caption).foregroundColor(.secondary)
                         ForEach(posts.prefix(2)) { post in
                             NavigationLink(value: Route.blogPost(post.slug.isEmpty ? post.id : post.slug)) {
                                 VStack(alignment: .leading) { Text(post.title).font(.subheadline); Text(post.excerpt ?? "").font(.caption).foregroundColor(.secondary).lineLimit(2) }
                             }
                         }
-                        NavigationLink(value: Route.blog) { Text("Read All").foregroundColor(.accentColor) }
+                        NavigationLink(value: Route.blog) { Text("Read More").foregroundColor(.accentColor) }
                     }
                 }
-                // Community + Live
+                // Community
                 Section("Community") {
                     NavigationLink(value: Route.community) { Label("Join the Community", systemImage: "person.3") }
                     NavigationLink(value: Route.live) { Label("Live Shopping", systemImage: "dot.radiowaves.left.and.right") }
                     NavigationLink(value: Route.forum) { Label("Forum", systemImage: "bubble.left.and.bubble.right") }
                 }
-                // 19. FAQ
+                // FAQ
                 Section("Help Center") {
-                    ForEach(faqs, id: \.0) { q, a in
-                        DisclosureGroup(q) { Text(a).font(.subheadline).foregroundColor(.secondary) }
-                    }
-                    NavigationLink(value: Route.help) { Text("More help").foregroundColor(.accentColor) }
+                    Text("Frequently asked questions").font(.caption).foregroundColor(.secondary)
+                    ForEach(faqs, id: \.0) { q, a in DisclosureGroup(q) { Text(a).font(.subheadline).foregroundColor(.secondary) } }
+                    NavigationLink(value: Route.contact) { Text("Contact Support").foregroundColor(.accentColor) }
                 }
-                // 20. Brands
+                // Brands
                 if !brands.isEmpty {
-                    Section("Top Brands") {
+                    Section("Shop by Brand") {
+                        Text("Top brands you trust").font(.caption).foregroundColor(.secondary)
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack { ForEach(brands.prefix(8)) { b in Text(b.name).padding(8).background(.thinMaterial).cornerRadius(12) } }
                         }
-                        NavigationLink(value: Route.brands) { Text("All Brands").foregroundColor(.accentColor) }
+                        NavigationLink(value: Route.brands) { Text("View All").foregroundColor(.accentColor) }
                     }
                 }
-                // 21. Newsletter
+                // Newsletter
                 Section("Stay in the Loop") {
+                    Text("Get exclusive deals, new arrivals & 10% off your first order.").font(.caption).foregroundColor(.secondary)
+                    HStack {
+                        Text("🎁 10% Off First Order").font(.caption).padding(6).background(Color.accentColor.opacity(0.1)).foregroundColor(.accentColor).cornerRadius(12)
+                        Text("✨ Early Access").font(.caption).padding(6).background(Color.accentColor.opacity(0.1)).foregroundColor(.accentColor).cornerRadius(12)
+                    }
                     TextField("Enter your email", text: $email)
                     Button("Subscribe") { Task { subscribed = await API.subscribeEmail(email) } }.disabled(!email.contains("@"))
-                    if let s = subscribed { Text(s ? "✅ You're in!" : "❌ Failed").font(.caption) }
+                    if let s = subscribed { Text(s ? "✅ Subscribed! Your code: WELCOME10" : "❌ Failed").font(.caption).bold(s) }
                 }
-                // Quick help + links
-                Section("Quick Help") {
+                // Rewards tiers
+                Section("Grapsee Rewards") {
+                    Text("Join & unlock exclusive benefits").font(.caption).foregroundColor(.secondary)
+                    Text("🛡 Bronze · ⭐ Silver · 👑 Gold · 🏆 Platinum · 💎 Diamond").font(.caption)
+                    NavigationLink(value: Route.rewards) { Text("🏆 Start Earning Points →").foregroundColor(.accentColor) }
+                }
+                // Quick Actions
+                Section("Quick Actions") {
                     NavigationLink(value: Route.track) { Label("Track Order", systemImage: "box") }
                     NavigationLink(value: Route.returns) { Label("Returns", systemImage: "arrow.uturn.left") }
                     NavigationLink(value: Route.contact) { Label("Contact", systemImage: "message") }
+                    NavigationLink(value: Route.notifications) { Label("Notifications\(unread > 0 ? " (\(unread))" : "")", systemImage: "bell") }
+                    NavigationLink(value: Route.help) { Label("View Help Center", systemImage: "questionmark.circle") }
                 }
+                // Reviews card
+                Section("Customer Reviews") {
+                    Text("4.8 ★ · Based on verified customer reviews").font(.subheadline)
+                    NavigationLink(value: Route.reviews) { Text("See All").foregroundColor(.accentColor) }
+                }
+                // Quick Links
                 Section("Quick Links") {
                     NavigationLink(value: Route.list(.bundles)) { Text("Bundles") }
                     NavigationLink(value: Route.styleguide) { Text("Style Guide") }
                     NavigationLink(value: Route.affiliate) { Text("Affiliate") }
                     NavigationLink(value: Route.sitemap) { Text("Sitemap") }
                 }
-                // Group buy + price drops
+                // Group Buy
                 if !groupBuys.isEmpty {
                     Section("Group Buy") {
-                        ForEach(groupBuys.prefix(2)) { g in
-                            NavigationLink(value: Route.groupbuy) { Text(g.displayTitle).font(.subheadline) }
-                        }
+                        ForEach(groupBuys.prefix(2)) { g in NavigationLink(value: Route.groupbuy) { Text("\(g.displayTitle)").font(.subheadline) } }
+                    }
+                } else {
+                    Section("Group Buy") {
+                        NavigationLink(value: Route.groupbuy) { Text("Buy Together, Save Together · Up to 60% off").font(.subheadline) }
                     }
                 }
+                // Price drops
                 if !drops.isEmpty {
-                    Section("Price Drops") {
+                    Section("Price Drop Alerts") {
+                        Text("Track price drops on your favorite items").font(.caption).foregroundColor(.secondary)
                         ForEach(drops.prefix(3)) { p in NavigationLink(value: Route.product(p.id)) { ProductRow(product: p) } }
                         NavigationLink(value: Route.pricedrop) { Text("Track drops").foregroundColor(.accentColor) }
                     }
                 }
-                // Service tiles
+                // Services
                 Section("Services") {
                     NavigationLink(value: Route.installments) { Label("Installments · 0% EMI", systemImage: "creditcard") }
                     NavigationLink(value: Route.tradein) { Label("Trade-In · up to 55%", systemImage: "arrow.triangle.2.circlepath") }
@@ -286,7 +366,7 @@ struct HomeView: View {
                     NavigationLink(value: Route.outfit) { Label("Outfit Maker", systemImage: "tshirt") }
                     NavigationLink(value: Route.rental) { Label("Rent Products", systemImage: "key") }
                     NavigationLink(value: Route.giftwrap) { Label("Gift Wrap", systemImage: "gift") }
-                    NavigationLink(value: Route.seller) { Label("Become a Seller", systemImage: "storefront") }
+                    NavigationLink(value: Route.seller) { Label("Become a Seller · Earn up to 95%", systemImage: "storefront") }
                     NavigationLink(value: Route.topreviewers) { Label("Top Reviewers", systemImage: "megaphone") }
                 }
                 Section("More Features") {
@@ -297,8 +377,11 @@ struct HomeView: View {
                     NavigationLink(value: Route.loyaltycalc) { Label("Loyalty Calc", systemImage: "function") }
                     NavigationLink(value: Route.minigames) { Label("Mini Games", systemImage: "gamecontroller") }
                 }
-                // Footer
-                Section { Text("Grapsee Mall · you've seen it all ✨").font(.caption).foregroundColor(.secondary) }
+                Section {
+                    Text("🏬 Grapsee Shop").font(.headline)
+                    Text("Websites, apps & digital services — one mall").font(.caption).foregroundColor(.secondary)
+                    Text("© Grapsee Shop · Powered by captainpiracy.shop").font(.caption).foregroundColor(.secondary)
+                }
             }
             .navigationTitle("Grapsee Mall")
             .toolbar { NavigationLink(value: Route.search("")) { Image(systemName: "magnifyingglass") } }
@@ -310,169 +393,23 @@ struct HomeView: View {
                            p = API.todaysPicks(), r = API.reviews(), rec = API.recommended(),
                            lx = API.luxury(limit: 6), ev = API.events(),
                            cols = API.collections(), bp = API.blogPosts(), br = API.brands(),
-                           gb = API.groupBuys(), pd = API.priceDrops()
+                           gb = API.groupBuys(), pd = API.priceDrops(),
+                           tt = API.trendingSearches(), st = API.publicStats(),
+                           tm = API.testimonials()
                 categories = await c; deals = await d.items; trending = await t.items
                 arrivals = await n.items; featured = await f.items
                 let a = await all; allProducts = a.items; allPages = a.totalPages
-                picks = await p; reviews = await r; recommended = await rec
+                picks = await p; recommended = await rec
                 luxury = await lx; events = await ev
                 collections = await cols; posts = await bp; brands = await br
                 groupBuys = await gb; drops = await pd
+                terms = await tt; stats = await st; testimonials = await tm
+                if let notes = await API.notifications() as [AppNotification]? { unread = notes.filter { !$0.seen }.count }
             }
             .refreshable {
                 let a = await API.products(page: 1)
                 allProducts = a.items; allPage = 1; allPages = a.totalPages
             }
-        }
-    }
-}
-
-struct HeroSlide: View {
-    let badge: String
-    let title: String
-    let desc: String
-    let cta: String
-    let route: Route
-    var body: some View {
-        NavigationLink(value: route) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(badge).font(.caption).bold().foregroundColor(.accentColor)
-                Text(title).font(.title2).bold()
-                Text(desc).font(.subheadline).foregroundColor(.secondary).lineLimit(2)
-                Text(cta).font(.subheadline).bold().padding(.horizontal, 14).padding(.vertical, 8)
-                    .background(Color.accentColor).foregroundColor(.white).cornerRadius(10)
-            }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.thinMaterial).cornerRadius(16)
-        }
-    }
-}
-
-struct StatCell: View {
-    let value: String
-    let label: String
-    var body: some View {
-        VStack { Text(value).font(.headline); Text(label).font(.caption).foregroundColor(.secondary) }
-        .frame(maxWidth: .infinity)
-    }
-}
-
-// Shared destination map so Home, Explore and Profile stay identical.
-struct HomeDestination: View {
-    let route: Route
-    var body: some View {
-        switch route {
-        case .product(let id): ProductDetailView(id: id)
-        case .list(let mode): ProductListView(mode: mode)
-        case .category(let id, let name): CategoryView(id: id, name: name)
-        case .categories: CategoriesView()
-        case .search(let q): SearchView(initial: q)
-        case .collections: CollectionsView()
-        case .collection(let id): CollectionDetailView(id: id)
-        case .blog: BlogView()
-        case .blogPost(let slug): BlogPostView(slug: slug)
-        case .brands: BrandsView()
-        case .reviews: ReviewsView()
-        case .community: CommunityView()
-        case .events: EventsView()
-        case .forum: ForumView()
-        case .forumTopic(let id): ForumTopicView(id: id)
-        case .videos: VideosView()
-        case .quiz: QuizView()
-        case .live: LiveView()
-        case .voucher: VoucherView()
-        case .vip: VipView()
-        case .wallet: WalletView()
-        case .checkin: CheckinView()
-        case .mystery: MysteryView()
-        case .loyalty: LoyaltyView()
-        case .giftcards: GiftCardsView()
-        case .referrals: ReferralsView()
-        case .rewards: RewardsFullView()
-        case .track: TrackView()
-        case .returns: ReturnsView()
-        case .shipping: ShippingView()
-        case .installments: InstallmentsView()
-        case .tradein: TradeInView()
-        case .trybuy: TryView()
-        case .outfit: OutfitMakerView()
-        case .rental: RentalView()
-        case .downloads: DownloadsView()
-        case .groupbuy: GroupBuyView()
-        case .pricedrop: PriceDropView()
-        case .giftwrap: GiftWrapView()
-        case .codequality: CodeQualityView()
-        case .student: StudentView()
-        case .warranty: WarrantyView()
-        case .techlib: TechLibraryView()
-        case .seller: SellerView()
-        case .opensource: OpenSourceView()
-        case .shield: DeliveryShieldView()
-        case .darkstore: DarkStoreView()
-        case .loyaltycalc: LoyaltyCalcView()
-        case .minigames: MiniGamesView()
-        case .topreviewers: TopReviewersView()
-        case .styleguide: StyleGuideView()
-        case .notifications: NotificationsView()
-        case .help: HelpView()
-        case .helpArticle(let slug): HelpArticleView(slug: slug)
-        case .contact: ContactView()
-        case .sitemap: SitemapView()
-        case .settings: SettingsView()
-        case .affiliate: AffiliateView()
-        case .emailsub: EmailSubscribeView()
-        case .about: AboutView()
-        case .privacy: PrivacyView()
-        case .terms: TermsView()
-        case .faqfull: FaqFullView()
-        case .compare: CompareView()
-        case .recentfull: RecentFullView()
-        case .stores: StoresView()
-        case .pricealerts: PriceAlertsView()
-        case .subscriptions: SubscriptionsView()
-        case .digital: DigitalHubView()
-        case .certs: CertificationsView()
-        case .features: FeaturesDirectoryView()
-        case .emi: EmiView()
-        case .currency: CurrencyView()
-        case .tipcalc: TipCalcView()
-        case .fuel: FuelView()
-        case .measure: MeasureView()
-        case .carbon: CarbonView()
-        case .roi: RoiCalcView()
-        case .resale: ResaleView()
-        case .instcompare: InstallmentCompareView()
-        case .taxrefund: TaxRefundView()
-        case .pricelock: PriceLockView()
-        case .unitprice: UnitPriceView()
-        case .smartreorder: SmartReorderView()
-        case .giftmatcher: GiftMatcherView()
-        case .stylequiz: StyleQuizView()
-        case .allergy: AllergyView()
-        case .halal: HalalView()
-        case .submanager: SubManagerView()
-        case .coloradvisor: ColorAdvisorView()
-        case .sizepredictor: SizePredictorView()
-        case .discountstack: DiscountStackView()
-        case .dealauth: DealAuthView()
-        case .speccompare: SpecCompareView()
-        case .smsorder: SmsOrderView()
-        case .shopautocomplete: ShopAutocompleteView()
-        case .docexpiry: DocExpiryView()
-        case .vehicle: VehicleView()
-        case .legaldocs: LegalDocsView()
-        case .formbuilder: FormBuilderView()
-        case .resumebuilder: ResumeBuilderView()
-        case .insurance: InsuranceView()
-        case .aitools: AiToolsView()
-        case .aichat: AiChatView()
-        case .audits: AuditsView()
-        case .guides: GuidesView()
-        case .cicd: CicdView()
-        case .envsetup: EnvSetupView()
-        case .dbschemas: DbSchemasView()
-        case .notion: NotionView()
-        case .tutorials: TutorialsView()
-        case .digital: DigitalHubView()
-        case .web(let path): WebFallbackView(path: path)
         }
     }
 }
@@ -557,12 +494,20 @@ struct WishlistView: View {
             if state.wishlist.isEmpty {
                 ContentUnavailableView("No favorites yet", systemImage: "heart", description: Text("Tap the heart on any product"))
             } else {
-                List(state.wishlist, id: \.self) { id in NavigationLink(value: Route.product(id)) { Text(id).lineLimit(1) } }
+                List(state.wishlist, id: \.self) { id in
+                    NavigationLink(value: Route.product(id)) {
+                        if let m = state.wishmeta[id] {
+                            VStack(alignment: .leading) {
+                                Text(m.name).font(.subheadline).lineLimit(1)
+                                PriceText(price: m.price, compare: m.compare)
+                            }
+                        } else { Text(id).lineLimit(1) }
+                    }
+                } }
                     .navigationDestination(for: Route.self) { route in HomeDestination(route: route) }
             }
         }.navigationTitle("Wishlist")
     }
-}
 
 struct ProfileView: View {
     var body: some View {

@@ -68,7 +68,8 @@ data class Product(
     fun percentOff(): Int? {
         val compare = comparePrice ?: return null
         if (compare <= price || compare <= 0.0) return null
-        return (((compare - price) / compare) * 100).toInt().coerceIn(1, 99)
+        // Web uses Math.round (product-card.tsx), not truncation.
+        return kotlin.math.round((compare - price) / compare * 100).toInt().coerceIn(0, 100).takeIf { it > 0 }
     }
 }
 
@@ -739,3 +740,32 @@ data class VehicleDto(
     val displayName: String get() = name ?: vehicleName.orEmpty()
     val kind: String get() = type ?: vehicleType.orEmpty()
 }
+
+/** Home-fidelity DTOs. */
+@Serializable
+data class TrendingTermDto(
+    val term: String = "",
+    val hitCount: Int = 0,
+) {
+    val countLabel: String get() = if (hitCount > 1000) "${"%.1f".format(hitCount / 1000.0)}K" else hitCount.toString()
+}
+
+@Serializable
+data class PublicStatsDto(
+    val products: Int = 0,
+    val users: Int = 0,
+    val averageRating: Double = 0.0,
+    val totalReviews: Int = 0,
+)
+
+/** Testimonials (web: /api/testimonials -> {testimonials:[...]}). */
+@Serializable
+data class TestimonialDto(
+    val id: String = "",
+    val name: String = "",
+    val role: String? = null,
+    val company: String? = null,
+    val avatar: String? = null,
+    val rating: Double = 5.0,
+    val text: String = "",
+)

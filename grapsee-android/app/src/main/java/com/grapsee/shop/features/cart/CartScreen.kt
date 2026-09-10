@@ -77,6 +77,9 @@ fun CartScreen(
                 subtitle = "Browse the mall and add something you love",
                 modifier = Modifier.fillMaxWidth(),
             )
+            Button(onClick = onLogin, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Text("Sign in to sync your cart")
+            }
         }
         return
     }
@@ -93,7 +96,7 @@ fun CartScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 4.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(lines, key = { it.productId }) { line ->
+            items(lines, key = { it.id }) { line ->
                 CartLineRow(
                     line = line,
                     onProduct = onProduct,

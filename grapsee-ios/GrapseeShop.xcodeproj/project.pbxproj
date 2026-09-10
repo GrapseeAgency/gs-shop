@@ -79,7 +79,7 @@
 				2F35C4CF44B85B03023161F5 /* Theme.swift */,
 				E5AC0A410168C96D23AE4EAF /* UpdateChecker.swift */,
 			);
-			path = GrapseeShop/Features/Core;
+			path = GrapseeShop/Core;
 			name = Core;
 			sourceTree = "<group>";
 		};

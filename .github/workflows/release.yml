@@ -100,6 +100,9 @@ jobs:
           sed -i '' 's|static let owner = ".*"|static let owner = "${{ github.repository_owner }}"|' GrapseeShop/Core/UpdateChecker.swift
           sed -i '' 's|static let repo = ".*"|static let repo = "${{ github.event.repository.name }}"|' GrapseeShop/Core/UpdateChecker.swift
 
+      - name: Validate Xcode project (local gate, runs before Apple tools)
+        run: python3 scripts/validate_xcodeproj.py
+
       - name: Select Xcode 16
         run: |
           XCODE=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | head -1)

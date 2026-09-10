@@ -20,6 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Validate Xcode project (local gate, runs before Apple tools)
+        run: python3 scripts/validate_xcodeproj.py
+
       - name: Select Xcode 16
         run: |
           XCODE=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | head -1)

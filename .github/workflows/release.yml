@@ -80,6 +80,8 @@ jobs:
 
   ios:
     runs-on: macos-15
+    env:
+      HAS_APPLE: ${{ secrets.APPLE_TEAM_ID != '' }}
     steps:
       - uses: actions/checkout@v6
 
@@ -113,7 +115,7 @@ jobs:
           zip -r ../../../../GrapseeShop-${{ steps.ver.outputs.tag }}-unsigned.ipa Payload
 
       - name: Signed export (only with Apple secrets)
-        if: ${{ secrets.APPLE_TEAM_ID != '' }}
+        if: env.HAS_APPLE == 'true'
         working-directory: grapsee-ios
         env:
           KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
@@ -159,6 +161,8 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v3
         with:
+          # Org blocks workflow write for GITHUB_TOKEN: use the release PAT.
+          token: ${{ secrets.RELEASE_PAT }}
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           generate_release_notes: true
           files: |

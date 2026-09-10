@@ -80,17 +80,17 @@ struct MeasureView: View {
     @State private var from = "inch"
     @State private var result = ""
     let conv: [String: [String: Double]] = ["inch": ["cm": 2.54, "mm": 25.4], "cm": ["inch": 0.3937, "mm": 10], "kg": ["lb": 2.20462, "g": 1000], "lb": ["kg": 0.453592, "g": 453.592]]
+    func convert() -> String {
+        guard let v = Double(value), let c = conv[from] else { return "" }
+        let target: String = (from == "inch" || from == "cm") ? "cm" : "kg"
+        let amount: Double = v * (c[target] ?? 1)
+        return String(format: "%.2f", amount) + " " + target
+    }
     var body: some View {
         List {
             TextField("Value", text: $value).keyboardType(.decimalPad)
             Picker("From", selection: $from) { ForEach(["inch", "cm", "kg", "lb"], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
-            Button("Convert") {
-                if let v = Double(value), let c = conv[from] {
-                    let target: String = (from == "inch" || from == "cm") ? "cm" : "kg"
-                    let amount: Double = v * (c[target] ?? 1)
-                    result = String(format: "%.2f %@", amount as NSNumber, target as NSString)
-                }
-            }.disabled(value.isEmpty)
+            Button("Convert") { result = convert() }.disabled(value.isEmpty)
             if !result.isEmpty { KV("Result", result) }
         }.navigationTitle("Measurement Converter")
     }

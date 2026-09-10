@@ -41,7 +41,7 @@ struct CodeQualityView: View {
     let plans = [("basic", "Basic Coverage", "30 days · 2 revisions"), ("pro", "Pro Assurance", "90 days · 5 revisions"), ("enterprise", "Enterprise Shield", "180 days · 10 revisions")]
     var body: some View {
         List {
-            ForEach(plans, id: \.0) { id, name, desc in
+            ForEach(Array(plans.enumerated()), id: \.offset) { _, pl in let (id, name, desc) = pl
                 Button { plan = id } label: { VStack(alignment: .leading) { Text(name).font(.headline); Text(desc).font(.caption).foregroundColor(.secondary) } }.foregroundColor(.primary)
             }
             Section {
@@ -146,7 +146,7 @@ struct DeliveryShieldView: View {
     let plans = [("standard", "Standard Protection", "50% refund · 3 milestones"), ("pro", "Pro Protection", "75% refund · 5 milestones"), ("enterprise", "Enterprise Shield", "100% refund · 7 milestones")]
     var body: some View {
         List {
-            ForEach(plans, id: \.0) { id, name, desc in
+            ForEach(Array(plans.enumerated()), id: \.offset) { _, pl in let (id, name, desc) = pl
                 Button { plan = id } label: { VStack(alignment: .leading) { Text(name).font(.headline); Text(desc).font(.caption).foregroundColor(.secondary) } }.foregroundColor(.primary)
             }
             Section {
@@ -234,7 +234,7 @@ struct StyleGuideView: View {
         List {
             Section("COLORS") {
                 HStack(spacing: 16) {
-                    ForEach([("Primary", Color.accentColor), ("Secondary", Color.secondary), ("Error", Color.red)], id: \.0) { name, color in
+                    ForEach(Array([("Primary", Color.accentColor), ("Secondary", Color.secondary), ("Error", Color.red)].enumerated()), id: \.offset) { _, pair in let (name, color) = pair
                         VStack { RoundedRectangle(cornerRadius: 10).fill(color).frame(width: 48, height: 48); Text(name).font(.caption).foregroundColor(.secondary) }
                     }
                 }

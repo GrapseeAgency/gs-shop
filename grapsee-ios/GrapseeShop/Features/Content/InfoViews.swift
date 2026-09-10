@@ -186,7 +186,7 @@ struct DigitalHubView: View {
     let kinds = [("courses", "Courses"), ("templates", "Templates"), ("ui-kits", "UI Kits"), ("snippets", "Snippets"), ("products", "Products")]
     var body: some View {
         VStack {
-            Picker("Kind", selection: $kind) { ForEach(kinds, id: \.0) { id, label in Text(label).tag(id) } }
+                Picker("Kind", selection: $kind) { ForEach(Array(kinds.enumerated()), id: \.offset) { _, k in Text(k.1).tag(k.0) } }
             .pickerStyle(.segmented).padding(.horizontal)
             .onChange(of: kind) { _, v in Task { loading = true; items = await API.digitalItems(kind: v); loading = false } }
             Group {

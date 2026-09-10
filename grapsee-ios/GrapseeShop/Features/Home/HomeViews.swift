@@ -139,7 +139,7 @@ struct HomeView: View {
                 // 7. Shop by Floor
                 Section("Shop by Floor") {
                     Text("Browse like a real mall").font(.caption).foregroundColor(.secondary)
-                    ForEach(floors, id: \.1) { emoji, name, sub, tags, route in
+                    ForEach(Array(floors.enumerated()), id: \.offset) { _, fl in let (emoji, name, sub, tags, route) = fl
                         NavigationLink(value: route) {
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack { Text(emoji); VStack(alignment: .leading) { Text("Floor").font(.caption).bold().foregroundColor(.secondary); Text(name).font(.headline); Text(sub).font(.caption).foregroundColor(.secondary) } }
@@ -165,7 +165,8 @@ struct HomeView: View {
                 // 10. Promo
                 Section("Mega Sale") {
                     TabView {
-                        ForEach([("🔥 Mega Sale — up to 50% off", Route.list(.deals)), ("🚚 Free Delivery week", Route.search("")), ("🎁 Buy 1 Get 1", Route.list(.deals)), ("📦 Bundle & Save — 30%", Route.search("")), ("⚡ Flash Deal", Route.list(.deals)), ("👑 Premium Club", Route.list(.luxury))], id: \.0) { title, route in
+                        ForEach(Array([("🔥 Mega Sale — up to 50% off", Route.list(.deals)), ("🚚 Free Delivery week", Route.search("")), ("🎁 Buy 1 Get 1", Route.list(.deals)), ("📦 Bundle & Save — 30%", Route.search("")), ("⚡ Flash Deal", Route.list(.deals)), ("👑 Premium Club", Route.list(.luxury))].enumerated()), id: \.offset) { _, pair in
+                            let (title, route) = pair
                             NavigationLink(value: route) { Text(title).font(.headline).frame(maxWidth: .infinity).padding().background(.thinMaterial).cornerRadius(14) }
                         }
                     }.tabViewStyle(.page(indexDisplayMode: .never)).frame(height: 90)
@@ -288,7 +289,7 @@ struct HomeView: View {
                 // FAQ
                 Section("Help Center") {
                     Text("Frequently asked questions").font(.caption).foregroundColor(.secondary)
-                    ForEach(faqs, id: \.0) { q, a in DisclosureGroup(q) { Text(a).font(.subheadline).foregroundColor(.secondary) } }
+                    ForEach(Array(faqs.enumerated()), id: \.offset) { _, qa in DisclosureGroup(qa.0) { Text(qa.1).font(.subheadline).foregroundColor(.secondary) } }
                     NavigationLink(value: Route.contact) { Text("Contact Support").foregroundColor(.accentColor) }
                 }
                 // Brands
@@ -450,10 +451,10 @@ struct ExploreView: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(groups, id: \.0) { title, links in
-                    Section(title) {
-                        ForEach(links, id: \.0) { label, route in
-                            NavigationLink(value: route) { Text(label) }
+                ForEach(Array(groups.enumerated()), id: \.offset) { _, group in
+                    Section(group.0) {
+                        ForEach(Array(group.1.enumerated()), id: \.offset) { _, link in
+                            NavigationLink(value: link.1) { Text(link.0) }
                         }
                     }
                 }

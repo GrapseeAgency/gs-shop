@@ -235,7 +235,7 @@ struct ColorAdvisorView: View {
     let tones = [("Fair", "Cool/Warm", ["Pastel pink", "Light blue", "Mint green", "Soft yellow"]), ("Medium", "Neutral", ["Coral", "Teal", "Lavender", "Peach"]), ("Olive", "Warm", ["Emerald", "Rust", "Cream", "Burgundy"]), ("Dark", "Cool/Warm", ["Bright white", "Royal blue", "Orange", "Hot pink"])]
     var body: some View {
         List {
-            ForEach(tones, id: \.0) { name, under, _ in
+            ForEach(Array(tones.enumerated()), id: \.offset) { _, t in let (name, under, _) = t
                 Button { tone = name } label: { HStack { Text(name).font(.headline); Text(under).font(.caption).foregroundColor(.secondary); Spacer(); if tone == name { Image(systemName: "checkmark.circle.fill").foregroundColor(.accentColor) } } }.foregroundColor(.primary)
             }
             if !tone.isEmpty, let entry = tones.first(where: { $0.0 == tone }) {

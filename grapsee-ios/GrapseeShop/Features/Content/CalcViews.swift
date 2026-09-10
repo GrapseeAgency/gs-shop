@@ -153,7 +153,7 @@ struct InstallmentCompareView: View {
         let amt = Double(amount) ?? 0
         List {
             TextField("Amount", text: $amount).keyboardType(.decimalPad)
-            ForEach(plans, id: \.0) { months, rate in
+            ForEach(Array(plans.enumerated()), id: \.offset) { _, plan in let (months, rate) = plan
                 let emi = ((amt + amt * rate / 100) / Double(months)).rounded()
                 let total = (amt + amt * rate / 100).rounded()
                 KV("\(months) mo · \(rate, specifier: "%.0f")%", "$\(emi, specifier: "%.0f")/mo · $\(total, specifier: "%.0f")")

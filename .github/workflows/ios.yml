@@ -34,7 +34,8 @@ jobs:
           xcodebuild -project GrapseeShop.xcodeproj -scheme GrapseeShop \
             -sdk iphoneos -configuration Release \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
-            -derivedDataPath build 2>&1 | tail -5
+            -derivedDataPath build 2>&1 | tee xcodebuild.log; test ${PIPESTATUS[0]} -eq 0
+          grep -a -m30 -E "error:" xcodebuild.log || true
           test -x build/Build/Products/Release-iphoneos/GrapseeShop.app/GrapseeShop
 
       - name: Upload unsigned app

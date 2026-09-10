@@ -86,8 +86,9 @@ struct MeasureView: View {
             Picker("From", selection: $from) { ForEach(["inch", "cm", "kg", "lb"], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
             Button("Convert") {
                 if let v = Double(value), let c = conv[from] {
-                    let target = (from == "inch" || from == "cm") ? "cm" : "kg"
-                    result = String(format: "%.2f %@", v * (c[target] ?? 1), target)
+                    let target: String = (from == "inch" || from == "cm") ? "cm" : "kg"
+                    let amount: Double = v * (c[target] ?? 1)
+                    result = String(format: "%.2f %@", amount as NSNumber, target as NSString)
                 }
             }.disabled(value.isEmpty)
             if !result.isEmpty { KV("Result", result) }

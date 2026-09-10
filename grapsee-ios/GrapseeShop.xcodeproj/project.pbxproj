@@ -66,6 +66,7 @@
 			children = (
 				0EADE18448603D4B294C5781 /* ContentView.swift */,
 			);
+			path = GrapseeShop;
 			name = GrapseeShop;
 			sourceTree = "<group>";
 		};

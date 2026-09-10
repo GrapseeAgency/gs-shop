@@ -79,7 +79,7 @@
 				2F35C4CF44B85B03023161F5 /* Theme.swift */,
 				E5AC0A410168C96D23AE4EAF /* UpdateChecker.swift */,
 			);
-			path = GrapseeShop/Core;
+			path = GrapseeShop/Features/Core;
 			name = Core;
 			sourceTree = "<group>";
 		};
@@ -88,7 +88,7 @@
 			children = (
 				6A8B961BE6053E0526424B69 /* AccountViews.swift */,
 			);
-			path = GrapseeShop/Account;
+			path = GrapseeShop/Features/Account;
 			name = Account;
 			sourceTree = "<group>";
 		};
@@ -97,7 +97,7 @@
 			children = (
 				FD35E57EDF29F4BE5F414296 /* CatalogViews.swift */,
 			);
-			path = GrapseeShop/Catalog;
+			path = GrapseeShop/Features/Catalog;
 			name = Catalog;
 			sourceTree = "<group>";
 		};
@@ -112,7 +112,7 @@
 				F5FD0FBF041439F1D8DF0366 /* InfoViews.swift */,
 				088E0257A84375840293950E /* ToolsViews.swift */,
 			);
-			path = GrapseeShop/Content;
+			path = GrapseeShop/Features/Content;
 			name = Content;
 			sourceTree = "<group>";
 		};
@@ -121,7 +121,7 @@
 			children = (
 				BEC0A36E6283018D68811876 /* HomeViews.swift */,
 			);
-			path = GrapseeShop/Home;
+			path = GrapseeShop/Features/Home;
 			name = Home;
 			sourceTree = "<group>";
 		};
@@ -130,7 +130,7 @@
 			children = (
 				95FDC81BEB7445319711515C /* OrderToolsViews.swift */,
 			);
-			path = GrapseeShop/Orders;
+			path = GrapseeShop/Features/Orders;
 			name = Orders;
 			sourceTree = "<group>";
 		};
@@ -139,7 +139,7 @@
 			children = (
 				BEFBF6590E8CCCBFD64A3C83 /* RewardsViews.swift */,
 			);
-			path = GrapseeShop/Rewards;
+			path = GrapseeShop/Features/Rewards;
 			name = Rewards;
 			sourceTree = "<group>";
 		};
@@ -148,7 +148,7 @@
 			children = (
 				B928BCA5FAE113C9D637330D /* ServicesViews.swift */,
 			);
-			path = GrapseeShop/Services;
+			path = GrapseeShop/Features/Services;
 			name = Services;
 			sourceTree = "<group>";
 		};

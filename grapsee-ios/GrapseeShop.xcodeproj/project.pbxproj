@@ -5,6 +5,8 @@
 	};
 	objectVersion = 56;
 	objects = {
+		94BE43F5D29C52A1C545B5FF /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F35C4CF44B85B03023161F5 /* Theme.swift */; };
+		2F35C4CF44B85B03023161F5 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		C8D14FB7FA002FE77034D889 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EADE18448603D4B294C5781 /* ContentView.swift */; };
 		01B388B73940B41F708BE762 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBECC38332C08641D127EC32 /* APIClient.swift */; };
 		221C27EA7D1AC5EED2BC9EC9 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A375ADBF93859FA0BCC14E18 /* AppState.swift */; };
@@ -73,8 +75,10 @@
 				CBECC38332C08641D127EC32 /* APIClient.swift */,
 				A375ADBF93859FA0BCC14E18 /* AppState.swift */,
 				C707C05282ADDB2A6B594854 /* Models.swift */,
+				2F35C4CF44B85B03023161F5 /* Theme.swift */,
 				E5AC0A410168C96D23AE4EAF /* UpdateChecker.swift */,
 			);
+			path = GrapseeShop/Core;
 			name = Core;
 			sourceTree = "<group>";
 		};
@@ -83,6 +87,7 @@
 			children = (
 				6A8B961BE6053E0526424B69 /* AccountViews.swift */,
 			);
+			path = GrapseeShop/Account;
 			name = Account;
 			sourceTree = "<group>";
 		};
@@ -91,6 +96,7 @@
 			children = (
 				FD35E57EDF29F4BE5F414296 /* CatalogViews.swift */,
 			);
+			path = GrapseeShop/Catalog;
 			name = Catalog;
 			sourceTree = "<group>";
 		};
@@ -105,6 +111,7 @@
 				F5FD0FBF041439F1D8DF0366 /* InfoViews.swift */,
 				088E0257A84375840293950E /* ToolsViews.swift */,
 			);
+			path = GrapseeShop/Content;
 			name = Content;
 			sourceTree = "<group>";
 		};
@@ -113,6 +120,7 @@
 			children = (
 				BEC0A36E6283018D68811876 /* HomeViews.swift */,
 			);
+			path = GrapseeShop/Home;
 			name = Home;
 			sourceTree = "<group>";
 		};
@@ -121,6 +129,7 @@
 			children = (
 				95FDC81BEB7445319711515C /* OrderToolsViews.swift */,
 			);
+			path = GrapseeShop/Orders;
 			name = Orders;
 			sourceTree = "<group>";
 		};
@@ -129,6 +138,7 @@
 			children = (
 				BEFBF6590E8CCCBFD64A3C83 /* RewardsViews.swift */,
 			);
+			path = GrapseeShop/Rewards;
 			name = Rewards;
 			sourceTree = "<group>";
 		};
@@ -137,6 +147,7 @@
 			children = (
 				B928BCA5FAE113C9D637330D /* ServicesViews.swift */,
 			);
+			path = GrapseeShop/Services;
 			name = Services;
 			sourceTree = "<group>";
 		};
@@ -195,6 +206,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94BE43F5D29C52A1C545B5FF /* Theme.swift in Sources */,
 				C8D14FB7FA002FE77034D889 /* ContentView.swift in Sources */,
 				01B388B73940B41F708BE762 /* APIClient.swift in Sources */,
 				221C27EA7D1AC5EED2BC9EC9 /* AppState.swift in Sources */,

@@ -30,10 +30,12 @@ jobs:
         # every Swift file compiles. Signed IPAs are produced by release.yml
         # when APPLE_* secrets are present.
         run: |
+          set -o pipefail
           xcodebuild -project GrapseeShop.xcodeproj -scheme GrapseeShop \
             -sdk iphoneos -configuration Release \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
-            -derivedDataPath build | tail -5
+            -derivedDataPath build 2>&1 | tail -5
+          test -x build/Build/Products/Release-iphoneos/GrapseeShop.app/GrapseeShop
 
       - name: Upload unsigned app
         uses: actions/upload-artifact@v4

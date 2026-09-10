@@ -108,10 +108,12 @@ jobs:
       - name: Build unsigned IPA contents (validation)
         working-directory: grapsee-ios
         run: |
+          set -o pipefail
           xcodebuild -project GrapseeShop.xcodeproj -scheme GrapseeShop \
             -sdk iphoneos -configuration Release \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
-            -derivedDataPath build | tail -3
+            -derivedDataPath build 2>&1 | tail -3
+          test -x build/Build/Products/Release-iphoneos/GrapseeShop.app/GrapseeShop
           cd build/Build/Products/Release-iphoneos
           mkdir -p Payload && cp -r GrapseeShop.app Payload/
           zip -r ../../../../GrapseeShop-${{ steps.ver.outputs.tag }}-unsigned.ipa Payload

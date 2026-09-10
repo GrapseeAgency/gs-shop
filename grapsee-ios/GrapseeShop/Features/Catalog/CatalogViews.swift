@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Native listing (mirrors Android ProductListScreen modes)
 enum ListMode: String, CaseIterable {
-    case deals, trending, featured, new arrivals = "new"
+    case deals, trending, featured, newArrivals = "new"
     case flashSale = "flash-sale", luxury, auctions, preorder, bundles
 
     var title: String {
@@ -10,7 +10,7 @@ enum ListMode: String, CaseIterable {
         case .deals: return "Deals"
         case .trending: return "Trending Now"
         case .featured: return "Featured"
-        case .new: return "New Arrivals"
+        case .newArrivals: return "New Arrivals"
         case .flashSale: return "Flash Sale"
         case .luxury: return "Luxury Zone"
         case .auctions: return "Auctions"
@@ -24,7 +24,7 @@ enum ListMode: String, CaseIterable {
         case .deals: return await API.products(page: page, flags: ["deals": "true"]).items
         case .trending: return await API.products(page: page, flags: ["trending": "true"]).items
         case .featured: return await API.products(page: page, flags: ["featured": "true"]).items
-        case .new: return await API.products(page: page, flags: ["new": "true"]).items
+        case .newArrivals: return await API.products(page: page, flags: ["new": "true"]).items
         case .flashSale: return await API.flashSale()
         case .luxury: return await API.luxury(limit: 100)
         case .auctions: return await API.auctions()

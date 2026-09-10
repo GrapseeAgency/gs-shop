@@ -492,23 +492,44 @@ struct WishlistView: View {
     @EnvironmentObject var state: AppState
     var body: some View {
         NavigationStack {
-            if state.wishlist.isEmpty {
-                ContentUnavailableView("No favorites yet", systemImage: "heart", description: Text("Tap the heart on any product"))
-            } else {
-                List(state.wishlist, id: \.self) { id in
-                    NavigationLink(value: Route.product(id)) {
-                        if let m = state.wishmeta[id] {
-                            VStack(alignment: .leading) {
-                                Text(m.name).font(.subheadline).lineLimit(1)
-                                PriceText(price: m.price, compare: m.compare)
-                            }
-                        } else { Text(id).lineLimit(1) }
-                    }
-                } }
-                    .navigationDestination(for: Route.self) { route in HomeDestination(route: route) }
+            Group {
+                if state.wishlist.isEmpty {
+                    ContentUnavailableView("No favorites yet", systemImage: "heart", description: Text("Tap the heart on any product"))
+                } else {
+                    WishlistListView(ids: state.wishlist)
+                }
             }
-        }.navigationTitle("Wishlist")
+            .navigationTitle("Wishlist")
+            .navigationDestination(for: Route.self) { route in HomeDestination(route: route) }
+        }
     }
+}
+
+struct WishlistListView: View {
+    let ids: [String]
+    var body: some View {
+        List(ids, id: \.self) { id in
+            NavigationLink(value: Route.product(id)) {
+                WishlistRow(id: id)
+            }
+        }
+    }
+}
+
+struct WishlistRow: View {
+    @EnvironmentObject var state: AppState
+    let id: String
+    var body: some View {
+        if let m = state.wishmeta[id] {
+            VStack(alignment: .leading) {
+                Text(m.name).font(.subheadline).lineLimit(1)
+                PriceText(price: m.price, compare: m.compare)
+            }
+        } else {
+            Text(id).lineLimit(1)
+        }
+    }
+}
 
 struct ProfileView: View {
     var body: some View {

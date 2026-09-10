@@ -415,6 +415,158 @@ struct HomeView: View {
     }
 }
 
+struct HeroSlide: View {
+    let badge: String
+    let title: String
+    let hi: String
+    let desc: String
+    let cta: String
+    let cta2: String
+    let route: Route
+    let route2: Route
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(badge).font(.caption).bold().foregroundColor(.accentColor)
+            Text(title + " ").font(.title2) + Text(hi).font(.title2).bold().foregroundColor(.accentColor)
+            Text(desc).font(.subheadline).foregroundColor(.secondary).lineLimit(3)
+            HStack {
+                NavigationLink(value: route) { Text(cta).font(.subheadline).bold().padding(.horizontal, 14).padding(.vertical, 8).background(Color.accentColor).foregroundColor(.white).cornerRadius(10) }
+                NavigationLink(value: route2) { Text(cta2).font(.caption).foregroundColor(.accentColor) }
+            }
+        }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.thinMaterial).cornerRadius(16)
+    }
+}
+
+struct StatCell: View {
+    let value: String
+    let label: String
+    var body: some View {
+        VStack { Text(value).font(.headline); Text(label).font(.caption).foregroundColor(.secondary) }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+// Shared destination map so Home, Explore and Profile stay identical.
+struct HomeDestination: View {
+    let route: Route
+    var body: some View {
+        switch route {
+        case .product(let id): ProductDetailView(id: id)
+        case .list(let mode): ProductListView(mode: mode)
+        case .category(let id, let name): CategoryView(id: id, name: name)
+        case .categories: CategoriesView()
+        case .search(let q): SearchView(initial: q)
+        case .collections: CollectionsView()
+        case .collection(let id): CollectionDetailView(id: id)
+        case .blog: BlogView()
+        case .blogPost(let slug): BlogPostView(slug: slug)
+        case .brands: BrandsView()
+        case .reviews: ReviewsView()
+        case .community: CommunityView()
+        case .events: EventsView()
+        case .forum: ForumView()
+        case .forumTopic(let id): ForumTopicView(id: id)
+        case .videos: VideosView()
+        case .quiz: QuizView()
+        case .live: LiveView()
+        case .voucher: VoucherView()
+        case .vip: VipView()
+        case .wallet: WalletView()
+        case .checkin: CheckinView()
+        case .mystery: MysteryView()
+        case .loyalty: LoyaltyView()
+        case .giftcards: GiftCardsView()
+        case .referrals: ReferralsView()
+        case .rewards: RewardsFullView()
+        case .track: TrackView()
+        case .returns: ReturnsView()
+        case .shipping: ShippingView()
+        case .installments: InstallmentsView()
+        case .tradein: TradeInView()
+        case .trybuy: TryView()
+        case .outfit: OutfitMakerView()
+        case .rental: RentalView()
+        case .downloads: DownloadsView()
+        case .groupbuy: GroupBuyView()
+        case .pricedrop: PriceDropView()
+        case .giftwrap: GiftWrapView()
+        case .codequality: CodeQualityView()
+        case .student: StudentView()
+        case .warranty: WarrantyView()
+        case .techlib: TechLibraryView()
+        case .seller: SellerView()
+        case .opensource: OpenSourceView()
+        case .shield: DeliveryShieldView()
+        case .darkstore: DarkStoreView()
+        case .loyaltycalc: LoyaltyCalcView()
+        case .minigames: MiniGamesView()
+        case .topreviewers: TopReviewersView()
+        case .styleguide: StyleGuideView()
+        case .notifications: NotificationsView()
+        case .help: HelpView()
+        case .helpArticle(let slug): HelpArticleView(slug: slug)
+        case .contact: ContactView()
+        case .sitemap: SitemapView()
+        case .settings: SettingsView()
+        case .affiliate: AffiliateView()
+        case .emailsub: EmailSubscribeView()
+        case .about: AboutView()
+        case .privacy: PrivacyView()
+        case .terms: TermsView()
+        case .faqfull: FaqFullView()
+        case .compare: CompareView()
+        case .recentfull: RecentFullView()
+        case .stores: StoresView()
+        case .pricealerts: PriceAlertsView()
+        case .subscriptions: SubscriptionsView()
+        case .digital: DigitalHubView()
+        case .certs: CertificationsView()
+        case .features: FeaturesDirectoryView()
+        case .emi: EmiView()
+        case .currency: CurrencyView()
+        case .tipcalc: TipCalcView()
+        case .fuel: FuelView()
+        case .measure: MeasureView()
+        case .carbon: CarbonView()
+        case .roi: RoiCalcView()
+        case .resale: ResaleView()
+        case .instcompare: InstallmentCompareView()
+        case .taxrefund: TaxRefundView()
+        case .pricelock: PriceLockView()
+        case .unitprice: UnitPriceView()
+        case .smartreorder: SmartReorderView()
+        case .giftmatcher: GiftMatcherView()
+        case .stylequiz: StyleQuizView()
+        case .allergy: AllergyView()
+        case .halal: HalalView()
+        case .submanager: SubManagerView()
+        case .coloradvisor: ColorAdvisorView()
+        case .sizepredictor: SizePredictorView()
+        case .discountstack: DiscountStackView()
+        case .dealauth: DealAuthView()
+        case .speccompare: SpecCompareView()
+        case .smsorder: SmsOrderView()
+        case .shopautocomplete: ShopAutocompleteView()
+        case .docexpiry: DocExpiryView()
+        case .vehicle: VehicleView()
+        case .legaldocs: LegalDocsView()
+        case .formbuilder: FormBuilderView()
+        case .resumebuilder: ResumeBuilderView()
+        case .insurance: InsuranceView()
+        case .aitools: AiToolsView()
+        case .aichat: AiChatView()
+        case .audits: AuditsView()
+        case .guides: GuidesView()
+        case .cicd: CicdView()
+        case .envsetup: EnvSetupView()
+        case .dbschemas: DbSchemasView()
+        case .notion: NotionView()
+        case .tutorials: TutorialsView()
+        case .web(let path): WebFallbackView(path: path)
+        }
+    }
+}
+
 // MARK: - Explore (quick menu; commerce batch routes go native)
 struct ExploreView: View {
     let groups: [(String, [(String, Route)])] = [

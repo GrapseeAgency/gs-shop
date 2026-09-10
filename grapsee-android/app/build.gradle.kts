@@ -31,9 +31,10 @@ android {
     signingConfigs {
         create("release") {
             storeFile = rootProject.file("grapsee-release.jks")
-            storePassword = System.getenv("GRAPSEE_STORE_PASS") ?: "grapsee2026"
+            // CI passes unset secrets as EMPTY strings — treat blank as unset.
+            storePassword = System.getenv("GRAPSEE_STORE_PASS")?.ifBlank { null } ?: "grapsee2026"
             keyAlias = "grapsee"
-            keyPassword = System.getenv("GRAPSEE_KEY_PASS") ?: "grapsee2026"
+            keyPassword = System.getenv("GRAPSEE_KEY_PASS")?.ifBlank { null } ?: "grapsee2026"
         }
     }
 

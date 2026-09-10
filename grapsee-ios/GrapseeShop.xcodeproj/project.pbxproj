@@ -1,0 +1,312 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+		C8D14FB7FA002FE77034D889 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EADE18448603D4B294C5781 /* ContentView.swift */; };
+		01B388B73940B41F708BE762 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBECC38332C08641D127EC32 /* APIClient.swift */; };
+		221C27EA7D1AC5EED2BC9EC9 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A375ADBF93859FA0BCC14E18 /* AppState.swift */; };
+		6CA75AA9841C693E0648A0A5 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = C707C05282ADDB2A6B594854 /* Models.swift */; };
+		E70643F518E8D17DFAC312D2 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AC0A410168C96D23AE4EAF /* UpdateChecker.swift */; };
+		0A4A0B2D3FEAD120E6FA58D7 /* AccountViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8B961BE6053E0526424B69 /* AccountViews.swift */; };
+		2F6F1EC7BE752CB978401FF4 /* CatalogViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD35E57EDF29F4BE5F414296 /* CatalogViews.swift */; };
+		EF54EF521CF168AAD22BC4F6 /* CalcViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FF3AD29BFE3B9F17E1B241 /* CalcViews.swift */; };
+		FC13895FE5C886230735BC80 /* ContentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA62CBD77F0DD845CF18B99A /* ContentViews.swift */; };
+		8850BB9CC3F3EB4F72F26469 /* DevContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FBA8D35EBA779EC61C49717 /* DevContent.swift */; };
+		396B1EF0AB5C530A94BA33D7 /* DevToolsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8F74847775748BE9580834F /* DevToolsViews.swift */; };
+		E03C1A28A1EBC5E51740C0E5 /* InfoContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D800937A84943E8F6314A2 /* InfoContent.swift */; };
+		3B5380B66DC0D031313C6089 /* InfoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FD0FBF041439F1D8DF0366 /* InfoViews.swift */; };
+		8918080BDE8D66A55A602AF1 /* ToolsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 088E0257A84375840293950E /* ToolsViews.swift */; };
+		523B1210A1509C9B28CB04E6 /* HomeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC0A36E6283018D68811876 /* HomeViews.swift */; };
+		54FCB3EDCD7D043DFFA03660 /* OrderToolsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FDC81BEB7445319711515C /* OrderToolsViews.swift */; };
+		76DCDBC5EFFEB61F93CD56FB /* RewardsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEFBF6590E8CCCBFD64A3C83 /* RewardsViews.swift */; };
+		2068657A2ED77BE7376F01F7 /* ServicesViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B928BCA5FAE113C9D637330D /* ServicesViews.swift */; };
+		0EADE18448603D4B294C5781 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CBECC38332C08641D127EC32 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		A375ADBF93859FA0BCC14E18 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		C707C05282ADDB2A6B594854 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		E5AC0A410168C96D23AE4EAF /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		6A8B961BE6053E0526424B69 /* AccountViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountViews.swift; sourceTree = "<group>"; };
+		FD35E57EDF29F4BE5F414296 /* CatalogViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogViews.swift; sourceTree = "<group>"; };
+		84FF3AD29BFE3B9F17E1B241 /* CalcViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalcViews.swift; sourceTree = "<group>"; };
+		AA62CBD77F0DD845CF18B99A /* ContentViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViews.swift; sourceTree = "<group>"; };
+		7FBA8D35EBA779EC61C49717 /* DevContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevContent.swift; sourceTree = "<group>"; };
+		F8F74847775748BE9580834F /* DevToolsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevToolsViews.swift; sourceTree = "<group>"; };
+		09D800937A84943E8F6314A2 /* InfoContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoContent.swift; sourceTree = "<group>"; };
+		F5FD0FBF041439F1D8DF0366 /* InfoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoViews.swift; sourceTree = "<group>"; };
+		088E0257A84375840293950E /* ToolsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsViews.swift; sourceTree = "<group>"; };
+		BEC0A36E6283018D68811876 /* HomeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViews.swift; sourceTree = "<group>"; };
+		95FDC81BEB7445319711515C /* OrderToolsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderToolsViews.swift; sourceTree = "<group>"; };
+		BEFBF6590E8CCCBFD64A3C83 /* RewardsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsViews.swift; sourceTree = "<group>"; };
+		B928BCA5FAE113C9D637330D /* ServicesViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesViews.swift; sourceTree = "<group>"; };
+		2029A639DD8022543C17416B /* GrapseeShop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GrapseeShop.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7625B5B2FEA398F8912F62D8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		518DA81DB9B99529C0C0AEBE = {
+			isa = PBXGroup;
+			children = (
+				49371E1FBD392C06BC0051E3 /* GrapseeShop */,
+				82A33605EFFED3C5B571D571 /* Core */,
+				DB97E5FA6622702C7DBA2870 /* Account */,
+				F4DA44A1BAE65517FBE389F0 /* Catalog */,
+				2CC8BE468A9B01C455300971 /* Content */,
+				08B2E6574384D5E934EE2BC7 /* Home */,
+				A165F274EE0A2E305FADE5AA /* Orders */,
+				41F745EE2E27FBBF5368B605 /* Rewards */,
+				67F48B93FF1E5B6E8EEB6D7C /* Services */,
+				547D009064F7C3F13BEF3460 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		49371E1FBD392C06BC0051E3 /* GrapseeShop */ = {
+			isa = PBXGroup;
+			children = (
+				0EADE18448603D4B294C5781 /* ContentView.swift */,
+			);
+			name = GrapseeShop;
+			sourceTree = "<group>";
+		};
+		82A33605EFFED3C5B571D571 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				CBECC38332C08641D127EC32 /* APIClient.swift */,
+				A375ADBF93859FA0BCC14E18 /* AppState.swift */,
+				C707C05282ADDB2A6B594854 /* Models.swift */,
+				E5AC0A410168C96D23AE4EAF /* UpdateChecker.swift */,
+			);
+			name = Core;
+			sourceTree = "<group>";
+		};
+		DB97E5FA6622702C7DBA2870 /* Account */ = {
+			isa = PBXGroup;
+			children = (
+				6A8B961BE6053E0526424B69 /* AccountViews.swift */,
+			);
+			name = Account;
+			sourceTree = "<group>";
+		};
+		F4DA44A1BAE65517FBE389F0 /* Catalog */ = {
+			isa = PBXGroup;
+			children = (
+				FD35E57EDF29F4BE5F414296 /* CatalogViews.swift */,
+			);
+			name = Catalog;
+			sourceTree = "<group>";
+		};
+		2CC8BE468A9B01C455300971 /* Content */ = {
+			isa = PBXGroup;
+			children = (
+				84FF3AD29BFE3B9F17E1B241 /* CalcViews.swift */,
+				AA62CBD77F0DD845CF18B99A /* ContentViews.swift */,
+				7FBA8D35EBA779EC61C49717 /* DevContent.swift */,
+				F8F74847775748BE9580834F /* DevToolsViews.swift */,
+				09D800937A84943E8F6314A2 /* InfoContent.swift */,
+				F5FD0FBF041439F1D8DF0366 /* InfoViews.swift */,
+				088E0257A84375840293950E /* ToolsViews.swift */,
+			);
+			name = Content;
+			sourceTree = "<group>";
+		};
+		08B2E6574384D5E934EE2BC7 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				BEC0A36E6283018D68811876 /* HomeViews.swift */,
+			);
+			name = Home;
+			sourceTree = "<group>";
+		};
+		A165F274EE0A2E305FADE5AA /* Orders */ = {
+			isa = PBXGroup;
+			children = (
+				95FDC81BEB7445319711515C /* OrderToolsViews.swift */,
+			);
+			name = Orders;
+			sourceTree = "<group>";
+		};
+		41F745EE2E27FBBF5368B605 /* Rewards */ = {
+			isa = PBXGroup;
+			children = (
+				BEFBF6590E8CCCBFD64A3C83 /* RewardsViews.swift */,
+			);
+			name = Rewards;
+			sourceTree = "<group>";
+		};
+		67F48B93FF1E5B6E8EEB6D7C /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B928BCA5FAE113C9D637330D /* ServicesViews.swift */,
+			);
+			name = Services;
+			sourceTree = "<group>";
+		};
+		547D009064F7C3F13BEF3460 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2029A639DD8022543C17416B /* GrapseeShop.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		82CF2A43A7100F086D7FCFDD = {
+			isa = PBXGroup;
+			children = (
+				518DA81DB9B99529C0C0AEBE /* GrapseeShop */,
+			);
+			sourceTree = "<group>";
+		};
+		E3435DDA2687639586BF0B70 /* GrapseeShop */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7F557C0C68F00F0F7E5D102B /* Build configuration list for PBXNativeTarget "GrapseeShop" */;
+			buildPhases = (
+				7A70D71C385290AF96BF1031 /* Sources */,
+				424153ED3CD079DB4DB459AF /* Frameworks */,
+				285BB1C1430063331E9F5DD0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GrapseeShop;
+			productName = GrapseeShop;
+			productReference = 2029A639DD8022543C17416B /* GrapseeShop.app */;
+			productType = "com.apple.product-type.application";
+		};
+		46F86FAA6BBF9AC94A7E4595 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = 7EF2517A8FE63F4681EC5EEA /* Build configuration list for PBXProject "GrapseeShop" */;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en);
+			mainGroup = 82CF2A43A7100F086D7FCFDD;
+			productRefGroup = 547D009064F7C3F13BEF3460 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E3435DDA2687639586BF0B70 /* GrapseeShop */,
+			);
+		};
+		7A70D71C385290AF96BF1031 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8D14FB7FA002FE77034D889 /* ContentView.swift in Sources */,
+				01B388B73940B41F708BE762 /* APIClient.swift in Sources */,
+				221C27EA7D1AC5EED2BC9EC9 /* AppState.swift in Sources */,
+				6CA75AA9841C693E0648A0A5 /* Models.swift in Sources */,
+				E70643F518E8D17DFAC312D2 /* UpdateChecker.swift in Sources */,
+				0A4A0B2D3FEAD120E6FA58D7 /* AccountViews.swift in Sources */,
+				2F6F1EC7BE752CB978401FF4 /* CatalogViews.swift in Sources */,
+				EF54EF521CF168AAD22BC4F6 /* CalcViews.swift in Sources */,
+				FC13895FE5C886230735BC80 /* ContentViews.swift in Sources */,
+				8850BB9CC3F3EB4F72F26469 /* DevContent.swift in Sources */,
+				396B1EF0AB5C530A94BA33D7 /* DevToolsViews.swift in Sources */,
+				E03C1A28A1EBC5E51740C0E5 /* InfoContent.swift in Sources */,
+				3B5380B66DC0D031313C6089 /* InfoViews.swift in Sources */,
+				8918080BDE8D66A55A602AF1 /* ToolsViews.swift in Sources */,
+				523B1210A1509C9B28CB04E6 /* HomeViews.swift in Sources */,
+				54FCB3EDCD7D043DFFA03660 /* OrderToolsViews.swift in Sources */,
+				76DCDBC5EFFEB61F93CD56FB /* RewardsViews.swift in Sources */,
+				2068657A2ED77BE7376F01F7 /* ServicesViews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		424153ED3CD079DB4DB459AF /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		285BB1C1430063331E9F5DD0 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		C15E4A2B08FC9768415379E1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = $(GRAPSEE_DEV_TEAM);
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = GrapseeShop/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.grapsee.shop;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		2DEE9CBF1C74F0A3195F8042 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = $(GRAPSEE_DEV_TEAM);
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = GrapseeShop/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.grapsee.shop;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8FA215508853DD1B15B42625 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		2BDD0D5E1CCB93356A13CECC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7F557C0C68F00F0F7E5D102B /* Build configuration list for PBXNativeTarget "GrapseeShop" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C15E4A2B08FC9768415379E1 /* Debug */,
+				2DEE9CBF1C74F0A3195F8042 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7EF2517A8FE63F4681EC5EEA /* Build configuration list for PBXProject "GrapseeShop" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8FA215508853DD1B15B42625 /* Debug */,
+				2BDD0D5E1CCB93356A13CECC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+			};
+	};
+	rootObject = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+}

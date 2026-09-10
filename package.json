@@ -1,0 +1,16 @@
+{
+  "name": "grapsee-shop",
+  "version": "1.0.0",
+  "description": "Grapsee Shop monorepo root",
+  "type": "module",
+  "scripts": {
+    "fix:content": "node scripts/content-fixer.js",
+    "fix:content:dry": "node scripts/content-fixer.js --dry-run",
+    "fix:content:restore": "node scripts/content-fixer-restore.js",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "fast-check": "^3.23.2",
+    "vitest": "^1.6.1"
+  }
+}

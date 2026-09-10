@@ -1,0 +1,46 @@
+name: Android
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "grapsee-android/**"
+      - ".github/workflows/android.yml"
+  pull_request:
+    paths:
+      - "grapsee-android/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: grapsee-android
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build debug + release
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug assembleRelease --console=plain
+        env:
+          GRAPSEE_STORE_PASS: ${{ secrets.GRAPSEE_STORE_PASS }}
+          GRAPSEE_KEY_PASS: ${{ secrets.GRAPSEE_KEY_PASS }}
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: |
+            grapsee-android/app/build/outputs/apk/debug/app-debug.apk
+            grapsee-android/app/build/outputs/apk/release/app-release.apk

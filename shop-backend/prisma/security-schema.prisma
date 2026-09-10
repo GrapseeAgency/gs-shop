@@ -1,0 +1,88 @@
+// Security Schema Additions for Phase V
+// Add these models to your existing schema.prisma
+
+model SecurityLog {
+  id          String   @id @default(cuid())
+  requestId   String
+  type        String
+  severity    String   // LOW | MEDIUM | HIGH | CRITICAL
+  details     String
+  metadata    Json?
+  timestamp   DateTime @default(now())
+  ip          String?
+  userAgent   String?
+  
+  @@map("security_logs")
+}
+
+model BlacklistedEmail {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  reason    String?
+  createdAt DateTime @default(now())
+  
+  @@map("blacklisted_emails")
+}
+
+model BlacklistedIp {
+  id        String   @id @default(cuid())
+  ip        String   @unique
+  reason    String?
+  createdAt DateTime @default(now())
+  
+  @@map("blacklisted_ips")
+}
+
+model BlacklistedDevice {
+  id          String   @id @default(cuid())
+  fingerprint String   @unique
+  reason      String?
+  createdAt   DateTime @default(now())
+  
+  @@map("blacklisted_devices")
+}
+
+model Wallet {
+  id          String   @id @default(cuid())
+  userEmail   String   @unique
+  balance     Float    @default(0)
+  currency    String   @default("USD")
+  status      String   @default("active") // active | suspended | frozen | closed
+  restrictions Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("wallets")
+}
+
+model InventoryLog {
+  id        String   @id @default(cuid())
+  productId String
+  action    String   // reserved | released | sold | adjusted
+  quantity  Int
+  timestamp DateTime @default(now())
+  metadata  Json?
+  
+  @@map("inventory_logs")
+}
+
+model Chargeback {
+  id          String   @id @default(cuid())
+  customerEmail String
+  orderId     String
+  amount      Float
+  reason      String?
+  status      String   @default("pending")
+  created     DateTime @default(now())
+  
+  @@map("chargebacks")
+}
+
+// Add these fields to existing Product model if not already present:
+/*
+model Product {
+  // ... existing fields ...
+  reserved Int @default(0)
+  version  Int @default(1)
+}
+*/

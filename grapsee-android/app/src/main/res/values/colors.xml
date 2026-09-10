@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand tokens mirrored from shop-frontend globals.css / tailwind.config.ts -->
+    <color name="jade">#00A86B</color>
+    <color name="jade_dark">#006A4E</color>
+    <color name="launcher_background">#FFFFFF</color>
+</resources>

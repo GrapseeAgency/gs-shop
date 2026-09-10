@@ -1,0 +1,4623 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum EventType {
+  MEGA_SALE
+  AUCTION
+  COMMUNITY
+  BLOG_FEATURED
+  FLASH_SALE
+}
+
+enum EventStatus {
+  UPCOMING
+  ACTIVE
+  ENDED
+  HIDDEN
+}
+
+model Event {
+  id              String      @id @default(cuid())
+  type            EventType
+  title           String
+  subtitle        String?
+  description     String?
+
+  // Time control (strict)
+  startTime       DateTime
+  endTime         DateTime
+  status          EventStatus @default(UPCOMING)
+
+  // Visual customization
+  gradientFrom    String      @default("#f97316")
+  gradientVia     String?
+  gradientTo      String      @default("#dc2626")
+  badgeText       String?
+  badgeColor      String      @default("#fbbf24")
+
+  // Content
+  ctaText         String      @default("Shop Now")
+  ctaLink         String?
+  discountText    String?
+
+  // Product association (optional)
+  productId       String?
+  product         Product?    @relation(fields: [productId], references: [id])
+
+  // Auction fields
+  startPrice      Int?
+  currentBid      Int?
+  minBidIncrement Int?        @default(100)
+  bidCount        Int         @default(0)
+
+  // Control
+  isActive        Boolean     @default(true)
+  priority        Int         @default(0)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([startTime])
+  @@index([endTime])
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  // Icon options
+  icon        String?    // Lucide/icon name
+  iconSvg     String?    // Custom SVG code for icon
+  iconLottie  String?    // Lottie animation for icon
+  iconType    String     @default("icon") // icon, svg, lottie
+  // Images
+  imageUrl    String?
+  bannerUrl   String?
+  mobileBannerUrl String? // Mobile-optimized banner
+  // Styling
+  color       String?    // Primary color hex
+  gradient    String?    // Gradient CSS or JSON
+  textColor   String?    // Text color for contrast
+  // Display
+  order       Int        @default(0)
+  isFeatured  Boolean    @default(false) // Show on homepage
+  showInMenu  Boolean    @default(true)  // Show in navigation
+  // Hierarchy
+  parentId    String?
+  parent      Category?  @relation("CategoryToSubcategory", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryToSubcategory")
+  products    Product[]
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+  // State
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Product {
+  id              String            @id @default(cuid())
+  name            String
+  slug            String            @unique
+  description     String
+  price           Float
+  comparePrice    Float?
+  category        Category          @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  imageUrl        String?
+  images          String? // JSON array of image URLs
+  features        String? // JSON array of features
+  techStack       String? // JSON array of tech stack
+  deliveryTime    String?
+  isFeatured      Boolean           @default(false)
+  isActive        Boolean           @default(true)
+  isNew           Boolean           @default(false)
+  isTrending      Boolean           @default(false)
+  isFlashDeal     Boolean           @default(false)
+  flashExpiresAt  DateTime?
+  isVIPOnly       Boolean           @default(false)
+  isLuxury        Boolean           @default(false)
+  luxuryExpiresAt DateTime?
+  isOnSale        Boolean           @default(false)
+  isMock          Boolean           @default(false)
+  discount        Int               @default(0)
+  inventory       Int               @default(0)
+  reserved        Int               @default(0)
+  rating          Float             @default(0)
+  reviewCount     Int               @default(0)
+  views           Int               @default(0)
+  tags            String? // JSON array of tags
+  order           Int               @default(0)
+  weight          Float?            // grams
+  expiryDate      DateTime?
+  ingredients     String?           // For food/cosmetic products
+  stock           Int?              // Alias for inventory
+  color           String?           // For fashion products
+  size            String?           // For fashion products
+  ecoScore        Float?            // 0-100
+  carbonFootprint Float?            // kg CO2
+  reviews         Review[]
+  questions       ProductQuestion[]
+  priceHistory    PriceHistory[]
+  competitorPrices CompetitorPrice[]
+  pricingRules    PricingRule[]
+  priceChangeLogs PriceChangeLog[]
+  auctions        Auction[]
+  videos          ProductVideo[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  nFTCertificates NFTCertificate[]
+  productDuelA    ProductDuel[] @relation("ProductDuelA")
+  productDuelB    ProductDuel[] @relation("ProductDuelB")
+  productViews    ProductView[]
+  customerPhotos  CustomerPhoto[]
+  flashSales      FlashSale[]
+  events          Event[]           // Bidirectional relation for Mega Sale/Auction events
+  pvpGames        PvpGame[]
+  chatSessions    ChatSession[]
+  createdAt       DateTime          @default(now())
+
+  // Seller
+  sellerId String?
+  seller   Seller? @relation(fields: [sellerId], references: [id])
+  featuredSeller Seller? @relation("SellerFeaturedProducts", fields: [sellerId], references: [id])
+
+  // AR/Authenticity
+  arModelUrl     String?
+  dimensions     String?
+  qrCode         String?   @unique
+  serialNumber   String?
+  isAuthentic    Boolean   @default(false)
+  manufacturedAt DateTime?
+  batchNumber    String?
+  origin         String?
+  updatedAt      DateTime  @updatedAt
+
+  // Phase 2: Digital Service Extensions
+  complexity         String  @default("medium") // small, medium, large, enterprise
+  complexityGuide    String? // Description of scope (landing page vs full app)
+  demoUrl            String? // Live demo link
+  previewImages      String? // JSON array of preview screenshots
+  interactiveDemoUrl String? // Interactive prototype link
+  videoDemoUrl       String? // Product demo video
+
+  // Phase 2: Delivery Options
+  rushDeliveryAvailable Boolean @default(false)
+  rushDeliveryPrice     Float?
+  standardDeliveryDays  Int     @default(14)
+  rushDeliveryDays      Int     @default(3)
+
+  // Phase 2: Availability (for service slots)
+  maxMonthlyOrders   Int @default(10)
+  currentMonthOrders Int @default(0)
+
+  // Phase 2: Tech Stack Variants
+  techStackOptions String? // JSON: [{name, value, priceModifier}]
+
+  // Phase 2: EMI Support
+  emiAvailable Boolean @default(false)
+  emiMinAmount Float   @default(5000)
+
+  // SVG & Animation Support
+  svgUrl           String?           // Animated SVG thumbnail URL
+  svgAnimation     String?           // JSON: {type: "lottie|css|svg", config: {...}}
+  lottieUrl        String?           // Lottie animation JSON URL
+
+  // Custom Illustrations (React/HTML/CSS)
+  illustrationCode String?           // Custom React/CSS/HTML code for illustrations
+  illustrationType String?           // "react", "css", "svg", "lottie"
+
+  // Preview & Thumbnail Options
+  thumbnailType    String  @default("image") // image, svg, animation, illustration
+  previewUrl       String?           // Live preview/demo URL
+  videoThumbnail   String?           // Video thumbnail for product cards
+
+  // Enhanced Product Display
+  shortDescription String?           // Short description for product cards
+  badge            String?           // Badge text: "New", "Hot", "Sale", "Bestseller"
+  badgeColor       String?           // Badge color: "red", "green", "blue", "gold"
+
+  // SEO Fields
+  metaTitle        String?           // SEO meta title
+  metaDescription  String?           // SEO meta description
+  keywords         String?           // SEO keywords (comma separated)
+  altText          String?           // Image alt text for accessibility
+
+  // Product Classification
+  productType      String  @default("physical") // physical, digital, service, subscription
+  sku              String?           @unique      // Stock keeping unit
+  barcode          String?           // Product barcode
+
+  // Tax & Shipping
+  taxClass         String?           // Tax classification
+  taxRate          Float?            // Tax percentage
+  shippingClass    String?           // Shipping classification
+
+  // Digital Products
+  downloadUrl      String?           // For digital products
+  downloadLimit    Int?              // Download limit (null = unlimited)
+  fileSize         String?           // File size display
+  fileFormat       String?           // File format: PDF, ZIP, etc.
+
+  // Subscription Products
+  subscriptionPeriod   String?       // monthly, yearly, weekly
+  subscriptionPrice    Float?        // Recurring price
+  trialDays            Int?            // Trial period days
+
+  // Gallery Options
+  galleryType      String  @default("grid") // grid, slider, masonry
+  galleryColumns   Int     @default(3)      // Number of columns
+
+  // Related Products
+  relatedProducts  String?           // JSON: [productId1, productId2, ...]
+  crossSells       String?           // JSON: [productId1, productId2, ...]
+  upsells          String?           // JSON: [productId1, productId2, ...]
+
+  // Phase 2: White Label
+  whiteLabelAvailable Boolean @default(false)
+  whiteLabelPrice     Float?
+
+  // Product extensions
+  variants         String? // JSON array
+  specifications   String? // JSON array
+  howToUse         String? // JSON
+  materials        String? // JSON array
+  flashbackProduct FlashbackProduct?
+  digitalPurchases DigitalPurchase[]
+  digitalDelivery  DigitalDelivery?
+
+  // Sustainability
+  packagingType    String? // biodegradable, recyclable, minimal
+  isRecyclable     Boolean  @default(false)
+  isEcoFriendly    Boolean  @default(false)
+
+  // Product statistics
+  totalSales       Int      @default(0)
+  wishlistCount    Int      @default(0)
+
+  // Sold status
+  isSold           Boolean  @default(false)
+  soldTo           String?  // userId of buyer
+  buyerUsername    String?  // public display name of buyer
+  isPubliclyVisible Boolean  @default(true) // Phase VIII: false = hidden from public shop
+
+  // Additional product fields
+  warrantyMonths Int?
+  returnDays     Int?
+  brand          String?
+  isLocal        Boolean  @default(false)
+
+  // Phase I: Architecture & One-of-a-kind
+  architectureStyle  String?  // Monolithic, Microservices, Layered, Event-Driven, SOA, Serverless, P2P
+  folderStructure    String?  // JSON representation of folder/file structure
+  showOneOfAKind     Boolean  @default(true)  // Show "each product is one-of-a-kind" messaging
+  isUnique           Boolean  @default(true)  // Product is unique/sold once
+
+  // Relations
+  todaysPicks    TodaysPick[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id])
+  customerName    String
+  customerEmail   String?
+  customerPhone   String?
+  total           Float
+  discount        Float       @default(0)
+  couponCode      String?
+  status          String      @default("pending")
+  paymentMethod   String?
+  paymentId       String?
+  notes           String?
+  shippingAddress String?
+  trackingNumber  String?
+  trackingSteps   String? // JSON array of tracking steps
+  items           OrderItem[]
+  returnRequests  ReturnRequest[]
+  deliveryBooking DeliveryBooking?
+  delivery        Delivery?
+  hasDeliveryVideo Boolean @default(false)
+  chatSession     ChatSession?
+  source          String?  // web, mobile, whatsapp, etc.
+  metadata        String?  // JSON object for additional order metadata
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Phase 2: Payment
+  splitPayment   Boolean @default(false)
+  walletAmount   Float   @default(0)
+  cardAmount     Float   @default(0)
+  priceLocked    Boolean @default(false)
+  priceLockId    String?
+  partialPayment Boolean @default(false)
+  amountPaid     Float   @default(0)
+
+  // Phase 2: Project Delivery
+  deliverySlotId       String?
+  deliveryInstructions String?
+  demoCallUrl          String? // For scheduled demo/handoff calls
+  demoCallScheduledAt  DateTime?
+  projectMilestone     String    @default("requirement_gathering") // requirement_gathering, design, development, testing, delivery, completed
+  rushDelivery         Boolean   @default(false)
+
+  // Phase 2: Revisions
+  revisionCount Int @default(0)
+  maxRevisions  Int @default(3)
+
+  // Phase 2: Delivery Proof
+  deliverableUrl     String? // Link to delivered files/GitHub
+  deliveryProofImage String? // Screenshot proof
+  deliveredAt        DateTime?
+
+  // Phase 2: Notifications
+  notifiedMilestones String? // JSON array of completed milestones
+
+  // Digital Products Enhancement
+  digitalPurchases DigitalPurchase[]
+  nFTCertificates  NFTCertificate[]
+
+  // Trust & Safety
+  escrow EscrowTransaction?
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  productName String
+  price       Float
+  quantity    Int      @default(1)
+  imageUrl    String?
+}
+
+model Review {
+  id            String   @id @default(cuid())
+  product       Product  @relation(fields: [productId], references: [id])
+  productId     String
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  author        String
+  title         String?
+  rating        Int
+  comment       String
+  avatar        String?
+  helpfulVotes  Int      @default(0)
+  isVerified    Boolean  @default(false)
+  isFlagged     Boolean  @default(false)
+  flagReason    String?
+  adminReply    String?
+  adminRepliedAt DateTime?
+  createdAt     DateTime @default(now())
+}
+
+model Brand {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  icon      String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String
+  email         String     @unique
+  password      String?
+  avatar        String?
+  image         String?
+  grapseeId     String?    @unique
+  phone         String?
+  role          String     @default("customer")
+  rewardsPoints Int        @default(0)
+  loyaltyTier   String     @default("bronze") // bronze, silver, gold, platinum, diamond
+  isActive      Boolean    @default(true)
+  emailVerified Boolean    @default(false)
+  reviews       Review[]
+  giftCards     GiftCard[]
+  orders        Order[]
+  returnRequests ReturnRequest[]
+  addresses     Address[]
+  cartItems     CartItem[]
+  customerPhotos CustomerPhoto[]
+  auctionsWon   Auction[]
+  chatSessions  ChatSession[]
+
+  // Digital Products Enhancement
+  digitalPurchases    DigitalPurchase[]
+  giftCardPurchases   GiftCardDelivery[]   @relation("GiftCardPurchaser")
+  studentVerification StudentVerification?
+
+  // NEW revolutionary feature relationships
+  liveShoppingSessions       LiveShoppingSession[]
+  liveShoppingInteractions   LiveShoppingInteraction[]
+  neuralProfile              NeuralProfile?    @relation("NeuralProfile")
+  neuralSignals              NeuralSignal[]    @relation("NeuralSignals")
+  digitalTwin                DigitalTwin?      @relation("DigitalTwin")
+  dnaProfile                 DNAProfile?       @relation("DNAProfile")
+  productCompatibilities     ProductCompatibility[] @relation("ProductCompatibilities")
+  bioHackSessions            BioHackSession[]
+  quantumPredictions         QuantumPrediction[]
+  quantumTeleportations      QuantumTeleportation[]
+  arSessions                 ARSession[]
+  styleEvolution             StyleEvolution?   @relation("StyleEvolution")
+  truthAnalyses              TruthAnalysis[]    @relation("TruthAnalyses")
+  trendPredictions           TrendPrediction[]
+  socialCapital              SocialCapital?    @relation("SocialCapital")
+  personalShopper            PersonalShopper?  @relation("PersonalShopper")
+  timeTravelSessions         TimeTravelSession[]
+  realityCustomization       RealityCustomization? @relation("RealityCustomization")
+  gameSessions               GameSession[]
+  trendCouncil               TrendCouncil?     @relation("TrendCouncil")
+  quantumCollectibles        QuantumCollectible[]
+
+  // PvP Price Guessing
+  pvpGuesses                 PvpGuess[]
+  pvpGamesHosted             PvpGame[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Phase 2: Gamification & Referrals
+  referralCode     String?   @unique
+  dailyCheckInDate DateTime?
+  currentStreak    Int       @default(0)
+  longestStreak    Int       @default(0)
+  totalCheckIns    Int       @default(0)
+
+  // Phase 2: Preferences
+  fontSize     String  @default("normal") // small, normal, large
+  highContrast Boolean @default(false)
+  reduceMotion Boolean @default(false)
+  language     String  @default("en") // en, bn, hi, ar
+  currency     String  @default("BDT") // BDT, USD, INR, AED
+  rtl          Boolean @default(false)
+
+  pushEnabled  Boolean @default(true)
+  emailEnabled Boolean @default(true)
+  smsEnabled   Boolean @default(false)
+
+  // Relations for new features
+  musicProfile      MusicProfile?
+  spinRecords       UserSpinRecord[]
+  biometricProfile  UserBiometricProfile?
+  achievements      UserAchievement[]
+  wishlistBoards    WishlistBoard[]
+  communityPosts    CommunityPost[]
+  communityComments CommunityComment[]
+
+  // Phase 1: Real Rewards System
+  rewardTransactions RewardTransaction[]
+
+  // Seller Center Relations
+  sellerReviews SellerReview[]
+  sellerMessages SellerMessage[]
+  seller        Seller?
+  
+  // Device Relations
+  devices Device[]
+}
+
+model FlashbackProduct {
+  id            String   @id @default(cuid())
+  productId     String   @unique
+  product       Product  @relation(fields: [productId], references: [id])
+  originalPrice Float    // Original price before discount
+  flashStart    DateTime
+  flashEnd      DateTime
+  discount      Int      @default(0) // percentage discount during flash
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Coupon {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  discount       Int?
+  discountValue  Int
+  discountType   String    @default("percentage") // percentage or fixed
+  type           String    @default("percentage") // percentage or fixed (legacy)
+  description    String?
+  minOrder       Float?
+  minOrderAmount Float?
+  maxUses        Int?
+  usedCount      Int       @default(0)
+  isActive       Boolean   @default(true)
+  startDate      DateTime  @default(now())
+  endDate        DateTime?
+  expiresAt      DateTime?
+  expiryDate     DateTime?
+  maxDiscount    Float?
+  appliesTo      String    @default("all") // "all", "products", "categories"
+  appliesToIds   String?   // JSON array of product/category IDs
+  createdAt      DateTime  @default(now())
+}
+
+model GiftCard {
+  id         String    @id @default(cuid())
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id])
+  code       String    @unique
+  amount     Float?
+  balance    Float
+  initialBalance Float @default(0) // Initial amount for tracking
+  status     String    @default("active") // active, redeemed, expired, cancelled
+  isRedeemed Boolean   @default(false)
+  redeemedBy String?
+  message    String?
+  design     String    @default("classic") // classic, birthday, holiday, premium
+  isActive   Boolean   @default(true)
+  expiryDate DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // Recipient info (for sending gift cards)
+  recipientEmail String?
+  recipientName  String?
+  senderName     String?
+  sendEmail      Boolean @default(false) // Whether to email the recipient
+
+  // Gift card can be sent to someone
+  deliveries GiftCardDelivery[]
+}
+
+model Referral {
+  id            String   @id @default(cuid())
+  referrerCode  String   @unique
+  referrerName  String
+  referredEmail String?
+  referredName  String?
+  status        String   @default("pending") // pending, completed, rewarded
+  reward        Int      @default(100)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ProductQuestion {
+  id         String   @id @default(cuid())
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  author     String
+  question   String
+  answer     String?
+  answeredBy String?
+  isHelpful  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model PriceAlert {
+  id           String   @id @default(cuid())
+  userId       String?
+  productId    String
+  productName  String?
+  targetPrice  Float
+  currentPrice Float?
+  email        String?
+  type         String?
+  isTriggered  Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  notifiedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PriceHistory {
+  id         String   @id @default(cuid())
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  price      Float
+  recordedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String? // null = broadcast to all
+  type      String // order, deal, reward, system, promo, new_arrival, etc.
+  title     String
+  message   String
+  icon      String?
+  link      String?
+  linkUrl   String?
+  metadata  String? // JSON: {price, orderId, productId, imageUrl, etc.}
+  priority  String    @default("normal") // low | normal | high | urgent
+  category  String? // commerce | social | system | gamification
+  expiresAt DateTime?
+  isRead    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, type])
+}
+
+model StoreLocation {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  city      String
+  phone     String?
+  hours     String?
+  latitude  Float?
+  longitude Float?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model ShippingMethod {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  price         Float
+  estimatedDays String?
+  freeAbove     Float?
+  maxWeight     Float?
+  regions       String? // JSON array of supported regions
+  icon          String?
+  isActive      Boolean  @default(true)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model Wallet {
+  id              String              @id @default(cuid())
+  userId          String              @unique
+  balance         Float               @default(0)
+  cashbackBalance Float               @default(0) // Phase 2: Cashback earnings
+  currency        String              @default("BDT")
+  status          String              @default("active") // "active", "suspended", "closed"
+  restrictions    String?             // JSON array of restrictions
+  transactions    WalletTransaction[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+  walletId    String
+  type        String // credit, debit
+  amount      Float
+  description String
+  referenceId String?
+  createdAt   DateTime @default(now())
+}
+
+// === DIGITAL PRODUCTS ENHANCEMENT ===
+
+model DigitalPurchase {
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id])
+  productId          String
+  product            Product   @relation(fields: [productId], references: [id])
+  purchasePrice      Float
+  paymentMethod      String // wallet, stripe, giftcard
+  licenseKey         String    @unique
+  downloadsRemaining Int       @default(3)
+  totalDownloads     Int       @default(0)
+  lastDownloadedAt   DateTime?
+  isActive           Boolean   @default(true)
+  refundedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Reverse relations
+  downloadLogs DownloadLog[]
+  order        Order?        @relation(fields: [orderId], references: [id])
+  orderId      String?
+
+  @@index([userId, productId])
+  @@index([licenseKey])
+  @@index([orderId])
+}
+
+model DownloadLog {
+  id                String          @id @default(cuid())
+  userId            String
+  digitalPurchaseId String
+  digitalPurchase   DigitalPurchase @relation(fields: [digitalPurchaseId], references: [id])
+  ipAddress         String?
+  userAgent         String?
+  downloadedAt      DateTime        @default(now())
+  success           Boolean         @default(true)
+  errorMessage      String?
+}
+
+model GiftCardDelivery {
+  id              String    @id @default(cuid())
+  giftCardId      String
+  giftCard        GiftCard  @relation(fields: [giftCardId], references: [id])
+  purchaserId     String
+  purchaser       User      @relation(fields: [purchaserId], references: [id], name: "GiftCardPurchaser")
+  recipientEmail  String
+  recipientName   String?
+  personalMessage String?
+  emailSentAt     DateTime?
+  emailOpenedAt   DateTime?
+  claimedAt       DateTime?
+  status          String    @default("pending") // pending, sent, opened, redeemed, expired
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([giftCardId])
+  @@index([recipientEmail])
+}
+
+model StudentVerification {
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id])
+  verificationMethod String // email_domain, id_upload, third_party
+  universityEmail    String?
+  universityName     String?
+  studentIdNumber    String?
+  idDocumentUrl      String?
+  idDocumentVerified Boolean   @default(false)
+  status             String    @default("pending") // pending, verified, rejected, expired
+  discountCode       String?
+  discountPercent    Int       @default(15)
+  verifiedAt         DateTime?
+  expiresAt          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([universityEmail])
+  @@index([status])
+}
+
+model Auction {
+  id              String       @id @default(cuid())
+  productId       String
+  product         Product      @relation(fields: [productId], references: [id])
+  sellerId        String?
+  seller          Seller?      @relation(fields: [sellerId], references: [id])
+  description     String?
+  startPrice      Float
+  reservePrice    Float?
+  currentPrice    Float
+  currentBid      Float
+  bidCount        Int          @default(0)
+  isActive        Boolean      @default(true)
+  minBidIncrement Float        @default(50)
+  minIncrement    Float        @default(50)
+  startTime       DateTime
+  endTime         DateTime?
+  endsAt          DateTime?
+  status          String       @default("upcoming") // upcoming, live, ended
+  winnerId        String?
+  winner          User?        @relation(fields: [winnerId], references: [id])
+  winnerName      String?
+  bids            AuctionBid[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model AuctionBid {
+  id          String   @id @default(cuid())
+  auction     Auction  @relation(fields: [auctionId], references: [id])
+  auctionId   String
+  userId      String?
+  bidderName  String
+  bidderEmail String
+  amount      Float
+  isWinning   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model SpinPrize {
+  id          String           @id @default(cuid())
+  name        String
+  type        String // points, coupon, gift_card, free_shipping, discount, jackpot
+  value       Float
+  probability Float // 0-100 weight
+  icon        String?
+  color       String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  spinRecords UserSpinRecord[]
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?
+  type        String   @default("curated") // curated, seasonal, trending, staff_pick, new
+  productIds  String? // JSON array of product IDs
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BlogPost {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  excerpt      String?
+  content      String
+  imageUrl     String?
+  category     String? // tips, news, review, guide, lifestyle
+  author       String?
+  authorAvatar String?
+  isPublished  Boolean  @default(true)
+  viewCount    Int      @default(0)
+  likeCount    Int      @default(0)
+  tags         String? // JSON array of tags
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model HelpArticle {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  content      String
+  category     String // orders, shipping, returns, payments, account, products
+  featured     Boolean  @default(false)
+  isPublished  Boolean  @default(true)
+  viewCount    Int      @default(0)
+  helpfulCount Int      @default(0)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  label      String // home, office, other
+  name       String
+  phone      String
+  address    String
+  city       String
+  area       String?
+  postalCode String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ReturnRequest {
+  id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String
+  productName  String
+  reason       String
+  description  String?
+  status       String   @default("pending") // pending, approved, processing, completed, rejected
+  refundAmount Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ProductVideo {
+  id           String   @id @default(cuid())
+  product      Product  @relation(fields: [productId], references: [id])
+  productId    String
+  title        String
+  thumbnailUrl String?
+  videoUrl     String
+  duration     Int?
+  views        Int      @default(0)
+  type         String   @default("review") // review, unboxing, tutorial, comparison
+  createdAt    DateTime @default(now())
+}
+
+model Bundle {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  productIds     String // JSON array of product IDs
+  originalTotal  Float
+  bundlePrice    Float
+  savings        Float
+  savingsPercent Int
+  isActive       Boolean  @default(true)
+  imageUrl       String?
+  tag            String? // tech, fashion, home, gaming, etc
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model CommunityPost {
+  id               String             @id @default(cuid())
+  userId           String?
+  user             User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  author           String
+  avatar           String?
+  content          String
+  images           String? // JSON array of base64 or URLs
+  likes            Int                @default(0)
+  shares           Int                @default(0)
+  taggedProductIds String? // JSON array of product IDs
+  type             String             @default("review") // review, style, question, haul, tip
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  postComments     CommunityComment[]
+  postLikes        CommunityLike[]
+}
+
+model CommunityComment {
+  id         String        @id @default(cuid())
+  postId     String
+  post       CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  authorName String
+  avatar     String?
+  content    String
+  likes      Int           @default(0)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model CommunityLike {
+  id        String        @id @default(cuid())
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime      @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Affiliate {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  code           String   @unique
+  name           String
+  email          String
+  tier           String   @default("starter") // starter, silver, gold, platinum
+  totalEarnings  Float    @default(0)
+  totalReferrals Int      @default(0)
+  commissionRate Float    @default(5) // percentage
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model LoyaltyTier {
+  id           String   @id @default(cuid())
+  name         String // Bronze, Silver, Gold, Platinum, Diamond
+  minPoints    Int
+  maxPoints    Int
+  color        String
+  icon         String?
+  benefits     String // JSON array of benefit strings
+  discount     Int      @default(0) // percentage
+  freeShipping Boolean  @default(false)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+
+model CookiePreference {
+  id         String    @id @default(cuid())
+  userId     String?
+  essential  Boolean   @default(true)
+  analytics  Boolean   @default(false)
+  marketing  Boolean   @default(false)
+  functional Boolean   @default(false)
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model GroupBuy {
+  id             String   @id @default(cuid())
+  productId      String
+  productName    String
+  originalPrice  Float
+  groupPrice     Float
+  minBuyers      Int
+  currentBuyers  Int      @default(0)
+  maxBuyers      Int?
+  status         String   @default("active") // active, completed, expired, cancelled
+  endsAt         DateTime
+  imageUrl       String?
+  savingsPercent Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model TradeIn {
+  id             String   @id @default(cuid())
+  productName    String
+  condition      String // excellent, good, fair, poor
+  originalPrice  Float
+  estimatedValue Float
+  category       String
+  customerName   String?
+  customerEmail  String?
+  status         String   @default("pending") // pending, approved, inspected, paid, rejected
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model InstallmentPlan {
+  id             String   @id @default(cuid())
+  productId      String
+  productName    String
+  totalPrice     Float
+  downPayment    Float
+  monthlyPayment Float
+  tenure         Int // months: 3, 6, 9, 12, 18, 24
+  interestRate   Float    @default(0)
+  totalInterest  Float    @default(0)
+  status         String   @default("available") // available, active, completed, defaulted
+  imageUrl       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model DigitalDownload {
+  id            String   @id @default(cuid())
+  productId     String
+  productName   String
+  fileType      String // ebook, software, template, music, video, course
+  fileSize      String?
+  downloadUrl   String
+  downloadCount Int      @default(0)
+  maxDownloads  Int      @default(5)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Seller {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  slug         String   @unique
+  logo         String?
+  avatar       String?
+  coverImage   String?
+  description  String?
+  bio          String?
+  rating       Float    @default(0)
+  reviewCount  Int      @default(0)
+  productCount Int      @default(0)
+  totalSales   Int      @default(0)
+  revenue      Float    @default(0)
+  responseTime String? // e.g. "within 2 hours"
+  isVerified   Boolean  @default(false)
+  verifiedAt   DateTime?
+  isFeatured   Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  bankName     String?
+  icon         String?
+  joinedAt     DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Phase 2: Verification & Badges
+  verificationBadge String  @default("none") // none, verified, premium, top_seller, platinum
+  badges            String? // JSON array of earned badges
+
+  // Phase 2: Commission & Payouts
+  commissionRate Float @default(10) // platform percentage
+  payoutBalance  Float @default(0)
+  totalEarnings  Float @default(0)
+
+  // Phase 2: Analytics
+  monthlyRevenue String? // JSON: [{month, revenue, orders}]
+  topServices    String? // JSON array of top service IDs
+  conversionRate Float   @default(0)
+
+  // Phase 2: Storefront
+  storeTheme   String  @default("default")
+  customDomain String?
+  socialLinks  String? // JSON: {facebook, twitter, linkedin, github}
+  story        String?
+  isLocal      Boolean  @default(false)
+
+  // Phase 2: Availability
+  isAcceptingOrders Boolean @default(true)
+  avgResponseTime   Int? // in minutes
+
+  // Phase 2: Followers
+  followerCount Int @default(0)
+  viewCount     Int @default(0) // Storefront page views
+
+  // Real Seller Center Fields
+  userId             String?   @unique
+  user               User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  onboardingProgress Int       @default(0)
+  onboardingStatus   String    @default("incomplete")
+  isOnboarded        Boolean   @default(false)
+  bankAccountName    String?
+  bankAccountNumber  String?
+  bankRoutingNumber  String?
+  paypalEmail        String?
+  stripeConnectId    String?
+  minPayoutAmount    Float     @default(50)
+  autoPayoutEnabled  Boolean   @default(false)
+  storePolicies      String?   // JSON: { returns, shipping, privacy }
+
+  // Relations
+  auctions           Auction[]
+  products           Product[]
+  featuredProducts   Product[] @relation("SellerFeaturedProducts")
+  onboarding         SellerOnboarding?
+  documents          SellerDocument[]
+  payouts            SellerPayout[]
+  settings           SellerSettings?
+  analytics          SellerAnalytics[]
+  sellerReviews      SellerReview[]
+  messages           SellerMessage[]
+  promotions         SellerPromotion[]
+
+  @@index([userId])
+  @@index([onboardingStatus])
+  @@index([isOnboarded])
+}
+
+model ProductQuiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  questions   String // JSON array of {question, options[], correctIndex}
+  resultType  String // recommendation, personality, style
+  isPublished Boolean  @default(true)
+  takenCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Outfit {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  productIds  String // JSON array of product IDs
+  imageUrl    String?
+  style       String? // casual, formal, sporty, streetwear, minimalist
+  season      String? // spring, summer, fall, winter
+  likes       Int      @default(0)
+  isFeatured  Boolean  @default(false)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model StorePickup {
+  id        String    @id @default(cuid())
+  storeId   String
+  orderId   String?
+  status    String    @default("available") // available, preparing, ready, picked_up, expired
+  readyAt   DateTime?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model EmailSubscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  source      String   @default("website") // website, popup, checkout, referral
+  isActive    Boolean  @default(true)
+  preferences String? // JSON: {deals: true, newArrivals: true, blog: false}
+  createdAt   DateTime @default(now())
+}
+
+model AgeVerification {
+  id          String   @id @default(cuid())
+  method      String // id_card, selfie, declaration
+  status      String   @default("pending") // pending, verified, rejected
+  dateOfBirth String?
+  createdAt   DateTime @default(now())
+}
+
+model ShippingCalculator {
+  id            String   @id @default(cuid())
+  origin        String
+  destination   String
+  weight        Float
+  method        String
+  estimatedCost Float
+  estimatedDays String
+  createdAt     DateTime @default(now())
+}
+
+model ProductRating {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String?
+  rating    Int // 1-5
+  aspect    String? // quality, value, shipping, packaging
+  createdAt DateTime @default(now())
+}
+
+model WishlistBoard {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  productIds  String   @default("[]") // JSON array
+  isPublic    Boolean  @default(false)
+  color       String? // hex color
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model MysteryBox {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  price         Float
+  originalValue Float
+  category      String // tech, fashion, beauty, gaming, surprise
+  tier          String   @default("standard") // standard, premium, luxury, ultimate
+  imageUrl      String?
+  totalBoxes    Int      @default(100)
+  soldBoxes     Int      @default(0)
+  isActive      Boolean  @default(true)
+  featuredItems String? // JSON array of possible featured items
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Preorder {
+  id              String   @id @default(cuid())
+  productId       String
+  productName     String
+  customerEmail   String
+  estimatedDate   DateTime
+  depositAmount   Float
+  fullPrice       Float
+  bonusIncluded   String? // JSON array of bonus items
+  preorderedCount Int      @default(0)
+  maxPreorders    Int?
+  status          String   @default("open") // open, confirmed, shipped, cancelled
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model GiftRegistry {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  occasion    String // wedding, birthday, baby, housewarming, graduation
+  productIds  String    @default("[]") // JSON array
+  createdBy   String
+  isPublic    Boolean   @default(true)
+  eventDate   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model EcoProduct {
+  id         String   @id @default(cuid())
+  productId  String
+  ecoScore   Int // 1-100
+  ecoBadge   String // organic, recycled, sustainable, carbon-neutral, fair-trade
+  co2Saved   Float? // kg CO2 saved
+  waterSaved Float? // liters saved
+  createdAt  DateTime @default(now())
+}
+
+model PriceMatch {
+  id              String   @id @default(cuid())
+  userId          String?
+  productId       String
+  productName     String
+  ourPrice        Float
+  competitorPrice Float
+  competitorUrl   String?
+  status          String   @default("pending") // pending, approved, rejected
+  customerEmail   String
+  appealedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model DealCalendar {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  dealType    String // flash, bundle, clearance, seasonal, anniversary, black_friday
+  discount    Int
+  startsAt    DateTime
+  endsAt      DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model StockNotification {
+  id          String   @id @default(cuid())
+  productId   String
+  productName String
+  email       String
+  isNotified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model ProductConfigurator {
+  id        String   @id @default(cuid())
+  productId String
+  options   String // JSON: { color: [...], size: [...], material: [...], storage: [...] }
+  basePrice Float
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CustomerPhoto {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName   String
+  imageUrl   String
+  caption    String?
+  likes      Int      @default(0)
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model SellerOnboarding {
+  id                    String   @id @default(cuid())
+  sellerId              String   @unique
+  userId                String?
+  seller                Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  // Business Info
+  name                  String?
+  email                 String?
+  businessName          String?
+  businessType          String?
+  taxId                 String?
+  phone                 String?
+  website               String?
+  step                  Int      @default(0)
+  status                String   @default("pending") // pending, approved, rejected
+
+  // Address
+  address               String?
+  city                  String?
+  state                 String?
+  zipCode               String?
+  country               String   @default("BD")
+
+  // Progress tracking
+  personalInfoCompleted Boolean  @default(false)
+  businessInfoCompleted Boolean  @default(false)
+  documentsSubmitted    Boolean  @default(false)
+  bankInfoCompleted     Boolean  @default(false)
+  storeSetupCompleted   Boolean  @default(false)
+  estimatedRevenue    Float    @default(0)
+
+  // Submissions & Reviews
+  submittedAt           DateTime?
+  reviewedAt            DateTime?
+  reviewedBy            String?
+  rejectionReason       String?
+  documents             String? // JSON array of document URLs
+  notes                 String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([sellerId])
+}
+
+model SellerDocument {
+  id           String   @id @default(cuid())
+  sellerId     String
+  seller       Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  type         String   // business_license, tax_certificate, identity, bank_statement
+  documentUrl  String
+  fileName     String?
+  fileSize     Int?
+  mimeType     String?
+  uploadedAt   DateTime @default(now())
+  verified     Boolean  @default(false)
+  verifiedAt   DateTime?
+  notes        String?
+
+  @@index([sellerId])
+}
+
+model SellerSettings {
+  id                  String   @id @default(cuid())
+  sellerId            String   @unique
+  seller              Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  // Store Settings
+  storeDescription    String?
+  returnPolicy        String?
+  shippingPolicy      String?
+  defaultShippingDays Int      @default(3)
+  freeShippingThreshold Float?
+
+  // Notifications
+  emailNotifications  Boolean  @default(true)
+  smsNotifications    Boolean  @default(false)
+  orderAlerts         Boolean  @default(true)
+  payoutAlerts        Boolean  @default(true)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([sellerId])
+}
+
+model TryBeforeYouBuy {
+  id          String    @id @default(cuid())
+  productId   String
+  productName String
+  userId      String?
+  status      String    @default("selected") // selected, shipped, trying, decided, returned, kept
+  trialStart  DateTime?
+  trialEnd    DateTime?
+  price       Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PriceDrop {
+  id          String   @id @default(cuid())
+  productId   String
+  productName String
+  oldPrice    Float
+  newPrice    Float
+  dropPercent Int
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model LoyaltyMallProduct {
+  id          String   @id @default(cuid())
+  productId   String
+  productName String
+  pointsPrice Int
+  imageUrl    String?
+  stock       Int      @default(1)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model GiftWrapping {
+  id          String   @id @default(cuid())
+  name        String
+  design      String // classic, birthday, wedding, holiday, premium, custom
+  price       Float
+  imageUrl    String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model WarrantyPlan {
+  id          String   @id @default(cuid())
+  name        String
+  duration    Int // months
+  coverage    String // JSON array of covered items
+  price       Float // percentage of product price
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model CharityPartner {
+  id          String   @id @default(cuid())
+  name        String
+  logo        String?
+  website     String?
+  cause       String // education, health, environment, disaster_relief
+  description String?
+  totalRaised Float    @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model RentalProduct {
+  id              String   @id @default(cuid())
+  productId       String
+  productName     String
+  dailyRate       Float
+  weeklyRate      Float
+  monthlyRate     Float
+  securityDeposit Float
+  category        String // electronics, cameras, tools, gaming, events
+  imageUrl        String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}
+
+model Rental {
+  id           String   @id @default(cuid())
+  userId       String
+  rentalProductId String
+  productId    String
+  status       String   @default("pending") // pending, confirmed, active, returned, cancelled
+  startDate    DateTime
+  endDate      DateTime
+  durationType String   // daily, weekly, monthly
+  duration     Int      // number of days/weeks/months
+  totalPrice   Float
+  securityDeposit Float
+  depositReturned Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PriceGuarantee {
+  id              String   @id @default(cuid())
+  productId       String
+  productName     String
+  ourPrice        Float
+  competitorUrl   String
+  competitorPrice Float
+  status          String   @default("submitted") // submitted, under_review, approved, refunded
+  customerEmail   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model MysteryReward {
+  id          String   @id @default(cuid())
+  userId      String?
+  rewardType  String // points, coupon, free_shipping, gift_card, jackpot
+  rewardValue Float
+  isRevealed  Boolean  @default(false)
+  claimedAt   DateTime @default(now())
+}
+
+model DarkStoreProduct {
+  id            String   @id @default(cuid())
+  productId     String
+  productName   String
+  price         Float
+  originalPrice Float
+  imageUrl      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+// === CART & CHECKOUT ENHANCEMENTS (41-50) ===
+
+model SavedCartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  options   String? // JSON: {techStack, deliverySpeed, etc}
+  notes     String?
+  savedAt   DateTime @default(now())
+}
+
+model CartExpiry {
+  id         String    @id @default(cuid())
+  cartId     String    @unique
+  userId     String
+  expiresAt  DateTime
+  extendedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model AbandonedCart {
+  id         String    @id @default(cuid())
+  userId     String
+  cartData   String // JSON snapshot of cart
+  emailSent  Boolean   @default(false)
+  smsSent    Boolean   @default(false)
+  recovered  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  remindedAt DateTime?
+}
+
+model PriceLock {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  lockedPrice Float
+  lockedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime // 24 hours from lockedAt
+  expiryDate  DateTime? // Alias for expiresAt
+  isUsed      Boolean  @default(false)
+  orderId     String?
+  // Additional fields for price-lock feature
+  depositAmount Float    @default(100)
+  status      String     @default("active")
+  releasedAt  DateTime?
+  convertedAt DateTime?
+}
+
+// === SELLER FEATURES (51-59) ===
+
+model SellerRating {
+  id           String   @id @default(cuid())
+  sellerId     String
+  userId       String
+  rating       Int // 1-5
+  review       String?
+  aspects      String? // JSON: {communication, quality, delivery, value}
+  isVerified   Boolean  @default(false)
+  helpfulCount Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+
+model SellerPromotion {
+  id          String   @id @default(cuid())
+  sellerId    String
+  seller      Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  type        String // flash, bundle, clearance
+  discount    Int
+  productIds  String // JSON array
+  startAt     DateTime
+  endAt       DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([sellerId])
+}
+
+model SellerPayout {
+  id          String    @id @default(cuid())
+  sellerId    String
+  seller      Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  amount      Float
+  status      String    @default("pending") // pending, processing, completed, rejected
+  method      String // bank, paypal, crypto
+  accountInfo String? // masked account details
+  requestedAt DateTime  @default(now())
+  processedAt DateTime?
+  notes       String?
+
+  @@index([sellerId])
+}
+
+model SellerAnalytics {
+  id            String   @id @default(cuid())
+  sellerId      String   @unique
+  seller        Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  totalSales    Int      @default(0)
+  totalRevenue  Float    @default(0)
+  avgOrderValue Float    @default(0)
+  topProducts   String? // JSON array of product IDs
+  monthlyData   String? // JSON: [{month, sales, revenue}]
+  updatedAt     DateTime @updatedAt
+
+  @@index([sellerId])
+}
+
+model SellerReview {
+  id        String   @id @default(cuid())
+  sellerId  String
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int      @default(5)
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sellerId])
+  @@index([userId])
+}
+
+model SellerMessage {
+  id          String   @id @default(cuid())
+  sellerId    String
+  seller      Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     String
+  content     String
+  isRead      Boolean  @default(false)
+  isFromSeller Boolean @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([sellerId])
+  @@index([userId])
+}
+
+// === GAMIFICATION (60-68) ===
+
+model DailyCheckIn {
+  id           String   @id @default(cuid())
+  userId       String
+  checkedInAt  DateTime @default(now())
+  streakDay    Int      @default(1) // consecutive days
+  pointsEarned Int      @default(0)
+  bonusEarned  Int      @default(0)
+}
+
+model SpinPrizeHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  prizeId    String
+  prizeName  String
+  prizeValue Float
+  prizeType  String // points, coupon, gift_card, discount
+  spunAt     DateTime @default(now())
+  claimed    Boolean  @default(false)
+}
+
+model UserAchievement {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId     String
+  badgeName   String
+  badgeIcon   String
+  description String
+  unlockedAt  DateTime @default(now())
+  progress    Int      @default(100) // percentage to next badge
+
+  @@index([userId])
+}
+
+// Note: Using existing Referral model from Phase 1
+// Extended fields added to User model for Phase 2 features
+
+model UserStreak {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  currentStreak  Int       @default(0)
+  longestStreak  Int       @default(0)
+  lastActivityAt DateTime?
+  streakType     String    @default("purchase") // purchase, login, review
+}
+
+model Leaderboard {
+  id        String   @id @default(cuid())
+  userId    String
+  userName  String
+  avatar    String?
+  category  String // top_buyer, top_reviewer, top_referrer
+  score     Int      @default(0)
+  rank      Int      @default(0)
+  period    String   @default("monthly") // weekly, monthly, all_time
+  updatedAt DateTime @updatedAt
+}
+
+model MiniGameSession {
+  id          String   @id @default(cuid())
+  userId      String
+  gameType    String // quiz, matching, memory
+  score       Int      @default(0)
+  rewardType  String? // coupon, points, discount
+  rewardValue Float?
+  completedAt DateTime @default(now())
+}
+
+model ScratchCard {
+  id          String    @id @default(cuid())
+  userId      String
+  orderId     String
+  rewardType  String // points, coupon, free_shipping, jackpot
+  rewardValue Float
+  isScratched Boolean   @default(false)
+  scratchedAt DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+}
+
+// === PROJECT DELIVERY (69-78) ===
+
+model ProjectMilestone {
+  id          String    @id @default(cuid())
+  orderId     String
+  milestone   String // requirement_gathering, design, development, testing, delivery
+  status      String    @default("pending") // pending, in_progress, completed
+  description String?
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now())
+}
+
+model DeliverySlot {
+  id          String            @id @default(cuid())
+  date        DateTime
+  timeStart   String // HH:MM
+  timeEnd     String // HH:MM
+  capacity    Int               @default(5)
+  booked      Int               @default(0)
+  isAvailable Boolean           @default(true)
+  bookings    DeliveryBooking[]
+}
+
+model DeliveryBooking {
+  id           String       @id @default(cuid())
+  userId       String?
+  orderId      String       @unique
+  order        Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  slotId       String
+  slot         DeliverySlot @relation(fields: [slotId], references: [id])
+  instructions String?
+  createdAt    DateTime     @default(now())
+}
+
+model DeliveryProof {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  imageUrl    String?  // Screenshot/deliverable proof
+  videoUrl    String?
+  description String?
+  deliveredAt DateTime @default(now())
+  deliveredBy String?
+  recordedAt  DateTime @default(now())
+  location    String?
+  duration    Int?     // seconds
+}
+
+model RevisionRequest {
+  id          String    @id @default(cuid())
+  orderId     String
+  userId      String
+  description String
+  priority    String    @default("normal") // low, normal, high, urgent
+  status      String    @default("pending") // pending, in_review, approved, rejected, completed
+  attachments String? // JSON array of file URLs
+  requestedAt DateTime  @default(now())
+  respondedAt DateTime?
+  completedAt DateTime?
+}
+
+// === SMART NOTIFICATIONS (79-86) ===
+
+model NotificationPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  priceDrops      Boolean  @default(true)
+  backInStock     Boolean  @default(true)
+  newArrivals     Boolean  @default(true)
+  orderMilestones Boolean  @default(true)
+  dealExpiry      Boolean  @default(true)
+  reviewReminders Boolean  @default(true)
+  birthdayOffers  Boolean  @default(true)
+  lowStock        Boolean  @default(true)
+  newProducts     Boolean  @default(true) // new product in interested category
+  auctionUpdates  Boolean  @default(true)
+  rewardUpdates   Boolean  @default(true)
+  securityAlerts  Boolean  @default(true)
+  channels        String   @default("push") // push, sms
+  quietHoursStart Int? // hour 0-23, e.g. 22 = 10pm
+  quietHoursEnd   Int? // hour 0-23, e.g. 8 = 8am
+  updatedAt       DateTime @updatedAt
+}
+
+// Note: Using existing PriceAlert model from Phase 1
+
+model StockAlert {
+  id         String    @id @default(cuid())
+  userId     String
+  productId  String
+  email      String
+  isNotified Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  notifiedAt DateTime?
+}
+
+// === AI & PERSONALIZATION (87-94) ===
+
+model AIChatSession {
+  id        String   @id @default(cuid())
+  userId    String?
+  sessionId String   @unique
+  messages  String // JSON array of {role, content, timestamp}
+  context   String? // JSON: {productId, orderId, intent}
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AIRecommendation {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  score     Float // 0-1 relevance score
+  reason    String? // "Based on your browsing..."
+  clicked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model SearchSuggestion {
+  id          String   @id @default(cuid())
+  query       String   @unique
+  suggestions String // JSON array
+  hitCount    Int      @default(0)
+  lastUsedAt  DateTime @default(now())
+}
+
+model VisualSearch {
+  id        String   @id @default(cuid())
+  userId    String?
+  imageUrl  String
+  results   String // JSON array of matched products
+  createdAt DateTime @default(now())
+}
+
+model SentimentSummary {
+  id        String   @id @default(cuid())
+  productId String   @unique
+  positive  Int      @default(0)
+  negative  Int      @default(0)
+  neutral   Int      @default(0)
+  summary   String? // AI-generated summary
+  updatedAt DateTime @updatedAt
+}
+
+// === PAYMENT & WALLET (95-102) ===
+
+model Cashback {
+  id         String    @id @default(cuid())
+  userId     String
+  orderId    String?
+  amount     Float
+  percentage Int       @default(5)
+  status     String    @default("pending") // pending, credited, used, expired
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  creditedAt DateTime?
+}
+
+model EMIOption {
+  id           String  @id @default(cuid())
+  productId    String
+  bankId       String
+  tenure       Int // 3, 6, 9, 12, 18, 24 months
+  interestRate Float   @default(0)
+  minAmount    Float
+  maxAmount    Float
+  isActive     Boolean @default(true)
+}
+
+model EMIApplication {
+  id            String    @id @default(cuid())
+  userId        String
+  orderId       String
+  bankId        String
+  tenure        Int
+  monthlyEMI    Float
+  totalInterest Float
+  status        String    @default("pending") // pending, approved, rejected, active, completed
+  appliedAt     DateTime  @default(now())
+  approvedAt    DateTime?
+}
+
+model PayLater {
+  id        String    @id @default(cuid())
+  userId    String
+  orderId   String
+  amount    Float
+  dueDate   DateTime // 14 or 30 days
+  status    String    @default("active") // active, paid, overdue, cancelled
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model CryptoPayment {
+  id           String    @id @default(cuid())
+  orderId      String
+  currency     String // USDT, BTC, ETH
+  amount       Float // crypto amount
+  fiatAmount   Float // converted fiat
+  fiatCurrency String    @default("USD")
+  address      String // payment address
+  txHash       String? // transaction hash
+  status       String    @default("pending") // pending, confirming, confirmed, failed
+  createdAt    DateTime  @default(now())
+  confirmedAt  DateTime?
+}
+
+model SplitPayment {
+  id           String    @id @default(cuid())
+  orderId      String
+  walletAmount Float
+  cardAmount   Float
+  walletTxId   String?
+  cardTxId     String?
+  totalAmount  Float
+  status       String    @default("pending") // pending, completed, failed
+  createdAt    DateTime  @default(now())
+  completedAt  DateTime?
+}
+
+// === SOCIAL & COMMUNITY (103-110) ===
+
+model ForumTopic {
+  id        String   @id @default(cuid())
+  authorId  String
+  title     String
+  content   String
+  category  String // general, tech, design, business, help
+  tags      String? // JSON array
+  views     Int      @default(0)
+  replies   Int      @default(0)
+  likes     Int      @default(0)
+  isPinned  Boolean  @default(false)
+  isLocked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ForumReply {
+  id         String   @id @default(cuid())
+  topicId    String
+  authorId   String
+  content    String
+  parentId   String? // for nested replies
+  likes      Int      @default(0)
+  isAccepted Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model SocialShare {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  platform  String // whatsapp, facebook, twitter, linkedin
+  sharedAt  DateTime @default(now())
+  clicks    Int      @default(0)
+}
+
+model SellerFollow {
+  id         String   @id @default(cuid())
+  userId     String
+  sellerId   String
+  followedAt DateTime @default(now())
+
+  @@unique([userId, sellerId])
+}
+
+model ServiceStory {
+  id        String   @id @default(cuid())
+  sellerId  String
+  productId String
+  mediaUrl  String // image or video
+  mediaType String   @default("image") // image, video
+  caption   String?
+  views     Int      @default(0)
+  expiresAt DateTime // 24 hours from created
+  createdAt DateTime @default(now())
+}
+
+// === ADMIN & ANALYTICS (111-120) ===
+
+model AdminDashboard {
+  id          String   @id @default(cuid())
+  date        DateTime @unique
+  revenue     Float    @default(0)
+  orders      Int      @default(0)
+  users       Int      @default(0)
+  products    Int      @default(0)
+  topSellers  String? // JSON array
+  topProducts String? // JSON array
+  createdAt   DateTime @default(now())
+}
+
+model ABTest {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  type         String // product_page, checkout, home
+  variants     String // JSON: [{id, name, config}]
+  trafficSplit String    @default("50,50") // percentage split
+  startAt      DateTime
+  endAt        DateTime?
+  isActive     Boolean   @default(true)
+  winnerId     String?
+  createdAt    DateTime  @default(now())
+}
+
+model ABTestResult {
+  id          String   @id @default(cuid())
+  testId      String
+  variantId   String
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
+  revenue     Float    @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+model ModerationQueue {
+  id          String    @id @default(cuid())
+  contentType String // review, forum_post, comment
+  contentId   String
+  content     String // snapshot of content
+  reason      String? // reported reason
+  reporterId  String?
+  status      String    @default("pending") // pending, approved, rejected
+  moderatedBy String?
+  moderatedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String // create, update, delete, login
+  resource   String // product, order, user, etc
+  resourceId String?
+  oldValue   String? // JSON
+  newValue   String? // JSON
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+}
+
+// === LOCALIZATION (121-127) ===
+
+model LanguagePreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  language  String   @default("en") // en, bn, hi, ar
+  currency  String   @default("BDT") // BDT, USD, INR, AED
+  rtl       Boolean  @default(false)
+  timezone  String   @default("Asia/Dhaka")
+  updatedAt DateTime @updatedAt
+}
+
+model CurrencyRate {
+  id           String   @id @default(cuid())
+  fromCurrency String
+  toCurrency   String
+  rate         Float
+  updatedAt    DateTime @updatedAt
+
+  @@unique([fromCurrency, toCurrency])
+}
+
+model VoiceSearch {
+  id         String   @id @default(cuid())
+  userId     String?
+  audioUrl   String
+  transcript String
+  results    String? // JSON search results
+  confidence Float?
+  createdAt  DateTime @default(now())
+}
+
+// === USER PREFERENCE EXTENSIONS ===
+
+model UserPreference {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Gamification
+  dailyCheckInDate DateTime?
+  streakCount      Int       @default(0)
+  currentStreak    Int       @default(0)
+  referralCode     String?   @unique
+
+  // Accessibility
+  fontSize     String  @default("normal") // small, normal, large
+  highContrast Boolean @default(false)
+  reduceMotion Boolean @default(false)
+
+  // Notifications
+  pushEnabled  Boolean @default(true)
+  emailEnabled Boolean @default(true)
+  smsEnabled   Boolean @default(false)
+
+  // Adaptive Shopping
+  noiseAdaptation       String? // distraction_free, full_experience, standard
+  seniorMode            Boolean @default(false)
+  voiceEnabled          Boolean @default(false)
+  simpleCheckout        Boolean @default(false)
+  visualImpairedMode    Boolean @default(false)
+  voiceNavigation       Boolean @default(false)
+  screenReaderOptimized Boolean @default(false)
+  hapticFeedback        Boolean @default(false)
+
+  // Social Proof Settings
+  showSocialProof    Boolean @default(true)
+  showReviews        Boolean @default(true)
+  showPopularity     Boolean @default(true)
+  showNotifications  Boolean @default(true)
+
+  // Onboarding & Personalization
+  interests          String? // JSON array of category slugs e.g. ["websites","mobile-apps"]
+  shopStyle          String? // deal_hunter | quality_first | new_arrivals
+  onboardingComplete Boolean @default(false)
+
+  updatedAt DateTime @updatedAt
+}
+
+// === PRODUCT EXTENSIONS ===
+
+model ProductVariant {
+  id            String   @id @default(cuid())
+  productId     String
+  type          String // tech_stack, complexity, delivery_speed
+  name          String
+  value         String
+  priceModifier Float    @default(0)
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model ProductDemo {
+  id             String   @id @default(cuid())
+  productId      String   @unique
+  demoUrl        String // Live demo link
+  previewImages  String? // JSON array
+  videoUrl       String?
+  interactiveUrl String? // Interactive preview
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+}
+
+model AdminApiKey {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  name        String
+  permissions String    @default("[\"read\",\"write\",\"delete\"]")
+  isActive    Boolean   @default(true)
+  lastUsed    DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+// === ADAPTIVE SHOPPING (Focus Mode) ===
+
+model FocusMode {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  enabled             Boolean   @default(false)
+  startedAt           DateTime?
+  endsAt              DateTime?
+  goal                String?
+  distractionsBlocked Int       @default(0)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// === CART SYSTEM ===
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  options   String? // JSON: {techStack, deliverySpeed, etc}
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserAdaptiveSettings {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  personaMode       String   @default("browse") // browse, buy, elderly, kid, power, left-hand, dark-room, offline, low-bandwidth
+  autoDetectPersona Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model UserBudget {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  monthlyBudget  Float
+  categoryLimits String? // JSON: {category: limit}
+  strictMode     Boolean  @default(true)
+  alertsEnabled  Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// === AI INTERACTIONS ===
+
+model AIInteraction {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // style_advisor, negotiator, etc
+  input     String? // JSON
+  output    String? // JSON
+  createdAt DateTime @default(now())
+}
+
+// === AR/VR ===
+
+model ARExperience {
+  id                 String   @id @default(cuid())
+  userId             String
+  productId          String
+  sessionDuration    Int?
+  placedSuccessfully Boolean  @default(false)
+  deviceType         String?
+  createdAt          DateTime @default(now())
+}
+
+model HealthProfile {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  eyeStrainLevel      String?
+  sleepHours          Float?
+  screenTime          Float?
+  lastEyeCheck        DateTime?
+  recommendations     String? // JSON array
+  allergies           String? // JSON array of allergies
+  dietaryRestrictions String? // JSON array
+  healthGoals         String? // JSON array
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// === AUDIT REPORTS ===
+
+model AuditReport {
+  id        String   @id @default(cuid())
+  url       String
+  type      String
+  email     String?
+  status    String   @default("pending")
+  score     Int      @default(0)
+  issues    String? // JSON
+  pdfUrl    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// === BIOMETRIC/HEALTH ===
+
+model UserBiometricProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allergies           String? // JSON array
+  dietaryRestrictions String? // JSON array
+  footSize            String?
+  shoeSize            Float?
+  strictAllergyMode   Boolean  @default(false)
+  bodyMeasurements    String? // JSON
+  clothingSize        String? // JSON
+  sizeHistory         String? // JSON array
+  lastMeasured        DateTime?
+  scentPreferences    String?
+  skinTone            String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model ChildProfile {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  age         Int
+  height      Float?
+  weight      Float?
+  currentSize String?
+  recordedAt  DateTime @default(now())
+}
+
+// === VOICE SHOPPING ===
+
+model VoiceShoppingLog {
+  id         String   @id @default(cuid())
+  userId     String
+  transcript String
+  command    String?
+  action     String?
+  result     String? // JSON
+  understood Boolean  @default(false)
+  success    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+// === VIRTUAL MALL ===
+
+model VirtualMallSession {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  lastPosition  String? // JSON {x, y, z}
+  currentZone   String   @default("main")
+  visitedStores String? // JSON array
+  lastStoreId   String?
+  sessionStart  DateTime @default(now())
+  lastActive    DateTime @updatedAt
+}
+
+model StoreVisit {
+  id           String    @id @default(cuid())
+  userId       String
+  sellerId     String
+  entryTime    DateTime  @default(now())
+  exitTime     DateTime?
+  source       String?   // web, mobile, virtual_mall
+  interactions Int       @default(0)
+}
+
+// === TRIALS ===
+
+model TrialOrder {
+  id           String   @id @default(cuid())
+  userId       String
+  productId    String
+  status       String   @default("active")
+  duration     Int      @default(7) // days
+  trialStart   DateTime @default(now())
+  trialEnd     DateTime
+  endsAt       DateTime
+  deposit      Float
+  trialPrice   Float?
+  finalPrice   Float?
+  returnMethod String?
+  startsAt     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// === NEGOTIATION ===
+
+model NegotiationSession {
+  id            String   @id @default(cuid())
+  userId        String
+  productId     String
+  sellerId      String?
+  messages      Json
+  originalPrice Float
+  currentOffer  Float
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// === NFT/AUTHENTICITY ===
+
+model NFTCertificate {
+  id              String   @id @default(cuid())
+  productId       String
+  orderId         String?
+  ownerId         String?
+  tokenId         String   @unique
+  blockchain      String   @default("ethereum")
+  contractAddress String
+  metadataUrl     String?
+  metadata        String?  // JSON metadata
+  isLimitedEdition Boolean @default(false)
+  editionNumber   Int?
+  totalEditions   Int?
+  mintedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  product         Product  @relation(fields: [productId], references: [id])
+  order           Order?   @relation(fields: [orderId], references: [id])
+}
+
+// === COURSES/TUTORIALS ===
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        String   @default("short")
+  duration    Int?
+  price       Float?
+  videoUrl    String?
+  tags        String?
+  views       Int      @default(0)
+  instructor  String?
+  rating      Float    @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DigitalProduct {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  price         Float
+  category      String
+  pages         Int?
+  duplicateUrl  String?
+  downloadUrl   String?
+  previewImages String?
+  topics        String?  // JSON array
+  lessons       String?  // JSON array
+  students      Int      @default(0)
+  downloads     Int      @default(0)
+  command       String?
+  schema        String?
+  language      String?
+  previewUrl    String?
+  format        String?
+  tags          String?  // JSON array
+  database      String?
+  code          String?
+  techStack     String?
+  componentCount Int?
+  os            String?
+  sales         Int      @default(0)
+  rating        Float    @default(0)
+  reviews       Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SearchQuery {
+  id        String   @id @default(cuid())
+  userId    String
+  query     String
+  results   String?
+  createdAt DateTime @default(now())
+}
+
+// Alias for SearchQuery to match code usage
+model ProductView {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  viewedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model LifeEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  eventType  String
+  confidence Float
+  message    String
+  detectedAt DateTime @default(now())
+}
+
+model Appointment {
+  id            String   @id @default(cuid())
+  schedulerId   String
+  userId        String
+  slot          String
+  type          String?
+  status        String   @default("booked")
+  notes         String?
+  attendeeName  String?
+  attendeeEmail String?
+  duration      Int      @default(30)
+  scheduledAt   DateTime?
+  calendarEventId String?
+  createdAt     DateTime @default(now())
+}
+
+model Form {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  fields    String
+  settings  String
+  formUrl   String
+  status    String   @default("active")
+  responses Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FormSubmission {
+  id              String   @id @default(cuid())
+  formId          String
+  data            String
+  responses       String?
+  respondentEmail String?
+  respondentName  String?
+  submittedAt     DateTime @default(now())
+}
+
+model LegalDocument {
+  id        String   @id @default(cuid())
+  type      String
+  content   String
+  version   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String
+  content   String
+  data      String?  // JSON stringified data
+  template  String
+  pdfUrl    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CertificationExam {
+  id              String   @id @default(cuid())
+  certificationId String?
+  title           String
+  description     String?
+  questions       String
+  passingScore    Int
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}
+
+model CertificationResult {
+  id          String   @id @default(cuid())
+  examId      String
+  userId      String
+  score       Int
+  passed      Boolean
+  completedAt DateTime @default(now())
+}
+
+model SubscriptionPlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  yearlyPrice Float?
+  monthlyPrice Float?
+  duration    String
+  features    String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model Subscription {
+  id             String    @id @default(cuid())
+  userId         String
+  planId         String
+  productId      String?
+  name           String?   // Plan name
+  status         String    @default("active")
+  price          Float?
+  amount         Float?    // Alias for price
+  frequency      String?   // monthly, yearly, etc.
+  paymentMethod  String?
+  startDate      DateTime  @default(now())
+  endDate        DateTime?
+  nextOrderDate  DateTime?
+  nextBillingDate DateTime?
+  billingPeriod  String?   // monthly, yearly
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model FlashSale {
+  id          String   @id @default(cuid())
+  name        String   // Display name for the flash sale
+  description String?  // Description of the sale
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  productIds  String?  // JSON array for multiple products ["id1", "id2", ...]
+  salePrice   Float
+  discountPercent Int? // Calculated discount percentage
+  startTime   DateTime
+  endTime     DateTime
+  maxQuantity Int?
+  soldCount   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ThankYouVideo {
+  id         String   @id @default(cuid())
+  orderId    String   @unique
+  sellerId   String?
+  videoUrl   String
+  message    String?
+  duration   Int?
+  createdAt  DateTime @default(now())
+}
+
+model PriceProtectionClaim {
+  id           String   @id @default(cuid())
+  userId       String
+  orderId      String
+  productId    String
+  oldPrice     Float
+  newPrice     Float
+  refundAmount Float
+  status       String   @default("pending")
+  adminNotes   String?
+  reviewedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AutoBid {
+  id         String   @id @default(cuid())
+  auctionId  String
+  userId     String
+  maxBid     Float
+  maxAmount  Float?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model BingoCard {
+  id          String    @id @default(cuid())
+  userId      String
+  card        String // JSON grid
+  grid        String? // JSON grid data
+  marked      String? // JSON marked cells
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model QuestProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  questId     String
+  progress    Int       @default(0)
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PregnancyProfile {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  dueDate     DateTime?
+  trimester   Int?
+  preferences String? // JSON
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CertificationProgram {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  exams       String // JSON array
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model FamilyWallet {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FamilyWalletMember {
+  id        String   @id @default(cuid())
+  walletId  String
+  userId    String
+  role      String   @default("member")
+  limit     Float?
+  createdAt DateTime @default(now())
+}
+
+model RegistryItem {
+  id         String   @id @default(cuid())
+  registryId String
+  productId  String
+  quantity   Int      @default(1)
+  purchased  Int      @default(0)
+  priority   String?
+  createdAt  DateTime @default(now())
+}
+
+model RegistryContribution {
+  id         String   @id @default(cuid())
+  registryId String
+  itemId     String
+  userId     String
+  amount     Float
+  message    String?
+  createdAt  DateTime @default(now())
+}
+
+model GroupDecision {
+  id          String   @id @default(cuid())
+  creatorId   String
+  title       String
+  description String?
+  options     String // JSON array
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GroupVote {
+  id          String   @id @default(cuid())
+  decisionId  String
+  userId      String
+  optionIndex Int
+  createdAt   DateTime @default(now())
+}
+
+model Influencer {
+  id        String   @id @default(cuid())
+  name      String
+  handle    String   @unique
+  followers Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model InfluencerPurchase {
+  id           String   @id @default(cuid())
+  influencerId String
+  userId       String
+  orderId      String
+  commission   Float
+  createdAt    DateTime @default(now())
+}
+
+model LiveShopping {
+  id         String    @id @default(cuid())
+  sellerId   String
+  title      String
+  streamUrl  String
+  status     String    @default("upcoming")
+  startTime  DateTime
+  startedAt  DateTime?
+  endTime    DateTime?
+  isLive     Boolean   @default(false)
+  flashDeals String? // JSON
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model LiveShoppingViewer {
+  id        String   @id @default(cuid())
+  liveId    String
+  sessionId String?
+  userId    String
+  joinedAt  DateTime @default(now())
+}
+
+model LivePurchase {
+  id          String   @id @default(cuid())
+  liveId      String
+  sessionId   String?
+  userId      String
+  orderId     String
+  purchasedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model SharedCart {
+  id         String   @id @default(cuid())
+  ownerId    String
+  name       String
+  inviteCode String?
+  isPublic   Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model SharedCartMember {
+  id       String   @id @default(cuid())
+  cartId   String
+  userId   String
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+}
+
+model SharedCartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  addedBy   String
+  createdAt DateTime @default(now())
+}
+
+model ShoppingParty {
+  id             String   @id @default(cuid())
+  hostId         String
+  title          String
+  name           String?
+  inviteCode     String?
+  currentProduct String?
+  status         String   @default("active")
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ShoppingPartyMember {
+  id       String   @id @default(cuid())
+  partyId  String
+  userId   String
+  joinedAt DateTime @default(now())
+}
+
+model ShoppingPartyVote {
+  id        String   @id @default(cuid())
+  partyId   String
+  userId    String
+  vote      String?
+  productId String
+  createdAt DateTime @default(now())
+}
+
+model WatchParty {
+  id         String    @id @default(cuid())
+  hostId     String
+  title      String
+  videoUrl   String
+  productId  String?
+  inviteCode String?
+  status     String    @default("active")
+  isActive   Boolean   @default(true)
+  startedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model WatchPartyMember {
+  id       String   @id @default(cuid())
+  partyId  String
+  userId   String
+  joinedAt DateTime @default(now())
+}
+
+model ProductDuel {
+  id         String   @id @default(cuid())
+  productAId String
+  productBId String
+  productA   Product  @relation("ProductDuelA", fields: [productAId], references: [id])
+  productB   Product  @relation("ProductDuelB", fields: [productBId], references: [id])
+  title      String
+  status     String   @default("active")
+  endsAt     DateTime
+  winner     String?
+  finalVotesA Int     @default(0)
+  finalVotesB Int     @default(0)
+  votes      DuelVote[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model DuelVote {
+  id        String   @id @default(cuid())
+  duelId    String
+  duel      ProductDuel @relation(fields: [duelId], references: [id], onDelete: Cascade)
+  userId    String
+  choice    String   // 'A' or 'B'
+  createdAt DateTime @default(now())
+
+  @@unique([duelId, userId])
+}
+
+model ProductCompare {
+  id         String   @id @default(cuid())
+  userId     String
+  productIds String // JSON array
+  createdAt  DateTime @default(now())
+}
+
+model InsuranceClaim {
+  id          String   @id @default(cuid())
+  userId      String
+  orderId     String
+  productId   String?
+  issue       String?
+  damageType  String?
+  photos      String?  // JSON
+  status      String   @default("pending")
+  amount      Float
+  claimAmount Float?   // Alias for amount
+  purchaseDate DateTime?
+  warrantyEnd DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PriceDropRefund {
+  id           String   @id @default(cuid())
+  userId       String
+  orderId      String
+  productId    String
+  originalPrice Float
+  newPrice     Float
+  refundAmount Float
+  status       String   @default("filed")
+  filedAt      DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ProductLiquidation {
+  id            String   @id @default(cuid())
+  userId        String
+  productName   String
+  category      String
+  condition     String
+  age           Int
+  estimatedValue Float
+  photos        String?  // JSON
+  status        String   @default("listed")
+  listedAt      DateTime @default(now())
+  platforms     String?  // JSON
+  finalPrice    Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model VehicleTracker {
+  id          String    @id @default(cuid())
+  userId      String
+  vehicleName String
+  vehicleType String?
+  lastService DateTime?
+  nextService DateTime?
+  nextServiceDue DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model ServiceCenter {
+  id        String   @id @default(cuid())
+  name      String
+  location  String
+  vehicleTypes String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model ProductRecall {
+  id              String   @id @default(cuid())
+  productId       String
+  reason          String
+  status          String   @default("active")
+  severity        String   @default("medium") // low, medium, high, critical
+  action          String?  // return, replace, refund, dispose
+  issuedAt        DateTime @default(now())
+  refundEligible  Boolean  @default(false)
+  replacementEligible Boolean @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}
+
+model RecallResponse {
+  id        String   @id @default(cuid())
+  recallId  String
+  userId    String
+  response  String
+  createdAt DateTime @default(now())
+}
+
+model DocumentTracker {
+  id             String    @id @default(cuid())
+  userId         String
+  documentName   String
+  documentType   String?
+  documentNumber String?
+  renewUrl       String?
+  expiryDate     DateTime?
+  status         String    @default("active")
+  reminderDays   Int       @default(30)
+  isActive       Boolean   @default(true)
+  addedAt        DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+}
+
+model Certification {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+// User's Spotify/music integration profile for mood-based recommendations
+model MusicProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentlyPlaying String?
+  recentTracks     String?
+  mood             String?
+  lastSync         DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// Records of user's spin the wheel attempts for rate limiting
+model UserSpinRecord {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spinPrizeId String
+  spinPrize   SpinPrize @relation(fields: [spinPrizeId], references: [id])
+  won         Boolean   @default(false)
+  spunAt      DateTime  @default(now())
+
+  @@index([userId, spunAt])
+}
+
+model CustomPlacement {
+  id        String   @id @default(cuid())
+  zone      String // e.g. "global-announcement", "home-hero", "product-sidebar", "cart-nudge"
+  title     String
+  content   String?
+  imageUrl  String?
+  linkUrl   String?
+  bgColor   String   @default("from-violet-600 to-indigo-600")
+  textColor String   @default("#ffffff")
+  type      String   @default("banner") // banner, card, nudge, alert
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([zone])
+  @@index([isActive])
+}
+
+// Phase 1: Real Rewards System - Transaction history for rewards
+model RewardTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String   // purchase, daily_login, referral, redemption, tier_upgrade, review, spin_win, manual, outfit_created, trade_in_request
+  points      Int
+  description String
+  orderId     String?
+  metadata    String?  // JSON: { couponCode, discountAmount, orderTotal, etc. }
+  createdAt   DateTime @default(now())
+}
+
+// ========================================
+// REVOLUTIONARY SIDEBAR FEATURES MODELS
+// ========================================
+
+// Live Shopping - Holographic Commerce
+model LiveShoppingSession {
+  id                String   @id @default(cuid())
+  title             String
+  description       String?
+  streamUrl         String?
+  holographicUrl    String?
+  hostId            String
+  host              User     @relation(fields: [hostId], references: [id])
+  products          Json?    // Array of product IDs with holographic configs
+  startTime         DateTime
+  endTime           DateTime
+  status            String   @default("upcoming") // upcoming, live, ended
+  viewers           Int      @default(0)
+  neuralBiddings    Json?    // Neural bidding data
+  emotionalData     Json?    // Real-time emotional analytics
+  quantumFeatures   Boolean  @default(false)
+  dnaMatching       Boolean  @default(false)
+  interactions      LiveShoppingInteraction[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([hostId])
+  @@index([status])
+  @@index([startTime])
+}
+
+model LiveShoppingInteraction {
+  id                String   @id @default(cuid())
+  sessionId         String
+  session           LiveShoppingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              String   // purchase, bid, reaction, comment, neural_intent
+  content           String?
+  data              Json?    // Interaction-specific data
+  neuralConfidence  Float?
+  emotionalState    String?
+  timestamp         DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([userId])
+}
+
+// Neural Interface & Digital Twin
+model NeuralProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation("NeuralProfile", fields: [userId], references: [id], onDelete: Cascade)
+  baselinePatterns    Json?    // Neural signal baselines
+  intentRecognition   Json?    // Purchase, browse, compare intent scores
+  emotionalSignatures Json?    // Emotional state patterns
+  biometricBaseline   Json?    // Heart rate, stress, focus baselines
+  calibrationData     Json?    // Calibration session data
+  isActive            Boolean  @default(false)
+  lastCalibration     DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model DigitalTwin {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation("DigitalTwin", fields: [userId], references: [id], onDelete: Cascade)
+  avatarUrl       String?
+  bodyMeasurements Json?   // 3D body measurements
+  styleProfile    Json?    // Style preferences and history
+  wardrobe        Json?    // Virtual wardrobe items
+  lifestyleData   Json?    // Lifestyle simulation data
+  evolutionData   Json?    // Aging and style evolution
+  isActive        Boolean  @default(true)
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+}
+
+// DNA Analysis & Bio-Hacking
+model DNAProfile {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation("DNAProfile", fields: [userId], references: [id], onDelete: Cascade)
+  geneticMarkers        Json?    // Genetic marker data
+  stylePredisposition   Json?    // Style preferences based on DNA
+  healthFactors         Json?    // Health-related genetic factors
+  personalityTraits     Json?    // Personality trait predictions
+  optimalProducts       Json?    // Genetically optimal products
+  lifestyleRecommendations Json? // Lifestyle suggestions
+  sampleType            String?  // saliva, blood, cheek-swab
+  analysisStatus        String   @default("pending") // pending, processing, completed
+  createdAt             DateTime @default(now())
+  lastUpdated           DateTime @updatedAt
+}
+
+model BioHackSession {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionType       String   // hormonal, neurochemical, energy, circadian
+  bioData           Json?    // Biometric data collected
+  recommendations   Json?    // Shopping timing recommendations
+  optimizationScore Float?
+  isActive          Boolean  @default(true)
+  startTime         DateTime @default(now())
+  endTime           DateTime?
+}
+
+// Quantum Computing Features
+model QuantumPrediction {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          String   // price, trend, demand, inventory
+  confidence    Float
+  timeline      String
+  outcomes      Json     // Quantum outcome probabilities
+  isCollapsed   Boolean  @default(false)
+  collapsedAt   DateTime?
+  createdAt     DateTime @default(now())
+}
+
+model QuantumTeleportation {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceProductId   String
+  targetLocation    Json     // [x, y, z] coordinates
+  energyRequired    Int
+  estimatedTime     Int      // milliseconds
+  status            String   @default("pending") // pending, in-progress, completed, failed
+  quantumState      Json?    // Quantum state data
+  completedAt       DateTime?
+  createdAt         DateTime @default(now())
+}
+
+// Holographic System
+model HolographicProduct {
+  id                String   @id @default(cuid())
+  productId         String
+  modelUrl          String
+  scale             Float    @default(1.0)
+  position          Json     // [x, y, z]
+  rotation          Json     // [x, y, z]
+  animations        Json?    // Animation data
+  materials         Json?    // Material properties
+  interactiveZones  Json?    // Interactive zone definitions
+  renderQuality     String   @default("high") // low, medium, high, ultra
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ARSession {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId       String
+  environment     String   // real-world, virtual-space
+  trackingMode    String   // marker-based, markerless, plane-detection
+  isActive        Boolean  @default(true)
+  startTime       DateTime @default(now())
+  endTime         DateTime?
+  interactions    Json?    // AR interaction history
+  analyticsData   Json?    // Session analytics
+}
+
+// Style Evolution & Trend Oracle
+model StyleEvolution {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation("StyleEvolution", fields: [userId], references: [id], onDelete: Cascade)
+  timelineData      Json?    // Historical style data
+  futurePredictions Json?    // AI style predictions
+  parallelStyles    Json?    // Alternative style universes
+  dnaBasedStyles    Json?    // DNA-influenced styles
+  socialImpact      Json?    // Style influence data
+  evolutionScore    Float?
+  lastUpdated       DateTime @default(now())
+  createdAt         DateTime @default(now())
+}
+
+model TrendPrediction {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trendName         String
+  category          String
+  confidence        Float
+  timeline          String
+  investmentData    Json?    // Investment tracking
+  earlyAdopterStatus Boolean @default(false)
+  nftData           Json?    // NFT ownership data
+  isActive          Boolean  @default(true)
+  predictedAt       DateTime @default(now())
+  materializedAt    DateTime?
+}
+
+// Social Capital & Community
+model SocialCapital {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation("SocialCapital", fields: [userId], references: [id], onDelete: Cascade)
+  influenceScore    Float    @default(0)
+  socialCurrency    Int      @default(0)
+  perks             Json?    // Available perks
+  investments       Json?    // Influence investments
+  leaderboardRank   Int?
+  lastCalculated    DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model StyleTribe {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  dnaSignature      Json?    // DNA-based tribe signature
+  members           Json?    // Member data
+  collectivePower   Int      @default(0)
+  rituals           Json?    // Tribe shopping rituals
+  evolutionLevel    Int      @default(1)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model TrendCouncil {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation("TrendCouncil", fields: [userId], references: [id], onDelete: Cascade)
+  councilTier       String   // bronze, silver, gold, platinum
+  votingPower       Int      @default(1)
+  proposals         Json?    // Trend proposals
+  predictions       Json?    // Successful predictions
+  rewards           Json?    // Earned rewards
+  eliteStatus       Boolean  @default(false)
+  joinedAt          DateTime @default(now())
+  lastActivity      DateTime @default(now())
+}
+
+// Entertainment & Gaming
+model ShoppingGame {
+  id                String   @id @default(cuid())
+  name              String
+  type              String   // style_battle, price_hunter, fashion_quest, trend_master
+  gameData          Json?    // Game configuration
+  rewards           Json?    // Reward structure
+  isActive          Boolean  @default(true)
+  playerCount       Int      @default(0)
+  sessions          GameSession[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model GameSession {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId            String
+  game              ShoppingGame @relation(fields: [gameId], references: [id])
+  score             Int      @default(0)
+  progress          Json?    // Game progress data
+  rewards           Json?    // Earned rewards
+  status            String   @default("active") // active, completed, abandoned
+  startTime         DateTime @default(now())
+  endTime           DateTime?
+}
+
+// Virtual Mall & Metaverse
+model VirtualShowroom {
+  id                String   @id @default(cuid())
+  brandId           String?
+  name              String
+  environment        String   // luxury, minimal, futuristic, natural, urban
+  lighting          Json?    // Lighting configuration
+  camera            Json?    // Camera settings
+  products          Json?    // Product placements
+  visitorCount      Int      @default(0)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model MetaverseWorld {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  worldType         String   // brand_universe, social_plaza, entertainment_zone
+  configuration     Json?    // World settings
+  avatarSystem      Json?    // Avatar customization
+  socialFeatures    Json?    // Social interaction features
+  isActive          Boolean  @default(true)
+  visitorCount      Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// AI Personal Shopper
+model PersonalShopper {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation("PersonalShopper", fields: [userId], references: [id], onDelete: Cascade)
+  aiPersonality     Json?    // AI personality traits
+  learningData      Json?    // User preference learning
+  predictions       Json?    // Future need predictions
+  budgetOptimizer   Json?    // Budget optimization data
+  styleEvolution    Json?    // Style evolution tracking
+  lifePlanning      Json?    // Life goal planning
+  isActive          Boolean  @default(true)
+  lastInteraction   DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// Time Travel & Reality Customization
+model TimeTravelSession {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeEra           String   // past, present, future, parallel
+  targetDate        DateTime? // Target date for time travel
+  status            String   @default("active") // active, completed, cancelled
+  scenario          String?  // shopping_experience, market_analysis, etc.
+  estimatedDuration Int      @default(300) // in seconds
+  timelineData      Json?    // Timeline-specific data
+  accessedDeals     Json?    // Historical deals found
+  futureProducts    Json?    // Future product previews
+  alternateSelves   Json?    // Alternate universe data
+  products          Json?    // Products associated with session
+  timeline          Json?    // Timeline data
+  quantumState      Json?    // Quantum state data
+  predictions       Json?    // Predictions data
+  interactions      Json?    // Interactions data
+  isActive          Boolean  @default(true)
+  startTime         DateTime @default(now())
+  endTime           DateTime?
+}
+
+model RealityCustomization {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation("RealityCustomization", fields: [userId], references: [id], onDelete: Cascade)
+  physicsEngine     Json?    // Custom physics settings
+  gravitySettings   Json?    // Gravity modifications
+  timeManipulation  Json?    // Time control settings
+  dimensionPortals  Json?    // Portal configurations
+  consciousnessOverlay Json? // Consciousness settings
+  isActive          Boolean  @default(true)
+  lastModified      DateTime @default(now())
+  createdAt         DateTime @default(now())
+}
+
+// Beyond Luxury & Quantum Collectibles
+model LuxuryProduct {
+  id                String   @id @default(cuid())
+  name              String
+  type              String   // immortality, consciousness, time, reality_editing, transcendence
+  description       String?
+  price             BigInt
+  currency          String   @default("USD")
+  availability      String   @default("exclusive") // exclusive, limited, unique
+  properties        Json?    // Special properties
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+}
+
+model QuantumCollectible {
+  id                String   @id @default(cuid())
+  name              String
+  type              String   // entangled, superposition, teleportation, time_crystal, consciousness
+  quantumState      Json?    // Quantum state data
+  celebrityLink     String?  // Entangled celebrity
+  properties        Json?    // Special properties
+  currentValue      BigInt
+  rarity            String   // common, rare, epic, legendary
+  ownerId           String?
+  owner             User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// Missing Models for Complete Implementation
+
+// Neural Signals for real-time data
+model NeuralSignal {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("NeuralSignals", fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // attention, emotion, intent, command
+  strength  Float
+  data      Json?    // Specific signal data
+  timestamp DateTime @default(now())
+
+  @@index([userId, timestamp])
+  @@index([type])
+}
+
+// Product Compatibility for DNA matching
+model ProductCompatibility {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation("ProductCompatibilities", fields: [userId], references: [id], onDelete: Cascade)
+  productId           String
+  productName         String
+  compatibilityScore  Float
+  factors             Json?    // genetic, lifestyle, preference factors
+  recommendations     Json?    // Product recommendations as JSON array
+  createdAt           DateTime @default(now())
+
+  @@index([userId, productId])
+}
+
+// Emotional Truth Analysis
+model TruthAnalysis {
+  id              String   @id @default(cuid())
+  reviewId        String
+  productId       String
+  userId          String
+  user            User     @relation("TruthAnalyses", fields: [userId], references: [id], onDelete: Cascade)
+  scores          Json     // overall, authenticity, emotionalConsistency, etc.
+  verdict         String   // authentic, questionable, synthetic, manipulated
+  confidence      Float
+  redFlags        Json?    // Red flags as JSON array
+  greenFlags      Json?    // Green flags as JSON array
+  neuralData      Json     // emotionalPatterns, cognitiveLoad, attention, memoryActivation
+  behavioralData  Json     // typingSpeed, editingPattern, timeSpent, revisionCount
+  socialContext   Json     // reviewerHistory, socialConnections, influenceScore
+  timestamp       DateTime @default(now())
+
+  @@index([reviewId])
+  @@index([productId])
+  @@index([userId])
+}
+
+model PriceGuaranteeClaim {
+  id          String   @id @default(cuid())
+  userId      String
+  orderId     String?
+  productId   String
+  oldPrice    Float
+  newPrice    Float
+  status      String   @default("pending") // pending, approved, rejected
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ReviewVote {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  isHelpful Boolean
+  createdAt DateTime @default(now())
+
+  @@index([reviewId])
+  @@index([userId])
+}
+
+model UserConfiguration {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  productId     String?
+  configuration Json?    // JSON config data
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PhotoLike {
+  id        String   @id @default(cuid())
+  photoId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@index([photoId])
+  @@index([userId])
+}
+
+model EscrowTransaction {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id])
+  buyerId     String?
+  sellerId    String?
+  amount      Float
+  status      String   @default("pending") // pending, held, released, disputed, refunded
+  releasedAt  DateTime?
+  refundedAt  DateTime?
+  disputeReason String?
+  disputedAt  DateTime?
+  holdUntil   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DisputeCase {
+  id          String   @id @default(cuid())
+  escrowId    String   @unique
+  orderId     String?
+  buyerId     String?
+  sellerId    String?
+  reason      String
+  status      String   @default("open") // open, resolved, dismissed
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model VideoVerification {
+  id          String   @id @default(cuid())
+  userId      String
+  buyerId     String?
+  productId   String?
+  sellerId    String?
+  videoUrl    String?
+  status      String   @default("pending") // pending, scheduled, approved, rejected, completed
+  scheduledTime DateTime?
+  completedAt DateTime?
+  reviewedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProductRental {
+  id          String   @id @default(cuid())
+  productId   String
+  userId      String
+  startDate   DateTime
+  endDate     DateTime
+  duration    Int      // Duration in days
+  durationUnit String  @default("days") // days, weeks, months
+  deposit     Float
+  totalCost   Float
+  rentalPrice Float?
+  tryThenBuy  Boolean  @default(false)
+  status      String   @default("active") // active, returned, overdue
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CarbonFootprint {
+  id          String   @id @default(cuid())
+  userId      String?  @unique
+  productId   String?
+  footprint   Float    // kg CO2
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PackagingReturn {
+  id          String   @id @default(cuid())
+  userId      String
+  orderId     String
+  itemsReturned Int    @default(0)
+  pointsAwarded Int    @default(0)
+  status      String   @default("requested") // requested, shipped, received, processed
+  trackingNumber String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Store {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  coordinates String?  // JSON lat/lng
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WishlistItem {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  addedAt     DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+// Daily picks for Today's Pick feature
+model TodaysPick {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  date        DateTime @default(now())
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@unique([date, productId]) // Unique combination of date and product
+  @@index([date, isActive])
+}
+
+model Delivery {
+  id              String   @id @default(cuid())
+  orderId         String   @unique
+  order           Order    @relation(fields: [orderId], references: [id])
+  status          String   @default("pending")
+  estimatedArrival DateTime?
+  currentLocation String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Missing models for various features
+
+model GroupShoppingSession {
+  id          String   @id @default(cuid())
+  hostId      String
+  productId   String?
+  inviteCode  String   @unique
+  code        String?
+  participants String?
+  status      String   @default("active") // active, completed, cancelled
+  memberCount Int      @default(0)
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PvpGame {
+  id          String   @id @default(cuid())
+  productId   String
+  hostId      String
+  status      String   @default("waiting") // waiting, active, completed
+  actualPrice Float?
+  winnerId    String?
+  endsAt      DateTime
+  prizePool   Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product     Product  @relation(fields: [productId], references: [id])
+  host        User     @relation(fields: [hostId], references: [id])
+  guesses     PvpGuess[]
+
+  @@index([hostId])
+}
+
+model PvpGuess {
+  id          String   @id @default(cuid())
+  gameId      String
+  userId      String
+  guess       Float
+  accuracy    Float?
+  isWinner    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  game        PvpGame  @relation(fields: [gameId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([gameId, userId])
+  @@index([userId])
+}
+
+model PrivacySettings {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  anonymousMode         Boolean  @default(false)
+  dataVaultEnabled      Boolean  @default(false)
+  priceDiscriminationCheck Boolean @default(true)
+  disableTracking       Boolean  @default(false)
+  autoDeleteHistory     Boolean  @default(false)
+  deleteAfterDays       Int      @default(30)
+  localDataOnly         Boolean  @default(false)
+  shareWithSellers      Boolean  @default(true)
+  shareForRecommendations Boolean @default(true)
+  allowAnalytics        Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model AutoStockLog {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  action      String
+  quantity    Int
+  predictionId String?
+  aiAccuracy  Float?
+  createdAt   DateTime @default(now())
+}
+
+model AutoReorder {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String   @unique
+  frequency   String   // weekly, monthly
+  threshold   Int      @default(5) // reorder when stock below this
+  nextOrder   DateTime
+  status      String   @default("active") // active, paused, cancelled
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PricePrediction {
+  id          String   @id @default(cuid())
+  productId   String
+  userId      String
+  currentPrice Float
+  predictedPrice Float
+  confidence  Float
+  trend       String   // up, down, stable
+  predictedDate DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model PriceCheck {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  price       Float
+  priceShown  Float?
+  ipAddress   String?
+  userAgent   String?
+  checkedAt   DateTime @default(now())
+}
+
+// Additional missing models
+
+model CartAbandonment {
+  id          String   @id @default(cuid())
+  userId      String
+  cartId      String?
+  cartData    String?  // JSON
+  status      String   @default("abandoned")
+  reminderSent Boolean @default(false)
+  recovered   Boolean  @default(false)
+  abandonedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CoolDownTimer {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  price       Float
+  duration    Int      // minutes
+  expiresAt   DateTime
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+}
+
+model MicroInvestment {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  enabled       Boolean  @default(false)
+  percentage    Float    @default(5)
+  totalInvested Float    @default(0)
+  multiplier    Float    @default(1)
+  investmentType String   @default("index-fund")
+  returns       Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model RoundUp {
+  id          String   @id @default(cuid())
+  userId      String
+  orderId     String
+  orderTotal  Float
+  roundUpTo   Float
+  amount      Float
+  invested    Boolean  @default(false)
+  investedIn  String?
+  createdAt   DateTime @default(now())
+}
+
+model NeedWantTag {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  productName String?
+  tag         String   // 'need' or 'want'
+  type        String?  // Alias for tag
+  reason      String?
+  createdAt   DateTime @default(now())
+}
+
+model UserBudgetSetting {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  monthlyBudget Float?
+  monthlyCap  Float?
+  alertsEnabled Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LocalImpact {
+  id          String   @id @default(cuid())
+  userId      String
+  sellerId    String
+  amount      Float
+  orderAmount Float?
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model TreasureHunt {
+  id          String   @id @default(cuid())
+  userId      String
+  clue        String
+  answer      String
+  rewardType  String   @default("points")
+  rewardValue Int      @default(100)
+  isFound     Boolean  @default(false)
+  foundAt     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BankIntegration {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  bankName    String?
+  accountNumber String?
+  connected   Boolean  @default(false)
+  connectedAt DateTime?
+  lastSync    DateTime?
+  balance     Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CalendarIntegration {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  provider    String   @default("google")
+  connected   Boolean  @default(false)
+  connectedAt DateTime?
+  lastSync    DateTime?
+  events      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FitnessProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  steps         Int      @default(0)
+  calories      Int      @default(0)
+  activeMinutes Int      @default(0)
+  lastWorkout   String?
+  lastSync      DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SmartFridgeIntegration {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  connected   Boolean  @default(false)
+  items       String?
+  lastSync    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SmartHomeIntegration {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  connected   Boolean  @default(false)
+  devices     String?
+  automationRules String?
+  lastSync    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WhatsAppIntegration {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  phoneNumber String?
+  connected   Boolean  @default(false)
+  connectedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Technician {
+  id            String   @id @default(cuid())
+  name          String
+  email         String?
+  phone         String?
+  specializations String?
+  isVerified    Boolean  @default(false)
+  isAvailable   Boolean  @default(true)
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  baseFee       Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model RepairRequest {
+  id            String   @id @default(cuid())
+  userId        String
+  applianceType String
+  problem       String
+  urgency       String   @default("normal")
+  status        String   @default("pending")
+  estimatedCost Float?
+  photos        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Donation {
+  id            String   @id @default(cuid())
+  userId        String
+  causeId       String?
+  amount        Float
+  roundUpSource String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model MedicineTracker {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  expiryDate    DateTime
+  batchNumber   String?
+  manufacturer  String?
+  daysUntilExpiry Int?
+  status        String   @default("good")
+  addedAt       DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PetProfile {
+  id            String   @id @default(cuid())
+  userId        String
+  petType       String
+  breed         String?
+  age           Int?
+  weight        Float?
+  specialNeeds  String?
+  monthlyFoodConsumption Float?
+  monthlyTreatConsumption Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model WarrantyExtension {
+  id            String   @id @default(cuid())
+  userId        String
+  warrantyId    String
+  extensionMonths Int
+  price         Float
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CustomBundle {
+  id            String   @id @default(cuid())
+  userId        String?
+  name          String
+  items         String
+  originalPrice Float
+  discountAmount Float
+  finalPrice    Float
+  discountPercent Int    @default(10)
+  isPublic      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SavedGiftBox {
+  id            String   @id @default(cuid())
+  userId        String
+  data          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SavedOutfit {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  items         String
+  totalPrice    Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SavedRoomDesign {
+  id            String   @id @default(cuid())
+  userId        String
+  data          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model StarterKit {
+  id            String   @id @default(cuid())
+  userId        String?
+  kitType       String
+  inputs        String
+  items         String
+  total         Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model VIPMembership {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  tier          String   @default("silver")
+  points        Int      @default(0)
+  isActive      Boolean  @default(true)
+  startedAt     DateTime @default(now())
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ConciergeRequest {
+  id            String   @id @default(cuid())
+  userId        String
+  type          String
+  details       String
+  message       String?  // Alias for details
+  status        String   @default("pending")
+  priority      String   @default("normal")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model UserCoupon {
+  id            String   @id @default(cuid())
+  userId        String
+  couponId      String
+  isUsed        Boolean  @default(false)
+  usedAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BulkBuyRequest {
+  id            String   @id @default(cuid())
+  userId        String
+  productId     String
+  quantity      Int
+  targetPrice   Float
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BulkBuyResponse {
+  id            String   @id @default(cuid())
+  requestId     String
+  sellerId      String
+  offeredPrice  Float
+  message       String?
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model VideoContent {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  videoUrl      String
+  thumbnailUrl  String?
+  duration      Int?
+  views         Int      @default(0)
+  likes         Int      @default(0)
+  productId     String?
+  category      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ArTryOn {
+  id            String   @id @default(cuid())
+  userId        String
+  productId     String
+  imageUrl      String?
+  arData        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Device {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceType  String   // "mobile", "tablet", "desktop"
+  platform    String   // "ios", "android", "web"
+  pushToken   String?  // Firebase/OneSignal token
+  deviceName  String?
+  isActive    Boolean  @default(true)
+  lastSeenAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, isActive])
+  @@index([pushToken])
+}
+
+model ModerationLog {
+  id            String   @id @default(cuid())
+  action        String
+  targetId      String
+  targetType    String
+  reason        String?
+  status        String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model NearbyAlert {
+  id            String   @id @default(cuid())
+  userId        String
+  productId     String
+  location      String?
+  distance      Float?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  company   String
+  avatar    String?
+  rating    Int      @default(5)
+  text      String
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// === DYNAMIC PRICING SYSTEM ===
+
+model CompetitorPrice {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  competitor  String   // e.g., "Envato", "ThemeForest", "CompetitorA"
+  price       Float
+  currency    String   @default("USD")
+  url         String?  // Link to competitor product
+  scrapedAt   DateTime @default(now())
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+  @@index([competitor])
+  @@index([scrapedAt])
+}
+
+model PricingRule {
+  id                String   @id @default(cuid())
+  productId         String?
+  product           Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name              String   // e.g., "Always 10% cheaper than Envato"
+  ruleType          String   // "cheapest_competitor", "percentage_below", "fixed_price", "range"
+  targetCompetitor  String?  // Competitor name or "market_average"
+  adjustment        Float    // Percentage or fixed amount
+  minPrice          Float?   // Floor price - never go below this
+  maxPrice          Float?   // Ceiling price - never go above this
+  isActive          Boolean  @default(true)
+  lastAppliedAt     DateTime?
+  lastAppliedPrice  Float?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([productId])
+  @@index([isActive])
+}
+
+model PriceChangeLog {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  oldPrice      Float
+  newPrice      Float
+  reason        String   // "manual", "pricing_rule", "flash_sale", "competitor_change"
+  triggeredBy   String?  // Admin user ID or "system"
+  ruleId        String?  // If triggered by pricing rule
+  metadata      String?  // JSON: {competitorPrice, marketAvg, etc.}
+  createdAt     DateTime @default(now())
+
+  @@index([productId])
+  @@index([createdAt])
+  @@index([reason])
+}
+
+// Security Models
+model SecurityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "fraud_check", "balance_check", "payment_verify", etc.
+  action    String   // "attempt", "success", "failure", "flagged"
+  ipAddress String?
+  userAgent String?
+  riskScore Int?     // 0-100
+  metadata  String?  // JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model BlacklistedEmail {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  reason    String?
+  riskScore Int      @default(100)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model BlacklistedIp {
+  id        String   @id @default(cuid())
+  ipAddress String   @unique
+  reason    String?
+  riskScore Int      @default(100)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model BlacklistedDevice {
+  id          String   @id @default(cuid())
+  deviceId    String   @unique
+  userAgent   String?
+  fingerprint String?
+  reason      String?
+  riskScore   Int      @default(100)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model Chargeback {
+  id        String   @id @default(cuid())
+  orderId   String
+  userId    String
+  amount    Float
+  reason    String?
+  status    String   @default("pending") // "pending", "approved", "rejected"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([userId])
+}
+
+model InventoryLog {
+  id        String   @id @default(cuid())
+  productId String
+  type      String   // "reserved", "released", "sold", "restocked"
+  quantity  Int
+  reason    String?
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([createdAt])
+}
+
+// === DIGITAL PRODUCT DELIVERY SYSTEM ===
+
+model DigitalDelivery {
+  id            String   @id @default(cuid())
+  productId     String   @unique
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // ZIP file delivery
+  zipFileUrl    String?
+  zipFileSize   Int?
+  zipUploadedAt DateTime?
+  
+  // GitHub repository
+  githubRepoUrl  String?
+  githubRepoName String?
+  
+  // Folder structure (for organized downloads)
+  folderStructure String? // JSON
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([productId])
+}
+
+model GitHubAccess {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  productId   String
+  username    String   // GitHub username
+  repoUrl     String?
+  status      String   @default("pending") // pending, granted, revoked
+  grantedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([orderId])
+  @@index([productId])
+  @@index([status])
+}
+
+model ChatSession {
+  id            String   @id @default(cuid())
+  userId        String?  // Link to User if logged in
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type          String   @default("general") // 'general' (pre-purchase) | 'paid' (post-purchase)
+  orderId       String?  @unique  // Only for paid chats
+  order         Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  productId     String?           // For general product-specific chats
+  product       Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  customerEmail String
+  customerName  String?           // For general chats without order
+  productName   String
+  roomId        String?           // Grapsee chat room ID
+  status        String   @default("active") // active, closed, waiting
+  priority      String   @default("normal") // low, normal, high (paid = high)
+  assignedTo    String?           // Grapsee agent ID
+  unreadCount   Int      @default(0)
+  lastMessageAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  messages      ChatMessage[]
+  
+  @@index([userId])
+  @@index([orderId])
+  @@index([productId])
+  @@index([status])
+  @@index([type])
+  @@index([assignedTo])
+  @@index([lastMessageAt])
+}
+
+// Update ChatMessage to add session relation
+model ChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String?
+  session   ChatSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  roomId    String?
+  userId    String?
+  message   String
+  sender    String
+  agentName String?
+  agentId   String?
+  read      Boolean  @default(false)
+  timestamp DateTime @default(now())
+  
+  @@index([sessionId])
+  @@index([roomId])
+  @@index([timestamp])
+}
+
+// DeviceToken model for push notification device registration
+model DeviceToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String
+  platform  String   // web, ios, android
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, token])
+  @@index([userId])
+  @@index([token])
+  @@index([isActive])
+}

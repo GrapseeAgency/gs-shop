@@ -1,0 +1,306 @@
+import Foundation
+
+// AUTO-GENERATED from the website source. Do not hand-edit.
+
+struct InfoSection: Identifiable { let id: String; let title: String; let paras: [String] }
+
+let privacySections: [InfoSection] = [
+    InfoSection(id: "information-we-collect", title: "Information We Collect", paras: ["We collect information you provide directly to us when you create an account, place an order, subscribe to our newsletter, contact customer support, or otherwise communicate with us. This includes:", "Personal Identification: Your name, email address, phone number, and profile photo when you create an account.", "Payment Information: Credit/debit card details, mobile banking information, and billing address when you make a purchase. Payment card data is processed by our PCI-compliant payment providers and never stored on our servers in plaintext.", "Order Data: Products purchased, delivery addresses, order history, and any special instructions you provide.", "Communications: Messages you send to our support team, chat logs, and feedback submissions.", "Auto-Collected Data: Device information (browser type, OS version), IP address, approximate location (city/country level), pages visited, products viewed, search queries, click patterns, and session duration.", "Cookies & Local Storage: Session tokens, preferences, shopping cart data, and analytics identifiers stored on your device."]),
+    InfoSection(id: "how-we-use", title: "How We Use Your Information", paras: ["We use the information we collect to provide, maintain, and improve our services, and to communicate with you. Specifically, we use your data to:", "Process and fulfill your orders, including shipping, returns, and refunds.", "Send order confirmations, shipping updates, and delivery notifications via email and SMS.", "Personalize your shopping experience with product recommendations, curated collections, and tailored deals based on your browsing and purchase history.", "Send promotional offers, flash deal alerts, and rewards program updates  only with your explicit consent. You can opt out at any time from your notification settings.", "Detect and prevent fraud, unauthorized transactions, and abuse of our platform.", "Analyze usage patterns to improve our website performance, UI/UX design, and service quality.", "Provide customer support and respond to your inquiries, complaints, and feedback.", "Comply with legal obligations and enforce our Terms of Service."]),
+    InfoSection(id: "data-storage-security", title: "Data Storage & Security", paras: ["We implement industry-leading security measures to protect your personal information:", "Encryption: All data in transit is secured using TLS 1.3 encryption. Sensitive data at rest is encrypted using AES-256 encryption standards.", "Access Controls: Role-based access control (RBAC) limits employee access to personal data on a need-to-know basis. All access is logged and audited.", "Infrastructure: Our services are hosted on SOC 2 Type II certified cloud infrastructure with multi-region redundancy and automated backups.", "Payment Security: All payment transactions are processed through PCI-DSS Level 1 certified payment providers. We never store complete credit card numbers on our servers.", "Regular Audits: We conduct quarterly security assessments and annual penetration tests by independent third-party firms.", "Data Retention: We retain your personal data only for as long as necessary to fulfill the purposes outlined in this policy, typically up to 3 years after your last interaction with our platform, unless a longer retention period is required by law.", "Breach Notification: In the event of a data breach that poses a risk to your rights, we will notify you and the relevant supervisory authority within 72 hours as required by applicable data protection laws."]),
+    InfoSection(id: "cookies", title: "Cookies & Tracking Technologies", paras: ["We use cookies and similar tracking technologies to enhance your browsing experience:", "Essential Cookies: Required for the website to function properly  session management, shopping cart, authentication, and security features. These cannot be disabled.", "Analytics Cookies: Help us understand how visitors interact with our website (pages visited, time spent, bounce rate). We use anonymized data and do not track you across other websites.", "Functional Cookies: Remember your preferences such as language, currency, theme (dark/light mode), and recently viewed products.", "Marketing Cookies: Used to deliver personalized advertisements and track the effectiveness of our marketing campaigns. These are only set with your explicit consent.", "You can manage your cookie preferences at any time through the cookie consent banner or your browser settings. Disabling certain cookies may affect the functionality of our website.", "We also use web beacons and pixel tags in our emails to track open rates and improve our communications."]),
+    InfoSection(id: "third-party-sharing", title: "Third-Party Sharing", paras: ["We do not sell, rent, or trade your personal data to third parties. We may share your information only in the following circumstances:", "Service Providers: We share data with trusted partners who help us operate our platform  payment processors, shipping carriers, email service providers, and cloud hosting. All partners are contractually bound to protect your data.", "Legal Requirements: We may disclose your data if required by law, regulation, legal process, or governmental request.", "Business Transfers: In the event of a merger, acquisition, or sale of assets, your data may be transferred to the acquiring entity under the same privacy protections.", "With Your Consent: We will share your data with third parties only when you have given us explicit consent to do so.", "Aggregated Data: We may share anonymized, aggregated data that cannot be used to identify you for industry analysis, marketing, or other purposes.", "Our third-party partners include: Stripe (payments), AWS (hosting), SendGrid (email), Google Analytics (analytics), and local shipping carriers."]),
+    InfoSection(id: "your-rights", title: "Your Rights", paras: ["Depending on your location, you may have the following rights regarding your personal data:", "Right to Access: You can request a copy of all personal data we hold about you. We will provide this within 30 days in a machine-readable format.", "Right to Rectification: You can request correction of any inaccurate or incomplete personal data.", "Right to Erasure: You can request deletion of your personal data, subject to legal retention requirements. Upon deletion, your account and all associated data will be permanently removed.", "Right to Portability: You can request to receive your data in a structured, commonly used, and machine-readable format (JSON or CSV).", "Right to Object: You can object to our processing of your data for direct marketing purposes at any time.", "Right to Restrict Processing: You can request that we limit how we use your data in certain circumstances.", "Right to Withdraw Consent: Where processing is based on consent, you can withdraw your consent at any time without affecting the lawfulness of prior processing.", "To exercise any of these rights, please contact our Data Protection Officer at privacy@grapsee.shop. We will respond to all legitimate requests within 30 days."]),
+    InfoSection(id: "changes", title: "Changes to This Policy", paras: ["We may update this Privacy Policy from time to time to reflect changes in our practices, technology, legal requirements, or other factors.", "When we make material changes, we will notify you by:", "Posting a prominent notice on our website homepage.", "Sending an email notification to the address associated with your account.", "Updating the \"Last Updated\" date at the top of this policy.", "For significant changes that affect your rights, we will provide at least 30 days' notice before the changes take effect. Your continued use of our services after the effective date constitutes acceptance of the updated policy.", "We encourage you to review this page periodically to stay informed about how we protect your information."]),
+    InfoSection(id: "contact", title: "Contact Us", paras: ["If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:", "Data Protection Officer: privacy@grapsee.shop", "General Inquiries: support@grapsee.shop", "Phone: +1 (415) 555-0199 (MonFri, 9AM6PM PST)", "Mailing Address: Grapsee Technologies Inc., 123 Digital Avenue, Suite 400, San Francisco, CA 94107, United States", "For EU residents: Our EU representative can be reached at eu-rep@grapsee.shop", "We aim to respond to all privacy-related inquiries within 5 business days. If you are not satisfied with our response, you have the right to lodge a complaint with your local data protection authority."]),
+]
+
+let termsSections: [InfoSection] = [
+    InfoSection(id: "acceptance", title: "Acceptance of Terms", paras: ["By accessing and using Grapsee Shop (captainpiracy.shop), you agree to be bound by these Terms of Service (\"Terms\"). If you do not agree to these Terms, you must not access or use our services.", "These Terms constitute a legally binding agreement between you (\"User\", \"you\", or \"your\") and Grapsee Technologies Inc. (\"Company\", \"we\", \"us\", or \"our\"), governing your use of our website, mobile applications, and all related services (collectively, the \"Services\").", "We reserve the right to modify these Terms at any time. Changes become effective upon posting. Your continued use of the Services after modifications constitutes acceptance of the revised Terms.", "By using our Services, you represent that you are at least 16 years of age and have the legal capacity to enter into these Terms. If you are using the Services on behalf of an organization, you represent that you have the authority to bind that organization to these Terms."]),
+    InfoSection(id: "account-terms", title: "Account Terms", paras: ["To access certain features of our Services, you must create an account. When creating an account, you agree to:", "Provide accurate, current, and complete information during registration and keep your account details updated.", "Maintain the security and confidentiality of your login credentials. You are solely responsible for all activities that occur under your account.", "Notify us immediately of any unauthorized use of your account or any other breach of security at security@grapsee.shop.", "Not create multiple accounts for the purpose of abusing promotions, rewards, or other benefits.", "Not use another person's account without their explicit permission.", "We reserve the right to suspend or terminate accounts that violate these Terms, engage in fraudulent activity, or have been inactive for more than 24 consecutive months.", "Account deletion requests can be submitted through your account settings or by contacting support. Upon deletion, all associated data will be permanently removed within 30 days, subject to legal retention requirements."]),
+    InfoSection(id: "products-pricing", title: "Products & Pricing", paras: ["All products listed on Grapsee Shop are digital services including but not limited to: websites, mobile applications, DevOps solutions, UI/UX design services, and enterprise software.", "Pricing: All prices are displayed in your selected currency (BDT, USD, or EUR) and include applicable taxes unless stated otherwise. Prices are subject to change without prior notice, though such changes will not affect orders already placed.", "Product Descriptions: We make every effort to ensure product descriptions, features, and specifications are accurate. However, we do not warrant that descriptions are entirely error-free.", "Service Tiers: Products may be offered in multiple tiers (Basic, Standard, Premium) with varying features, deliverables, and pricing. The specific terms of each tier are outlined on the product page.", "Availability: Product availability is subject to change. We reserve the right to discontinue any product or service without prior notice.", "Promotional Pricing: Discounted prices and promotional offers are valid for the specified period only. We reserve the right to modify or cancel promotions at any time."]),
+    InfoSection(id: "orders-payment", title: "Orders & Payment", paras: ["By placing an order on Grapsee Shop, you agree to the following terms:", "Order Acceptance: Your order constitutes an offer to purchase. We reserve the right to accept or decline any order. An order is confirmed only when you receive an official order confirmation email.", "Payment Methods: We accept Cash on Delivery (COD), Bank Transfer, Online Payment (credit/debit cards), Mobile Banking, and Wallet payments. Payment must be received before digital services are delivered, except for COD orders.", "Payment Security: All online payments are processed through PCI-DSS Level 1 certified payment gateways. We do not store your complete credit card information on our servers.", "Order Cancellation: You may cancel an order within 24 hours of placement at no charge. Cancellations after 24 hours may be subject to a processing fee of up to 10% of the order value if work has commenced.", "Coupon & Discount Codes: Promotional codes must be applied at checkout and cannot be applied retroactively. Each code may only be used once per customer unless stated otherwise. We reserve the right to invalidate codes that are used fraudulently.", "Price Errors: In the event of a pricing error, we reserve the right to cancel the order and notify you of the cancellation. We will offer you the option to re-order at the correct price."]),
+    InfoSection(id: "shipping-delivery", title: "Shipping & Delivery", paras: ["As a digital services marketplace, delivery of our products differs from traditional e-commerce:", "Digital Delivery: Most services are delivered electronically via email, secure download links, or direct deployment to your specified servers/platforms.", "Delivery Timeframes: Estimated delivery times are listed on each product page and vary by service tier. Standard delivery is 5-7 business days, Express is 2-3 business days, and Same-Day is available for select services.", "Delivery Confirmation: You will receive email notifications at each stage of the delivery process: order confirmed, work commenced, review ready, and final delivery.", "Physical Deliveries: For services that include physical components (branded merchandise, printed materials, hardware), shipping costs and timeframes will be calculated at checkout based on your location.", "Delivery Delays: While we strive to meet all delivery estimates, delays may occur due to scope changes, technical complexity, or factors beyond our control. We will communicate any delays promptly.", "Acceptance: Upon delivery, you have 7 business days to review and accept the deliverables. Failure to respond within this period constitutes acceptance."]),
+    InfoSection(id: "returns-refunds", title: "Returns & Refunds", paras: ["We offer a comprehensive return and refund policy to ensure your satisfaction:", "30-Day Money-Back Guarantee: All products come with a 30-day money-back guarantee from the date of delivery. If you are not satisfied, you may request a full refund within this period.", "Eligibility: To be eligible for a refund, the delivered service must not have been substantially modified, deployed to production, or used commercially. The product must be in its original delivered state.", "Partial Refunds: Services that have been partially delivered or where work has commenced may be eligible for a partial refund, calculated based on the percentage of work completed.", "Refund Process: Refund requests must be submitted through your order detail page or by contacting support@grapsee.shop. Include your order ID and reason for the request.", "Processing Time: Approved refunds are processed within 5-10 business days. The refund will be issued to the original payment method. Bank processing times may vary.", "Non-Refundable Items: Custom services that have been explicitly approved and accepted by the customer, and gift card purchases, are non-refundable.", "Exchange: Instead of a refund, you may request an exchange for a different product or service of equal or lesser value, subject to availability."]),
+    InfoSection(id: "intellectual-property", title: "Intellectual Property", paras: ["All content and materials on Grapsee Shop are protected by intellectual property laws:", "Ownership: All content on our platform  including text, graphics, logos, icons, images, audio, software, and their compilation  is the property of Grapsee Technologies Inc. or its content suppliers and is protected by international copyright laws.", "Product IP: Upon full payment and delivery, the intellectual property rights of the purchased digital service are transferred to the customer as specified in the product's license agreement. Unless otherwise stated, customers receive a perpetual, non-exclusive license to use the delivered product.", "Trademarks: \"Grapsee\", \"Grapsee Shop\", \"Grapsee Technologies\", and associated logos are trademarks of Grapsee Technologies Inc. You may not use these marks without our prior written consent.", "User Content: By submitting content (reviews, feedback, photos) to our platform, you grant us a non-exclusive, royalty-free, perpetual, and worldwide license to use, reproduce, and distribute that content in connection with our Services.", "DMCA: We respect intellectual property rights. If you believe any content on our platform infringes your copyright, please file a DMCA notice at legal@grapsee.shop."]),
+    InfoSection(id: "limitation-liability", title: "Limitation of Liability", paras: ["To the maximum extent permitted by applicable law:", "Grapsee Technologies Inc. shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, use, goodwill, or other intangible losses, resulting from (a) your access to or use of or inability to access or use the Services; (b) any conduct or content of any third party on the Services; (c) any content obtained from the Services; or (d) unauthorized access, use, or alteration of your transmissions or content.", "In no event shall our total liability exceed the amount paid by you to us in the twelve (12) months preceding the claim, or $1,000 USD, whichever is greater.", "We do not guarantee that the Services will be uninterrupted, timely, secure, or error-free. We are not responsible for any damage to your computer system or loss of data that results from your use of the Services.", "We are not liable for the actions or omissions of third-party service providers, including payment processors and shipping carriers.", "Some jurisdictions do not allow the exclusion or limitation of certain warranties or liabilities, so the above limitations may not apply to you. In such cases, our liability is limited to the fullest extent permitted by law."]),
+    InfoSection(id: "governing-law", title: "Governing Law", paras: ["These Terms shall be governed by and construed in accordance with the laws of the State of California, United States, without regard to its conflict of law provisions.", "Any disputes arising from these Terms or your use of the Services shall be resolved through the following process:", "Step 1: Informal Resolution  Contact our support team at support@grapsee.shop. We will attempt to resolve the dispute within 30 business days.", "Step 2: Mediation  If the dispute is not resolved informally, both parties agree to attempt mediation before pursuing litigation. Mediation will be conducted by a mutually agreed-upon mediator.", "Step 3: Arbitration  Any disputes not resolved through mediation shall be submitted to binding arbitration under the rules of the American Arbitration Association (AAA). The arbitration shall be conducted in San Francisco, California.", "For users located in the European Union, you may also bring proceedings in the courts of your country of residence, and the mandatory consumer protection laws of your country of residence will apply."]),
+    InfoSection(id: "changes", title: "Changes to Terms", paras: ["We reserve the right to modify or replace these Terms at any time at our sole discretion.", "If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.", "We will notify you of significant changes by: (a) posting a notice on our website homepage, (b) sending an email to the address associated with your account, and (c) updating the \"Effective Date\" at the top of this page.", "Your continued use of the Services after the effective date of any changes constitutes acceptance of the revised Terms.", "If you do not agree with the revised Terms, you must stop using the Services and may request a refund for any pending orders in accordance with our refund policy.", "It is your responsibility to review these Terms periodically. We recommend bookmarking this page for easy reference."]),
+    InfoSection(id: "contact", title: "Contact Information", paras: ["For questions, concerns, or disputes regarding these Terms of Service, please contact us:", "Legal Department: legal@grapsee.shop", "Customer Support: support@grapsee.shop", "Phone: +1 (415) 555-0199 (MonFri, 9AM6PM PST)", "Mailing Address: Grapsee Technologies Inc., Legal Department, 123 Digital Avenue, Suite 400, San Francisco, CA 94107, United States", "DMCA Notices: legal@grapsee.shop", "We aim to respond to all inquiries within 2 business days. Urgent legal matters will be prioritized."]),
+]
+
+struct FaqEntry: Identifiable { let q: String; let a: String; var id: String { q } }
+
+let faqEntries: [FaqEntry] = [
+    FaqEntry(q: "What is Grapsee Shop?", a: "Grapsee Shop is a premium digital mall offering a curated selection of digital products and services. From SaaS dashboards to mobile apps, design templates to enterprise solutions  we bring the best digital products under one roof with secure payments and instant delivery."),
+    FaqEntry(q: "How do I create an account?", a: "Creating an account is simple! Click the "),
+    FaqEntry(q: "Is Grapsee Shop available internationally?", a: "Yes! Grapsee Shop serves customers worldwide. We support multiple currencies (BDT, USD, EUR) and languages. Digital products are delivered instantly regardless of your location. Physical merchandise shipping availability may vary by region."),
+    FaqEntry(q: "How do I contact customer support?", a: "You can reach our support team through multiple channels: Live Chat (24/7), Email (support@grapsee.shop), Phone (+880-1-800-GRAPE), or through our Help Center. VIP members get priority support with dedicated agents."),
+    FaqEntry(q: "What payment methods do you accept?", a: "We accept Credit/Debit Cards (Visa, Mastercard), Mobile Banking (bKash, Nagad, Rocket), Grapsee Wallet, Bank Transfer, and Cash on Delivery for select regions. All transactions are secured with SSL encryption."),
+    FaqEntry(q: "How do I place an order?", a: "Browse our products, add items to your cart, and proceed to checkout. Select your preferred shipping and payment method, then confirm your order. You\\"),
+    FaqEntry(q: "Can I modify my order after placing it?", a: "You can modify your order within 1 hour of placement. Go to My Orders, select the order, and click "),
+    FaqEntry(q: "How do I cancel an order?", a: "To cancel an order, go to My Orders, select the order you want to cancel, and click "),
+    FaqEntry(q: "What is the order processing time?", a: "Most digital products are delivered instantly. Physical items and custom solutions typically process within 1-3 business days. You\\"),
+    FaqEntry(q: "How do I track my order?", a: "Once your order ships, you\\"),
+    FaqEntry(q: "What are the shipping options?", a: "We offer three shipping tiers: Standard (5-7 business days, free on orders over $100), Express (2-3 business days, $9.99), and Same-Day Delivery (available in select cities, $14.99). VIP members get free shipping on all orders."),
+    FaqEntry(q: "Do you offer international shipping?", a: "Yes, we ship to over 50 countries. International shipping typically takes 7-14 business days for Standard and 3-5 days for Express. Shipping costs vary by destination and package weight. Free international shipping on orders over $200."),
+    FaqEntry(q: "What if my package is lost or damaged?", a: "If your package is lost or arrives damaged, contact us immediately. We\\"),
+    FaqEntry(q: "Can I change my delivery address?", a: "You can update your delivery address before the order ships. Go to My Orders, select the order, and click "),
+    FaqEntry(q: "What is your return policy?", a: "We offer a 30-day return policy for most products. Digital products (software, templates) can be returned within 7 days if not downloaded. Physical items must be in original packaging. VIP members enjoy an extended 60-day return window."),
+    FaqEntry(q: "How do I initiate a return?", a: "Go to My Orders, select the item you want to return, and click "),
+    FaqEntry(q: "How long do refunds take?", a: "Refunds are processed within 3-5 business days after we receive the returned item. The refund will be credited to your original payment method. Grapsee Wallet refunds are instant. Bank/card refunds may take 5-10 business days to appear."),
+    FaqEntry(q: "Can I exchange instead of return?", a: "Yes! You can exchange items for a different size, color, or version. Select "),
+    FaqEntry(q: "Is my payment information secure?", a: "Absolutely. We use industry-standard SSL encryption and never store your full card details. All payments are processed through PCI-DSS compliant gateways. We also support two-factor authentication for added security."),
+    FaqEntry(q: "Can I use multiple payment methods?", a: "Yes! You can split your payment between Grapsee Wallet and another payment method. You can also use gift cards and coupon codes in combination with other payment methods. The remaining balance will be charged to your secondary method."),
+    FaqEntry(q: "Do you offer installment payments?", a: "Yes, we offer installment plans for orders over $500 through our banking partners. Choose "),
+    FaqEntry(q: "How do I reset my password?", a: "Click "),
+    FaqEntry(q: "How do I join the VIP program?", a: "Our VIP program is based on reward points. Earn points by shopping (10 pts/item), daily logins (5 pts), and referrals (100 pts). Reach tiers: Bronze (0+), Silver (500+), Gold (1000+), Platinum (2500+), Diamond (5000+). Higher tiers unlock more benefits!"),
+    FaqEntry(q: "How do I enable two-factor authentication?", a: "Go to Settings  Security  Enable 2FA. You can use an authenticator app (Google Authenticator, Authy) or SMS verification. We strongly recommend enabling 2FA to protect your account from unauthorized access."),
+    FaqEntry(q: "Are the digital products licensed?", a: "Yes, all digital products come with a commercial license. You can use them for personal and commercial projects. Some premium products include extended licenses for multi-user teams. Check individual product pages for specific license details."),
+    FaqEntry(q: "Do you offer product customization?", a: "Many of our digital products support customization. Look for the "),
+    FaqEntry(q: "How do I access my purchased products?", a: "After purchase, digital products are instantly available in your account under "),
+]
+
+struct Milestone: Identifiable { let year: String; let event: String; let desc: String; var id: String { year + event } }
+
+let milestones: [Milestone] = [
+    Milestone(year: "2020", event: "Grapsee Founded", desc: "Started as a small web development studio with a vision to make accessible digital services"),
+    Milestone(year: "2021", event: "First 1,000 Users", desc: "Expanded to mobile app development and reached our first major milestone"),
+    Milestone(year: "2022", event: "Mobile App Launch", desc: "Launched our mobile platform bringing digital services to your fingertips"),
+    Milestone(year: "2023", event: "50K+ Customers", desc: "Crossed 50,000 happy customers with a 4.9 star average rating"),
+    Milestone(year: "2024", event: "Premium Mall", desc: "Transformed into a premium digital marketplace with luxury service tiers"),
+    Milestone(year: "2025", event: "Global Expansion", desc: "Now serving customers in 120+ countries with localized experiences"),
+]
+
+struct FeatureTool: Identifiable { let name: String; let path: String; let desc: String; var id: String { path } }
+struct FeatureCategory: Identifiable { let title: String; let desc: String; let tools: [FeatureTool]; var id: String { title } }
+
+let featureCategories: [FeatureCategory] = [
+    FeatureCategory(title: "Money Savers", desc: "Save money on every purchase", tools: [
+        FeatureTool(name: "Price Drop Refund", path: "/price-drop-refund", desc: "Auto-detect price drops and claim refunds"),
+        FeatureTool(name: "Auto Coupon", path: "/auto-coupon", desc: "Best coupons auto-applied at checkout"),
+        FeatureTool(name: "Price Lock", path: "/price-lock", desc: "Lock price for 30 days with 100 deposit"),
+        FeatureTool(name: "Bulk Buy", path: "/bulk-buy", desc: "Get sellers to compete for your bulk order"),
+        FeatureTool(name: "Product Liquidator", path: "/product-liquidator", desc: "Sell old items on 5 platforms at once"),
+        FeatureTool(name: "Subscription Audit", path: "/subscription-audit", desc: "Find and cancel unused subscriptions"),
+        FeatureTool(name: "Tax Refund", path: "/tax-refund", desc: "Auto-find tax-deductible purchases"),
+        FeatureTool(name: "Flashback Deals", path: "/flashback-deals", desc: "Items you viewed now on sale"),
+        FeatureTool(name: "Smart Reorder", path: "/smart-reorder", desc: "Auto-reorder when supplies run low"),
+        FeatureTool(name: "Discount Stacking", path: "/discount-stacking", desc: "Optimal coupon + wallet + points combo"),
+    ]),
+    FeatureCategory(title: "Time Savers", desc: "Save hours, not minutes", tools: [
+        FeatureTool(name: "Recipe to Cart", path: "/recipe-to-cart", desc: "Convert any recipe to shopping list"),
+        FeatureTool(name: "Grocery List Import", path: "/grocery-list-import", desc: "Photo of handwritten list  cart"),
+        FeatureTool(name: "Prescription Scan", path: "/prescription-scan", desc: "Upload prescription  medicines in cart"),
+        FeatureTool(name: "SMS Order", path: "/sms-order", desc: "Order via SMS - no internet needed"),
+        FeatureTool(name: "USSD Menu", path: "/ussd-menu", desc: "*123*45# for feature phones"),
+        FeatureTool(name: "WhatsApp Bulk", path: "/whatsapp-bulk", desc: "Order via WhatsApp with catalog"),
+        FeatureTool(name: "Clipboard Purchase", path: "/clipboard-purchase", desc: "Copy product  instant buy option"),
+        FeatureTool(name: "Shopping List Autocomplete", path: "/shopping-list-autocomplete", desc: "Smart suggestions as you type"),
+        FeatureTool(name: "Emergency Quick-Buy", path: "/emergency-quick-buy", desc: "Essentials in 1-hour delivery"),
+        FeatureTool(name: "One-Click Reorder", path: "/one-click-reorder", desc: "Same as last time, but modified"),
+    ]),
+    FeatureCategory(title: "Trust Builders", desc: "Shop with confidence", tools: [
+        FeatureTool(name: "Video Verification", path: "/video-verification", desc: "2-min video call with seller before buying"),
+        FeatureTool(name: "Verified Photos", path: "/verified-photos", desc: "Only real buyers can upload photos"),
+        FeatureTool(name: "Ingredient Scanner", path: "/ingredient-scanner", desc: "Decode every ingredient in plain language"),
+        FeatureTool(name: "Safety Recall Alerts", path: "/safety-recall", desc: "Instant alerts if product recalled"),
+        FeatureTool(name: "Medicine Interaction", path: "/medicine-interaction", desc: "Check for dangerous drug combinations"),
+        FeatureTool(name: "Expiry Guarantee", path: "/expiry-guarantee", desc: "Free replacement if <6 months expiry"),
+        FeatureTool(name: "Crowd Wisdom", path: "/crowd-wisdom", desc: "See what 10,000+ people chose"),
+        FeatureTool(name: "Deal Authenticity", path: "/deal-authenticity", desc: "Verify if sale price is genuine"),
+    ]),
+    FeatureCategory(title: "Lifestyle & Health", desc: "Personalized for your life", tools: [
+        FeatureTool(name: "Appliance Repair", path: "/appliance-repair", desc: "Verified technicians in 2 taps"),
+        FeatureTool(name: "Medicine Tracker", path: "/medicine-tracker", desc: "Never use expired medicine"),
+        FeatureTool(name: "Pet Supply Auto-Pilot", path: "/pet-supplies", desc: "Auto-reorder pet food monthly"),
+        FeatureTool(name: "School Supplies Kit", path: "/school-supplies", desc: "Complete list by grade level"),
+        FeatureTool(name: "Moving Kit", path: "/moving-kit", desc: "Everything for your move"),
+        FeatureTool(name: "Diabetic Scanner", path: "/diabetic-scanner", desc: "Check sugar/GI of any food"),
+        FeatureTool(name: "Halal Checker", path: "/halal-checker", desc: "Instant halal status scan"),
+        FeatureTool(name: "Allergy Checker", path: "/allergy-checker", desc: "Cross-checks all products for allergens"),
+        FeatureTool(name: "Child Growth Tracker", path: "/child-growth", desc: "Auto-suggest clothing sizes"),
+    ]),
+    FeatureCategory(title: "Smart Tools", desc: "AI-powered shopping helpers", tools: [
+        FeatureTool(name: "Unit Price Calculator", path: "/unit-price-calculator", desc: "Find best value per gram/liter"),
+        FeatureTool(name: "EMI Calculator", path: "/emi-calculator", desc: "Compare 5 banks side-by-side"),
+        FeatureTool(name: "Resale Value Calculator", path: "/resale-value-calculator", desc: "True cost of ownership"),
+        FeatureTool(name: "Spec Compare", path: "/spec-compare", desc: "Side-by-side with highlighted differences"),
+        FeatureTool(name: "Alternative Finder", path: "/alternative-finder", desc: "Same specs, lower price"),
+        FeatureTool(name: "Use-Case Matcher", path: "/use-case-matcher", desc: "Best product for your needs"),
+        FeatureTool(name: "Currency Converter", path: "/currency-converter", desc: "See prices in 7 currencies"),
+        FeatureTool(name: "Tip Calculator", path: "/tip-calculator", desc: "Split bills with friends"),
+    ]),
+    FeatureCategory(title: "Smart Reminders", desc: "Never miss what matters", tools: [
+        FeatureTool(name: "Subscription Expiry", path: "/subscription-expiry", desc: "Cancel before auto-renewal"),
+        FeatureTool(name: "Document Expiry", path: "/document-expiry", desc: "Passport, license renewal alerts"),
+        FeatureTool(name: "Vehicle Service", path: "/vehicle-service", desc: "Service due reminders"),
+        FeatureTool(name: "Seasonal Clothing", path: "/seasonal-clothing", desc: "Rotate wardrobe on time"),
+        FeatureTool(name: "Warranty Expiry", path: "/warranty-expiry", desc: "Track warranty expiration"),
+    ]),
+    FeatureCategory(title: "Accessibility", desc: "Shopping for everyone", tools: [
+        FeatureTool(name: "Senior Mode", path: "/senior-mode", desc: "Large fonts, voice assist, simple UI"),
+        FeatureTool(name: "Visual Impaired", path: "/visual-impaired", desc: "Screen reader & audio descriptions"),
+        FeatureTool(name: "Student Budget", path: "/student-budget", desc: "Budget tracking & essentials"),
+    ]),
+    FeatureCategory(title: "Sustainability", desc: "Shop responsibly", tools: [
+        FeatureTool(name: "Sustainable Finder", path: "/sustainable-finder", desc: "Eco-friendly product alternatives"),
+        FeatureTool(name: "Carbon Calculator", path: "/carbon-calculator", desc: "Track carbon footprint"),
+    ]),
+    FeatureCategory(title: "Fashion & Style", desc: "Look your best", tools: [
+        FeatureTool(name: "Style Quiz", path: "/style-quiz", desc: "Discover your style"),
+        FeatureTool(name: "Body Type", path: "/body-type", desc: "Size recommendations"),
+        FeatureTool(name: "Color Advisor", path: "/color-advisor", desc: "Color matching guide"),
+        FeatureTool(name: "Trend Forecaster", path: "/trend-forecaster", desc: "Upcoming trends"),
+        FeatureTool(name: "Size Predictor", path: "/size-predictor", desc: "AI size predictions"),
+        FeatureTool(name: "Wardrobe Planner", path: "/wardrobe-planner", desc: "Mix and match outfits"),
+        FeatureTool(name: "Event Stylist", path: "/event-stylist", desc: "Outfit for any occasion"),
+    ]),
+    FeatureCategory(title: "Home Services", desc: "Help around the house", tools: [
+        FeatureTool(name: "Assembly Finder", path: "/assembly-finder", desc: "Furniture assembly help"),
+        FeatureTool(name: "Ingredient Swap", path: "/ingredient-swap", desc: "Cooking substitutes"),
+        FeatureTool(name: "Project Planner", path: "/project-planner", desc: "DIY project materials"),
+    ]),
+    FeatureCategory(title: "Payment & Finance", desc: "Smart spending tools", tools: [
+        FeatureTool(name: "Installment Compare", path: "/installment-compare", desc: "Compare EMI options"),
+        FeatureTool(name: "Fuel Cost Calculator", path: "/fuel-cost-calculator", desc: "Driving vs delivery cost"),
+        FeatureTool(name: "Insurance Claim", path: "/insurance-claim", desc: "File product claims"),
+        FeatureTool(name: "Resale Calculator", path: "/resale-calculator", desc: "Product depreciation value"),
+    ]),
+    FeatureCategory(title: "Gifting", desc: "Perfect presents", tools: [
+        FeatureTool(name: "Gift Matcher", path: "/gift-matcher", desc: "Find the right gift"),
+    ]),
+    FeatureCategory(title: "Food & Cooking", desc: "Kitchen helpers", tools: [
+        FeatureTool(name: "Measurement Converter", path: "/measurement-converter", desc: "Convert cups, grams, etc"),
+        FeatureTool(name: "Tip Calculator", path: "/tip-calculator", desc: "Split bills easily"),
+    ]),
+    FeatureCategory(title: "Ordering Methods", desc: "Order your way", tools: [
+        FeatureTool(name: "SMS Order", path: "/sms-order", desc: "No internet required"),
+        FeatureTool(name: "USSD Menu", path: "/ussd-menu", desc: "*123*45# feature phone"),
+        FeatureTool(name: "WhatsApp Bulk", path: "/whatsapp-bulk", desc: "Order via WhatsApp"),
+        FeatureTool(name: "Clipboard Purchase", path: "/clipboard-purchase", desc: "Copy and buy instantly"),
+    ]),
+    FeatureCategory(title: "Travel & More", desc: "Travel essentials", tools: [
+        FeatureTool(name: "Currency Converter", path: "/currency-converter", desc: "Live exchange rates"),
+    ]),
+    FeatureCategory(title: "Templates & Starters", desc: "Premium templates for developers", tools: [
+        FeatureTool(name: "Next.js Landing Page", path: "/templates/nextjs-landing", desc: "Landing page template store"),
+        FeatureTool(name: "E-commerce Starter", path: "/templates", desc: "E-commerce starter kits"),
+        FeatureTool(name: "Portfolio Templates", path: "/templates", desc: "Portfolio website templates"),
+        FeatureTool(name: "Admin Dashboard", path: "/templates", desc: "Dashboard admin templates"),
+        FeatureTool(name: "SaaS Boilerplate", path: "/templates", desc: "SaaS boilerplate with auth/billing"),
+    ]),
+    FeatureCategory(title: "UI Component Packs", desc: "Ready-to-use components", tools: [
+        FeatureTool(name: "Figma Components", path: "/ui-kits", desc: "50 premium Figma components"),
+        FeatureTool(name: "Tailwind Library", path: "/ui-kits", desc: "Tailwind CSS component library"),
+        FeatureTool(name: "Icon Packs", path: "/ui-kits", desc: "500+ custom icons"),
+        FeatureTool(name: "Animation Pack", path: "/ui-kits", desc: "100 Framer Motion presets"),
+    ]),
+    FeatureCategory(title: "Code Snippets", desc: "Production-ready code", tools: [
+        FeatureTool(name: "Auth in a Box", path: "/snippets", desc: "Complete auth system ready to paste"),
+        FeatureTool(name: "Payment Kit", path: "/snippets", desc: "Stripe + SSLCommerz integration"),
+        FeatureTool(name: "SEO Script", path: "/snippets", desc: "SEO optimization script"),
+        FeatureTool(name: "Database Schemas", path: "/database-schemas", desc: "Prisma schemas for all projects"),
+        FeatureTool(name: "CI/CD Templates", path: "/cicd", desc: "GitHub Actions & GitLab CI"),
+    ]),
+    FeatureCategory(title: "Documentation", desc: "Step-by-step guides", tools: [
+        FeatureTool(name: "Deployment Guide", path: "/guides", desc: "Next.js deployment guide"),
+        FeatureTool(name: "DevOps Pipeline", path: "/guides", desc: "DevOps setup guide"),
+        FeatureTool(name: "UI/UX Principles", path: "/guides", desc: "UI/UX guide for developers"),
+        FeatureTool(name: "App Store Checklist", path: "/guides", desc: "App Store approval guide"),
+    ]),
+    FeatureCategory(title: "Real Digital Products", desc: "Products people use daily worldwide", tools: [
+        FeatureTool(name: "Resume Builder", path: "/resume-builder", desc: "ATS-friendly resumes. 299-999"),
+        FeatureTool(name: "Legal Documents", path: "/legal-documents", desc: "NDAs, contracts, rental agreements"),
+        FeatureTool(name: "Form Builder", path: "/form-builder", desc: "Like Typeform. Free to start"),
+        FeatureTool(name: "Appointment Scheduler", path: "/scheduler", desc: "Like Calendly. 799/mo"),
+    ]),
+    FeatureCategory(title: "Service Delivery Engine", desc: "Complete project management system", tools: [
+        FeatureTool(name: "Service Configurator", path: "/service-configurator", desc: "Build services with live pricing"),
+        FeatureTool(name: "Project Dashboard", path: "/project-dashboard", desc: "Real-time progress tracking"),
+        FeatureTool(name: "Milestone Approval", path: "/milestones", desc: "Client approval workflow"),
+        FeatureTool(name: "Revision Tokens", path: "/revision-tokens", desc: "Additional revision purchases"),
+        FeatureTool(name: "Scope Change Detector", path: "/scope-change", desc: "Auto-detect scope changes"),
+        FeatureTool(name: "Deliverable Handoff", path: "/handoff-portal", desc: "Organized file delivery"),
+        FeatureTool(name: "Health Monitor", path: "/health-monitor", desc: "Weekly performance reports"),
+    ]),
+    FeatureCategory(title: "AI Sales Tools", desc: "AI-powered selling automation", tools: [
+        FeatureTool(name: "AI Project Scoper", path: "/ai-scoper", desc: "Plain language to scope"),
+        FeatureTool(name: "AI Competitor Analyzer", path: "/ai-competitor", desc: "Competitor site analysis"),
+        FeatureTool(name: "AI Design Preview", path: "/ai-preview", desc: "[] in 30 seconds"),
+        FeatureTool(name: "AI Proposal Writer", path: "/ai-proposal", desc: "Auto-generated proposals"),
+        FeatureTool(name: "AI Chatbot", path: "/ai-chatbot", desc: "Conversational requirements"),
+        FeatureTool(name: "Smart Upsell Engine", path: "/smart-upsell", desc: "Data-driven bundles"),
+        FeatureTool(name: "Deadline Predictor", path: "/deadline-predictor", desc: "Timeline estimation"),
+    ]),
+    FeatureCategory(title: "Trust & Verification", desc: "Build trust with clients", tools: [
+        FeatureTool(name: "Quality Certificate", path: "/quality-certificate", desc: "Auto quality reports"),
+        FeatureTool(name: "Live Portfolio Proof", path: "/portfolio-proof", desc: "Verified project showcase"),
+        FeatureTool(name: "Guarantee Vault", path: "/guarantee-vault", desc: "Escrow payment system"),
+        FeatureTool(name: "Dispute Resolution", path: "/dispute-resolution", desc: "Fair conflict resolution"),
+        FeatureTool(name: "SLA Generator", path: "/sla-generator", desc: "Auto-generated agreements"),
+    ]),
+    FeatureCategory(title: "Revenue Multipliers", desc: "Make more money per client", tools: [
+        FeatureTool(name: "Service Subscriptions", path: "/service-subscriptions", desc: "Maintenance plans"),
+        FeatureTool(name: "Referral System", path: "/referral-system", desc: "Client referral program"),
+        FeatureTool(name: "Loyalty Tiers", path: "/loyalty-tiers", desc: "Repeat buyer rewards"),
+        FeatureTool(name: "Corporate Credit", path: "/corporate-credit", desc: "Net-30 payment terms"),
+    ]),
+    FeatureCategory(title: "Client Acquisition", desc: "Bring in new clients", tools: [
+        FeatureTool(name: "Free Website Audit", path: "/free-audit", desc: "Lead generation tool"),
+        FeatureTool(name: "ROI Calculator", path: "/roi-calculator", desc: "Investment return estimator"),
+        FeatureTool(name: "Case Studies", path: "/case-studies", desc: "Success stories"),
+        FeatureTool(name: "Free [] Generator", path: "/free-[]", desc: "AI [] tool"),
+    ]),
+    FeatureCategory(title: "Client Retention", desc: "Keep clients forever", tools: [
+        FeatureTool(name: "Command Center", path: "/command-center", desc: "Unified dashboard"),
+        FeatureTool(name: "QBR Reports", path: "/qbr-reports", desc: "90-day reviews"),
+        FeatureTool(name: "Client Community", path: "/client-community", desc: "Private forum"),
+    ]),
+    FeatureCategory(title: "Business Intelligence", desc: "Data-driven decisions", tools: [
+        FeatureTool(name: "Profitability Dashboard", path: "/profitability", desc: "Service profit analysis"),
+        FeatureTool(name: "Client LTV", path: "/client-ltv", desc: "Lifetime value tracking"),
+        FeatureTool(name: "Demand Forecast", path: "/demand-forecast", desc: "Seasonal prediction"),
+        FeatureTool(name: "Churn Prediction", path: "/churn-prediction", desc: "Risk analysis"),
+        FeatureTool(name: "Pricing Test", path: "/pricing-test", desc: "A/B pricing experiments"),
+    ]),
+    FeatureCategory(title: "Video Courses", desc: "Learn from experts", tools: [
+        FeatureTool(name: "E-commerce Course", path: "/courses", desc: "Build e-commerce in 10 hours"),
+        FeatureTool(name: "DevOps Course", path: "/courses", desc: "DevOps zero to hero"),
+        FeatureTool(name: "Figma Mastery", path: "/courses", desc: "Figma for UI/UX"),
+        FeatureTool(name: "Short Tutorials", path: "/short-tutorials", desc: "Bite-sized tutorials"),
+    ]),
+    FeatureCategory(title: "Audit Tools", desc: "Automated website scans", tools: [
+        FeatureTool(name: "SEO Audit", path: "/audits", desc: "Comprehensive SEO analysis"),
+        FeatureTool(name: "Performance Audit", path: "/audits", desc: "Lighthouse + custom checks"),
+        FeatureTool(name: "Accessibility Audit", path: "/audits", desc: "WCAG compliance check"),
+        FeatureTool(name: "Security Scan", path: "/audits", desc: "Vulnerability assessment"),
+        FeatureTool(name: "Brand Audit", path: "/audits", desc: "Brand consistency check"),
+    ]),
+    FeatureCategory(title: "AI Generators", desc: "AI-powered tools", tools: [
+        FeatureTool(name: "AI Logo Generator", path: "/ai-tools", desc: "Generate logo options"),
+        FeatureTool(name: "Business Name AI", path: "/ai-tools", desc: "AI business name suggestions"),
+        FeatureTool(name: "Tagline Generator", path: "/ai-tools", desc: "Catchy taglines"),
+        FeatureTool(name: "Color Palette AI", path: "/ai-tools", desc: "Beautiful color combinations"),
+        FeatureTool(name: "Social Post AI", path: "/ai-tools", desc: "AI social media posts"),
+    ]),
+    FeatureCategory(title: "Bundles", desc: "Service + product bundles", tools: [
+        FeatureTool(name: "Website + SEO Bundle", path: "/bundles", desc: "Website + SEO + Hosting"),
+        FeatureTool(name: "App Store Bundle", path: "/bundles", desc: "App + Store optimization"),
+        FeatureTool(name: "DevOps Bundle", path: "/bundles", desc: "DevOps + Monitoring"),
+        FeatureTool(name: "UI/UX Bundle", path: "/bundles", desc: "Design + Components + Docs"),
+    ]),
+    FeatureCategory(title: "Subscriptions", desc: "Recurring revenue services", tools: [
+        FeatureTool(name: "Monthly Maintenance", path: "/subscriptions", desc: "Bug fixes + updates"),
+        FeatureTool(name: "Backup & Monitor", path: "/subscriptions", desc: "Weekly backups + alerts"),
+        FeatureTool(name: "Performance Reports", path: "/subscriptions", desc: "Monthly performance analysis"),
+        FeatureTool(name: "Priority Support", path: "/subscriptions", desc: "24hr response SLA"),
+    ]),
+    FeatureCategory(title: "Digital Products", desc: "Zero marginal cost", tools: [
+        FeatureTool(name: "SaaS Boilerplate Premium", path: "/digital", desc: "Complete SaaS starter"),
+        FeatureTool(name: "Notion Templates", path: "/notion-templates", desc: "Ready-to-use Notion workspaces"),
+        FeatureTool(name: "Figma UI Kits", path: "/digital", desc: "500+ components"),
+        FeatureTool(name: "Env Setup Scripts", path: "/env-setup", desc: "One-click dev environment"),
+        FeatureTool(name: "Certifications", path: "/certifications", desc: "Certified Developer programs"),
+    ]),
+]

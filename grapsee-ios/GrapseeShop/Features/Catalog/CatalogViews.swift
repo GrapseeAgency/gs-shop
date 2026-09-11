@@ -110,6 +110,7 @@ enum Route: Hashable {    case product(String), list(ListMode), collections, col
     case submanager, coloradvisor, sizepredictor, discountstack, dealauth, speccompare
     case smsorder, shopautocomplete, docexpiry, vehicle, legaldocs, formbuilder, resumebuilder, insurance
     case aiscoper, aicompetitor, aipreview, aiproposal, freeaudit, qualitycert, portfolioproof, casestudies
+    case emergencybuy, clipboardbuy, flashback, expiryguar, priceguar, smartupsell, studentbudget, subexpiry, altfinder, assembly
     case bodytype, usecasematcher, wardrobe, revtokens, trendforecaster, eventstylist
     case aitools, aichat, audits, guides, cicd, envsetup, dbschemas, notion, tutorials
     case category(String, String), search(String), categories
@@ -285,6 +286,16 @@ func appRoute(for path: String) -> Route {
     case "/quality-certificate": return .qualitycert
     case "/portfolio-proof": return .portfolioproof
     case "/case-studies": return .casestudies
+    case "/emergency-quick-buy": return .emergencybuy
+    case "/clipboard-purchase": return .clipboardbuy
+    case "/flashback-deals": return .flashback
+    case "/expiry-guarantee": return .expiryguar
+    case "/price-guarantee": return .priceguar
+    case "/smart-upsell": return .smartupsell
+    case "/student-budget": return .studentbudget
+    case "/subscription-expiry": return .subexpiry
+    case "/alternative-finder": return .altfinder
+    case "/assembly-finder": return .assembly
     case "/shopping-list-autocomplete": return .shopautocomplete
     case "/document-expiry": return .docexpiry
     case "/vehicle-service": return .vehicle

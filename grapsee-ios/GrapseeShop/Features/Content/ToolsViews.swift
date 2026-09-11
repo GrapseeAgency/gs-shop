@@ -834,3 +834,261 @@ struct CaseStudiesView: View {
         }.navigationTitle("Case Studies")
     }
 }
+
+// MARK: - Tools wave-C
+
+struct EmergencyQuickBuyView: View {
+    let items = [("Baby Diapers", "Critical", "30 min", 350), ("Medicine", "Urgent", "1 hour", 120), ("Phone Charger", "High", "2 hours", 299), ("Toilet Paper", "High", "2 hours", 80)]
+    var body: some View {
+        List(items, id: \.0) { name, urgency, delivery, price in
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name).font(.headline)
+                    Text("\(urgency) · delivers in \(delivery)").font(.caption).foregroundColor(.red)
+                    Text("\(price)").font(.headline).foregroundColor(.accentColor)
+                }
+                Spacer()
+                Button("Order") {}
+            }.padding(.vertical, 4)
+        }.navigationTitle("Emergency Quick Buy")
+    }
+}
+
+struct ClipboardPurchaseView: View {
+    @State private var detected = false
+    var body: some View {
+        Group {
+            if !detected {
+                VStack(spacing: 12) {
+                    ProgressView()
+                    Text("Monitoring clipboard for product names…").foregroundColor(.secondary)
+                }.onAppear {
+                    Task { try? await Task.sleep(nanoseconds: 2_000_000_000); detected = true }
+                }
+            } else {
+                List {
+                    Section {
+                        Text("Detected from clipboard").font(.caption).foregroundColor(.accentColor)
+                        Text("Wireless Earbuds").font(.title2)
+                        Text("1299").font(.title).foregroundColor(.accentColor)
+                        Button("Buy Now") {}
+                    }
+                }
+            }
+        }.navigationTitle("Clipboard Purchase")
+    }
+}
+
+struct FlashbackDealsView: View {
+    let deals = [("Air Fryer", 2999, 4999, "Last Diwali"), ("Bluetooth Speaker", 999, 1999, "Last Christmas"), ("Running Shoes", 1499, 2999, "Independence Day")]
+    var body: some View {
+        List(deals, id: \.0) { name, price, oldPrice, date in
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(date).font(.caption).foregroundColor(.secondary)
+                    Text(name).font(.headline)
+                    HStack {
+                        Text("\(price)").font(.headline).foregroundColor(.accentColor)
+                        Text("\(oldPrice)").font(.subheadline).strikethrough().foregroundColor(.secondary)
+                    }
+                    Text("You save \(oldPrice - price)").font(.caption).foregroundColor(.accentColor)
+                }
+                Spacer()
+                Button("Add") {}
+            }.padding(.vertical, 4)
+        }.navigationTitle("Flashback Deals")
+    }
+}
+
+struct ExpiryGuaranteeView: View {
+    var body: some View {
+        List {
+            Section {
+                Text("🛡️ Your Protection").font(.headline).foregroundColor(.accentColor)
+                ForEach(["Free replacement if product has less than 6 months expiry", "No questions asked, doorstep pickup", "Refund within 48 hours of claim"], id: \.self) { Text("• \($0)") }
+                Button("Claim replacement") {}
+            }
+        }.navigationTitle("Expiry Guarantee")
+    }
+}
+
+struct PriceGuaranteeView: View {
+    @State private var productUrl = ""
+    @State private var competitorUrl = ""
+    @State private var competitorPrice = ""
+    @State private var claims = [("Bluetooth Speaker", "under review", "2 days ago", 350), ("USB-C Hub", "refunded", "1 week ago", 150)]
+    let stories = [("Sarah M. · Wireless Earbuds", "Saved 450", "Found a lower price and got refunded within 48 hours!"), ("James K. · Smart Watch", "Saved 1200", "The guarantee saved me big. Process was super smooth."), ("Priya R. · Laptop Stand", "Saved 300", "Submitted my claim and got approved the same day.")]
+    var body: some View {
+        List {
+            Section {
+                TextField("Our product URL", text: $productUrl)
+                TextField("Competitor URL", text: $competitorUrl)
+                TextField("Competitor price", text: $competitorPrice).keyboardType(.numberPad)
+                Button("Submit claim") {
+                    guard !productUrl.isEmpty, !competitorUrl.isEmpty, !competitorPrice.isEmpty else { return }
+                    claims.insert((String(productUrl.prefix(24)), "submitted", "just now", Int(competitorPrice) ?? 0), at: 0)
+                    productUrl = ""; competitorUrl = ""; competitorPrice = ""
+                }
+            }
+            Section("My claims") {
+                ForEach(claims, id: \.0) { name, status, date, refund in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(name).font(.headline)
+                            Text("\(status) · \(date)").font(.caption).foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Text("+\(refund)").font(.headline).foregroundColor(.accentColor)
+                    }
+                }
+            }
+            Section("Success stories") {
+                ForEach(stories, id: \.0) { who, saved, story in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("⭐ \(who) — \(saved)").font(.headline)
+                        Text("\"\(story)\"").font(.caption).foregroundColor(.secondary)
+                    }.padding(.vertical, 2)
+                }
+            }
+        }.navigationTitle("Price Guarantee")
+    }
+}
+
+struct SmartUpsellView: View {
+    let recs = [("SEO Setup", 1999, 999, "98% buy this"), ("Logo Design", 2499, 1499, "Popular add-on"), ("Content Writing", 2999, 1999, "Saves 3 days")]
+    @State private var selected: Set<String> = []
+    var total: Int { recs.filter { selected.contains($0.0) }.map { $0.2 }.reduce(0, +) }
+    var savings: Int { recs.filter { selected.contains($0.0) }.map { $0.1 - $0.2 }.reduce(0, +) }
+    var body: some View {
+        List {
+            Section { Text("In cart: Website Development — 9999").font(.headline) }
+            Section {
+                ForEach(recs, id: \.0) { name, price, bundle, stat in
+                    HStack {
+                        Button(action: {
+                            if selected.contains(name) { selected.remove(name) } else { selected.insert(name) }
+                        }) { Image(systemName: selected.contains(name) ? "checkmark.square.fill" : "square") }
+                        VStack(alignment: .leading) {
+                            Text(name).font(.headline)
+                            Text(stat).font(.caption).foregroundColor(.accentColor)
+                            Text("\(bundle) (was \(price))").font(.subheadline)
+                        }
+                    }
+                }
+            }
+            Section {
+                Text("Bundle total: \(total) · You save \(savings)").font(.headline).foregroundColor(.accentColor)
+                Button("Add bundle") {}.disabled(selected.isEmpty)
+            }
+        }.navigationTitle("Smart Upsell")
+    }
+}
+
+struct StudentBudgetView: View {
+    @State private var budget = ""
+    @State private var spent = ""
+    var budgetAmt: Double { Double(budget) ?? 0 }
+    var spentAmt: Double { Double(spent) ?? 0 }
+    var body: some View {
+        List {
+            Section("Your Budget") {
+                TextField("Monthly Budget (2000)", text: $budget).keyboardType(.numberPad)
+                TextField("Amount Spent (1200)", text: $spent).keyboardType(.numberPad)
+            }
+            if budgetAmt > 0 {
+                Section {
+                    HStack {
+                        Text("Remaining")
+                        Spacer()
+                        Text("\(Int(budgetAmt - spentAmt))").font(.title2).foregroundColor(.accentColor)
+                    }
+                    ProgressView(value: min(spentAmt / budgetAmt, 1.0))
+                }
+            }
+        }.navigationTitle("Student Budget")
+    }
+}
+
+struct SubscriptionExpiryView: View {
+    @State private var subs = [("Netflix", "2024-12-15", "active"), ("Spotify", "2024-11-30", "expiring")]
+    @State private var newName = ""
+    @State private var newDate = ""
+    var body: some View {
+        List {
+            Section {
+                ForEach(subs, id: \.0) { name, date, status in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(name).font(.headline)
+                            Text("Expires \(date)").font(.caption).foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Text(status).foregroundColor(status == "expiring" ? .red : .accentColor)
+                    }
+                }
+            }
+            Section("Add") {
+                TextField("Service name", text: $newName)
+                TextField("Expiry date (YYYY-MM-DD)", text: $newDate)
+                Button("Add subscription") {
+                    guard !newName.isEmpty, !newDate.isEmpty else { return }
+                    subs.append((newName, newDate, "active"))
+                    newName = ""; newDate = ""
+                }
+            }
+        }.navigationTitle("Subscription Expiry")
+    }
+}
+
+struct AlternativeFinderView: View {
+    @State private var searching = false
+    @State private var alternatives: [(String, Int, Int, Bool)] = []
+    var body: some View {
+        List {
+            Section {
+                Text("Looking for alternatives to: Brand X Shirt (1,199)").font(.subheadline).foregroundColor(.secondary)
+                Button(searching ? "Finding…" : "Find Alternatives") {
+                    searching = true
+                    Task {
+                        try? await Task.sleep(nanoseconds: 1_500_000_000)
+                        alternatives = [("Brand Y Shirt", 899, 95, true), ("Brand Z Shirt", 999, 90, true), ("Brand W Shirt", 799, 85, false)]
+                        searching = false
+                    }
+                }.disabled(searching)
+            }
+            ForEach(alternatives, id: \.0) { name, price, match, available in
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text("\(name) · \(match)% match").font(.headline)
+                        Text(available ? "In Stock" : "Out of stock").font(.caption).foregroundColor(available ? .accentColor : .red)
+                        Text("\(price)").font(.subheadline)
+                    }
+                    Spacer()
+                    if available { Button("Add") {} }
+                }
+            }
+        }.navigationTitle("Alternative Finder")
+    }
+}
+
+struct AssemblyFinderView: View {
+    @State private var search = ""
+    let techs = [("Rahul Kumar", 4.8, 234, 299), ("Amit Singh", 4.9, 189, 349), ("Vikram Patel", 4.7, 312, 279)]
+    var filtered: [(String, Double, Int, Int)] { search.isEmpty ? techs : techs.filter { $0.0.localizedCaseInsensitiveContains(search) } }
+    var body: some View {
+        List {
+            Section { TextField("Search technicians", text: $search) }
+            ForEach(filtered, id: \.0) { name, rating, jobs, price in
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("🔧 \(name)").font(.headline)
+                        Text(String(format: "⭐ %.1f · %d jobs", rating, jobs)).font(.caption).foregroundColor(.secondary)
+                        Text("\(price) visit").font(.subheadline).foregroundColor(.accentColor)
+                    }
+                    Spacer()
+                    Button("Book") {}
+                }.padding(.vertical, 4)
+            }
+        }.navigationTitle("Assembly Finder")
+    }
+}

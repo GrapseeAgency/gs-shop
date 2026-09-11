@@ -35,6 +35,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextDecoration
 import com.grapsee.shop.core.network.ApiClient
 import com.grapsee.shop.core.network.DeductionDto
 import com.grapsee.shop.core.network.HalalResultDto
@@ -1907,6 +1915,432 @@ fun CaseStudiesScreen(onBack: () -> Unit) {
                     Text("📈 $title", style = MaterialTheme.typography.titleSmall)
                     Text(results, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
                     Text("\"$quote\"", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------- emergency quick buy (wave-C)
+
+private data class UrgentItem(val name: String, val urgency: String, val delivery: String, val price: Int)
+
+private val urgentItems = listOf(
+    UrgentItem("Baby Diapers", "Critical", "30 min", 350),
+    UrgentItem("Medicine", "Urgent", "1 hour", 120),
+    UrgentItem("Phone Charger", "High", "2 hours", 299),
+    UrgentItem("Toilet Paper", "High", "2 hours", 80),
+)
+
+@Composable
+fun EmergencyQuickBuyScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Emergency Quick Buy", "Essentials in minutes", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(urgentItems, key = { it.name }) { item ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(item.name, style = MaterialTheme.typography.titleSmall)
+                            Text("${item.urgency} · delivers in ${item.delivery}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                            Text("${item.price}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Button(onClick = { toast("${item.name} ordered! Delivering in ${item.delivery}") }) { Text("Order") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------ clipboard purchase (wave-C)
+
+class ClipboardPurchaseViewModel : ViewModel() {
+    var detected by mutableStateOf(false); private set
+    init {
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(2000)
+            detected = true
+        }
+    }
+}
+
+@Composable
+fun ClipboardPurchaseScreen(onBack: () -> Unit, vm: ClipboardPurchaseViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Clipboard Purchase", "Copy a name, buy in one tap", onBack)
+        if (!vm.detected) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Monitoring clipboard for product names…", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        } else {
+            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
+                item {
+                    ToolCard {
+                        Text("Detected from clipboard", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                        Text("Wireless Earbuds", style = MaterialTheme.typography.titleMedium)
+                        Text("1299", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+                        Button(onClick = { toast("Wireless Earbuds added to cart!") }, modifier = Modifier.fillMaxWidth()) { Text("Buy Now") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------- flashback deals (wave-C)
+
+private data class FlashDeal(val name: String, val price: Int, val oldPrice: Int, val date: String)
+
+private val flashDeals = listOf(
+    FlashDeal("Air Fryer", 2999, 4999, "Last Diwali"),
+    FlashDeal("Bluetooth Speaker", 999, 1999, "Last Christmas"),
+    FlashDeal("Running Shoes", 1499, 2999, "Independence Day"),
+)
+
+@Composable
+fun FlashbackDealsScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Flashback Deals", "Missed prices, back again", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(flashDeals, key = { it.name }) { item ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(item.date, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(item.name, style = MaterialTheme.typography.titleSmall)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("${item.price}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                                Text("${item.oldPrice}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textDecoration = TextDecoration.LineThrough)
+                            }
+                            Text("You save ${item.oldPrice - item.price}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Button(onClick = { toast("${item.name} added! You saved ${item.oldPrice - item.price}") }) { Text("Add") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- expiry guarantee (wave-C)
+
+@Composable
+fun ExpiryGuaranteeScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Expiry Guarantee", "Free replacement under 6 months expiry", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("🛡️ Your Protection", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    listOf("Free replacement if product has less than 6 months expiry", "No questions asked, doorstep pickup", "Refund within 48 hours of claim").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                    Button(onClick = { toast("Claim submitted! Replacement on the way.") }, modifier = Modifier.fillMaxWidth()) { Text("Claim replacement") }
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------- price guarantee (wave-C)
+
+data class GuaranteeClaim(val productName: String, val status: String, val submittedAt: String, val refundAmount: Int)
+
+class PriceGuaranteeViewModel : ViewModel() {
+    var productUrl by mutableStateOf(""); private set
+    var competitorUrl by mutableStateOf(""); private set
+    var competitorPrice by mutableStateOf(""); private set
+    var claims = mutableStateListOf(
+        GuaranteeClaim("Bluetooth Speaker", "under review", "2 days ago", 350),
+        GuaranteeClaim("USB-C Hub", "refunded", "1 week ago", 150),
+    ); private set
+    fun updateProductUrl(v: String) { productUrl = v }
+    fun updateCompetitorUrl(v: String) { competitorUrl = v }
+    fun updateCompetitorPrice(v: String) { competitorPrice = v.filter { it.isDigit() } }
+    fun submit(onError: (String) -> Unit, onDone: (String) -> Unit) {
+        if (productUrl.isBlank() || competitorUrl.isBlank() || competitorPrice.isBlank()) { onError("Please fill in all fields"); return }
+        claims.add(0, GuaranteeClaim(productUrl.take(24), "submitted", "just now", competitorPrice.toIntOrNull() ?: 0))
+        productUrl = ""; competitorUrl = ""; competitorPrice = ""
+        onDone("Claim submitted! We will review within 48 hours.")
+    }
+}
+
+private val guaranteeStories = listOf(
+    Triple("Sarah M. · Wireless Earbuds", "Saved 450", "Found a lower price and got refunded within 48 hours!"),
+    Triple("James K. · Smart Watch", "Saved 1200", "The guarantee saved me big. Process was super smooth."),
+    Triple("Priya R. · Laptop Stand", "Saved 300", "Submitted my claim and got approved the same day."),
+)
+
+@Composable
+fun PriceGuaranteeScreen(onBack: () -> Unit, vm: PriceGuaranteeViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Price Guarantee", "Find it cheaper, we refund the gap", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.productUrl, onValueChange = vm::updateProductUrl, label = { Text("Our product URL") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = vm.competitorUrl, onValueChange = vm::updateCompetitorUrl, label = { Text("Competitor URL") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = vm.competitorPrice, onValueChange = vm::updateCompetitorPrice, label = { Text("Competitor price") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                    Button(onClick = { vm.submit({ toast(it) }, { toast(it) }) }, modifier = Modifier.fillMaxWidth()) { Text("Submit claim") }
+                }
+            }
+            items(vm.claims, key = { it.productName + it.submittedAt }) { claim ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(claim.productName, style = MaterialTheme.typography.titleSmall)
+                            Text("${claim.status} · ${claim.submittedAt}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text("+${claim.refundAmount}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            items(guaranteeStories, key = { it.first }) { (who, saved, story) ->
+                ToolCard {
+                    Text("⭐ $who — $saved", style = MaterialTheme.typography.titleSmall)
+                    Text("\"$story\"", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- smart upsell (wave-C)
+
+data class UpsellRec(val name: String, val price: Int, val bundlePrice: Int, val stat: String)
+
+class SmartUpsellViewModel : ViewModel() {
+    val recs = listOf(
+        UpsellRec("SEO Setup", 1999, 999, "98% buy this"),
+        UpsellRec("Logo Design", 2499, 1499, "Popular add-on"),
+        UpsellRec("Content Writing", 2999, 1999, "Saves 3 days"),
+    )
+    var selected = mutableStateListOf<String>(); private set
+    fun toggle(name: String) { if (selected.contains(name)) selected.remove(name) else selected.add(name) }
+    fun bundleTotal(): Int = recs.filter { selected.contains(it.name) }.sumOf { it.bundlePrice }
+    fun savings(): Int = recs.filter { selected.contains(it.name) }.sumOf { it.price - it.bundlePrice }
+}
+
+@Composable
+fun SmartUpsellScreen(onBack: () -> Unit, vm: SmartUpsellViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Smart Upsell", "Bundle & save", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("In cart: Website Development — 9999", style = MaterialTheme.typography.titleSmall)
+                }
+            }
+            items(vm.recs, key = { it.name }) { rec ->
+                val on = vm.selected.contains(rec.name)
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.toggle(rec.name) }) {
+                        Checkbox(checked = on, onCheckedChange = { vm.toggle(rec.name) })
+                        Column(Modifier.weight(1f)) {
+                            Text(rec.name, style = MaterialTheme.typography.titleSmall)
+                            Text(rec.stat, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                            Text("${rec.bundlePrice} (was ${rec.price})", style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+            item {
+                ToolCard {
+                    Text("Bundle total: ${vm.bundleTotal()} · You save ${vm.savings()}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    Button(onClick = { toast("Bundle added! You saved ${vm.savings()}") }, enabled = vm.selected.isNotEmpty(), modifier = Modifier.fillMaxWidth()) { Text("Add bundle") }
+                }
+            }
+        }
+    }
+}
+
+// ----------------------------------------------- student budget (wave-C)
+
+class StudentBudgetViewModel : ViewModel() {
+    var budget by mutableStateOf(""); private set
+    var spent by mutableStateOf(""); private set
+    fun updateBudget(v: String) { budget = v.filter { it.isDigit() } }
+    fun updateSpent(v: String) { spent = v.filter { it.isDigit() } }
+    fun budgetAmt(): Double = budget.toDoubleOrNull() ?: 0.0
+    fun spentAmt(): Double = spent.toDoubleOrNull() ?: 0.0
+    fun remaining(): Double = budgetAmt() - spentAmt()
+    fun percentage(): Float = if (budgetAmt() > 0) (spentAmt() / budgetAmt()).toFloat() else 0f
+}
+
+@Composable
+fun StudentBudgetScreen(onBack: () -> Unit, vm: StudentBudgetViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Student Budget", "2000/month essentials mode", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.budget, onValueChange = vm::updateBudget, label = { Text("Monthly Budget") }, placeholder = { Text("2000") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = vm.spent, onValueChange = vm::updateSpent, label = { Text("Amount Spent") }, placeholder = { Text("1200") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                }
+            }
+            if (vm.budgetAmt() > 0) {
+                item {
+                    ToolCard {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Remaining", style = MaterialTheme.typography.bodyMedium)
+                            Text("${vm.remaining().toInt()}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                        }
+                        LinearProgressIndicator(progress = { vm.percentage().coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------ subscription expiry (wave-C)
+
+data class Subscription(val name: String, val expiryDate: String, val status: String)
+
+class SubscriptionExpiryViewModel : ViewModel() {
+    var subs = mutableStateListOf(
+        Subscription("Netflix", "2024-12-15", "active"),
+        Subscription("Spotify", "2024-11-30", "expiring"),
+    ); private set
+    var newName by mutableStateOf(""); private set
+    var newDate by mutableStateOf(""); private set
+    fun updateNewName(v: String) { newName = v }
+    fun updateNewDate(v: String) { newDate = v }
+    fun add(onDone: (String) -> Unit) {
+        if (newName.isBlank() || newDate.isBlank()) { onDone("Enter name and expiry date"); return }
+        subs.add(Subscription(newName.trim(), newDate.trim(), "active"))
+        newName = ""; newDate = ""
+        onDone("Subscription added!")
+    }
+}
+
+@Composable
+fun SubscriptionExpiryScreen(onBack: () -> Unit, vm: SubscriptionExpiryViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Subscription Expiry", "Never lose access", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(vm.subs, key = { it.name }) { sub ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(sub.name, style = MaterialTheme.typography.titleSmall)
+                            Text("Expires ${sub.expiryDate}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text(sub.status, style = MaterialTheme.typography.labelLarge, color = if (sub.status == "expiring") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.newName, onValueChange = vm::updateNewName, label = { Text("Service name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = vm.newDate, onValueChange = vm::updateNewDate, label = { Text("Expiry date (YYYY-MM-DD)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = { vm.add({ toast(it) }) }, modifier = Modifier.fillMaxWidth()) { Text("Add subscription") }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- alternative finder (wave-C)
+
+data class Alternative(val name: String, val price: Int, val match: Int, val available: Boolean)
+
+class AlternativeFinderViewModel : ViewModel() {
+    var searching by mutableStateOf(false); private set
+    var alternatives = mutableStateListOf<Alternative>(); private set
+    fun find() {
+        viewModelScope.launch {
+            searching = true
+            kotlinx.coroutines.delay(1500)
+            alternatives.clear()
+            alternatives.addAll(
+                listOf(
+                    Alternative("Brand Y Shirt", 899, 95, true),
+                    Alternative("Brand Z Shirt", 999, 90, true),
+                    Alternative("Brand W Shirt", 799, 85, false),
+                )
+            )
+            searching = false
+        }
+    }
+}
+
+@Composable
+fun AlternativeFinderScreen(onBack: () -> Unit, vm: AlternativeFinderViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Alternative Finder", "Out of stock? Try these", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("Looking for alternatives to: Brand X Shirt (1,199)", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Button(onClick = vm::find, enabled = !vm.searching, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.searching) "Finding…" else "Find Alternatives")
+                    }
+                }
+            }
+            items(vm.alternatives, key = { it.name }) { alt ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("${alt.name} · ${alt.match}% match", style = MaterialTheme.typography.titleSmall)
+                            Text(if (alt.available) "In Stock" else "Out of stock", style = MaterialTheme.typography.bodySmall, color = if (alt.available) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                            Text("${alt.price}", style = MaterialTheme.typography.bodyMedium)
+                        }
+                        if (alt.available) Button(onClick = { toast("${alt.name} added to cart") }) { Text("Add") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------- assembly finder (wave-C)
+
+private data class Technician(val name: String, val rating: Double, val jobs: Int, val price: Int)
+
+private val technicians = listOf(
+    Technician("Rahul Kumar", 4.8, 234, 299),
+    Technician("Amit Singh", 4.9, 189, 349),
+    Technician("Vikram Patel", 4.7, 312, 279),
+)
+
+@Composable
+fun AssemblyFinderScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    var search by remember { mutableStateOf("") }
+    val filtered = technicians.filter { search.isBlank() || it.name.contains(search, ignoreCase = true) }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Assembly Finder", "Book a technician", onBack)
+        OutlinedTextField(value = search, onValueChange = { search = it }, label = { Text("Search technicians") }, singleLine = true, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp))
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(filtered, key = { it.name }) { tech ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("🔧 ${tech.name}", style = MaterialTheme.typography.titleSmall)
+                            Text("⭐ ${tech.rating} · ${tech.jobs} jobs", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("${tech.price} visit", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Button(onClick = { toast("Booked ${tech.name}! They'll arrive in 2 hours.") }) { Text("Book") }
+                    }
                 }
             }
         }

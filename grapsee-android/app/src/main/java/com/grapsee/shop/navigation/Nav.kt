@@ -171,6 +171,16 @@ object Routes {
     const val QUALITYCERT = "qualitycert"
     const val PORTFOLIOPROOF = "portfolioproof"
     const val CASESTUDIES = "casestudies"
+    const val EMERGENCYBUY = "emergencybuy"
+    const val CLIPBOARDBUY = "clipboardbuy"
+    const val FLASHBACK = "flashback"
+    const val EXPIRYGUAR = "expiryguar"
+    const val PRICEGUAR = "priceguar"
+    const val SMARTUPSELL = "smartupsell"
+    const val STUDENTBUDGET = "studentbudget"
+    const val SUBEXPIRY = "subexpiry"
+    const val ALTFINDER = "altfinder"
+    const val ASSEMBLY = "assembly"
     const val BODYTYPE = "bodytype"
     const val USECASEMATCHER = "usecasematcher"
     const val WARDROBE = "wardrobe"
@@ -390,6 +400,16 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 route == "/quality-certificate" -> navController.navigate(Routes.QUALITYCERT)
                 route == "/portfolio-proof" -> navController.navigate(Routes.PORTFOLIOPROOF)
                 route == "/case-studies" -> navController.navigate(Routes.CASESTUDIES)
+                route == "/emergency-quick-buy" -> navController.navigate(Routes.EMERGENCYBUY)
+                route == "/clipboard-purchase" -> navController.navigate(Routes.CLIPBOARDBUY)
+                route == "/flashback-deals" -> navController.navigate(Routes.FLASHBACK)
+                route == "/expiry-guarantee" -> navController.navigate(Routes.EXPIRYGUAR)
+                route == "/price-guarantee" -> navController.navigate(Routes.PRICEGUAR)
+                route == "/smart-upsell" -> navController.navigate(Routes.SMARTUPSELL)
+                route == "/student-budget" -> navController.navigate(Routes.STUDENTBUDGET)
+                route == "/subscription-expiry" -> navController.navigate(Routes.SUBEXPIRY)
+                route == "/alternative-finder" -> navController.navigate(Routes.ALTFINDER)
+                route == "/assembly-finder" -> navController.navigate(Routes.ASSEMBLY)
                 route == "/body-type" -> navController.navigate(Routes.BODYTYPE)
                 route == "/use-case-matcher" -> navController.navigate(Routes.USECASEMATCHER)
                 route == "/wardrobe-planner" -> navController.navigate(Routes.WARDROBE)
@@ -1295,6 +1315,46 @@ fun GrapseeAppRoot(navController: NavHostController) {
 
             composable(Routes.CASESTUDIES) {
                 com.grapsee.shop.features.tools.CaseStudiesScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.EMERGENCYBUY) {
+                com.grapsee.shop.features.tools.EmergencyQuickBuyScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.CLIPBOARDBUY) {
+                com.grapsee.shop.features.tools.ClipboardPurchaseScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.FLASHBACK) {
+                com.grapsee.shop.features.tools.FlashbackDealsScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.EXPIRYGUAR) {
+                com.grapsee.shop.features.tools.ExpiryGuaranteeScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.PRICEGUAR) {
+                com.grapsee.shop.features.tools.PriceGuaranteeScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SMARTUPSELL) {
+                com.grapsee.shop.features.tools.SmartUpsellScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.STUDENTBUDGET) {
+                com.grapsee.shop.features.tools.StudentBudgetScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SUBEXPIRY) {
+                com.grapsee.shop.features.tools.SubscriptionExpiryScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.ALTFINDER) {
+                com.grapsee.shop.features.tools.AlternativeFinderScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.ASSEMBLY) {
+                com.grapsee.shop.features.tools.AssemblyFinderScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.SMSORDER) {

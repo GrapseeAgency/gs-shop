@@ -43,8 +43,8 @@ cmd_start() {
   [ "${1:-}" = "--build" ] && build=1
   mkdir -p "$LOGDIR"
   if [ $build -eq 1 ]; then
-    echo "building backend…"; ( cd "$ROOT/shop-backend" && npx next build )
-    echo "building frontend…"; ( cd "$ROOT/shop-frontend" && npx next build )
+    echo "building backend…"; ( cd "$ROOT/shop-backend" && npx next build --webpack )
+    echo "building frontend…"; ( cd "$ROOT/shop-frontend" && npx next build --webpack )
   fi
   if running "$BACKEND_PID"; then echo "backend already up ($(cat $BACKEND_PID))"; else
     supervise backend "$ROOT/shop-backend" "npx next start -p $BACKEND_PORT" "$BACKEND_PID" &

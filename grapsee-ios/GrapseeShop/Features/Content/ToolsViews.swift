@@ -1092,3 +1092,316 @@ struct AssemblyFinderView: View {
         }.navigationTitle("Assembly Finder")
     }
 }
+
+// MARK: - Tools wave-D
+
+struct AutoCouponView: View {
+    @State private var loading = true
+    @State private var coupons = [(String, String)]()
+    var body: some View {
+        Group {
+            if loading {
+                VStack(spacing: 12) { ProgressView(); Text("Finding coupons…").foregroundColor(.secondary) }
+                    .onAppear { Task { try? await Task.sleep(nanoseconds: 1_200_000_000); coupons = [("WELCOME10", "10% off your first order"), ("FLAT500", "Flat 500 off above 4999"), ("FREESHIP", "Free express shipping")]; loading = false } }
+            } else {
+                List {
+                    if let best = coupons.first {
+                        Section {
+                            Text("🏆 Best for cart (5000): \(best.0)").font(.headline).foregroundColor(.accentColor)
+                            Text(best.1)
+                            Button("Copy \(best.0)") {}
+                        }
+                    }
+                    ForEach(coupons, id: \.0) { code, desc in
+                        HStack {
+                            VStack(alignment: .leading) { Text(code).font(.headline); Text(desc).font(.caption).foregroundColor(.secondary) }
+                            Spacer()
+                            Button("Copy") {}
+                        }
+                    }
+                }
+            }
+        }.navigationTitle("Auto Coupon")
+    }
+}
+
+struct BulkBuyView: View {
+    @State private var productId = ""
+    @State private var targetPrice = ""
+    @State private var quantity = 5
+    @State private var loading = false
+    @State private var sent = false
+    var body: some View {
+        List {
+            Section {
+                TextField("Product name or ID", text: $productId)
+                TextField("Target price per unit", text: $targetPrice).keyboardType(.numberPad)
+                Text("Quantity: \(quantity)")
+                HStack { ForEach([5, 10, 25, 100], id: \.self) { q in Button("\(q)") { quantity = q } } }
+                Button(loading ? "Sending…" : "Send request") {
+                    loading = true
+                    Task { try? await Task.sleep(nanoseconds: 1_200_000_000); loading = false; sent = true }
+                }.disabled(productId.isEmpty || loading)
+            }
+            if sent {
+                Section {
+                    Text("✅ Request live — sellers are bidding").font(.headline).foregroundColor(.accentColor)
+                    Text("You will be notified when a seller beats your target.")
+                }
+            }
+        }.navigationTitle("Bulk Buy")
+    }
+}
+
+struct OneClickReorderView: View {
+    let lines = [("Wireless Earbuds", 1299), ("Phone Case", 499)]
+    @State private var placing = false
+    @State private var done = false
+    var body: some View {
+        List {
+            ForEach(lines, id: \.0) { name, price in
+                HStack { Text(name).font(.headline); Spacer(); Text("\(price)").foregroundColor(.accentColor) }
+            }
+            Section {
+                Button(placing ? "Adding…" : "Reorder all (\(lines.count))") {
+                    placing = true
+                    Task { try? await Task.sleep(nanoseconds: 800_000_000); placing = false; done = true }
+                }.disabled(placing)
+                if done { Text("✅ \(lines.count) items added to cart!").foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("One-Click Reorder")
+    }
+}
+
+struct PriceDropRefundView: View {
+    @State private var claimed: Set<String> = []
+    let refunds = [("Bluetooth Speaker", "ORD-1042", 350), ("Running Shoes", "ORD-1038", 200)]
+    var body: some View {
+        List(refunds, id: \.1) { name, orderId, drop in
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(name).font(.headline)
+                    Text("\(orderId) · dropped \(drop)").font(.caption).foregroundColor(.secondary)
+                }
+                Spacer()
+                if claimed.contains(orderId) { Text("Claimed ✅").foregroundColor(.accentColor) }
+                else { Button("Claim \(drop)") { claimed.insert(orderId) } }
+            }.padding(.vertical, 4)
+        }.navigationTitle("Price-Drop Refunds")
+    }
+}
+
+struct GroceryImportView: View {
+    @State private var raw = ""
+    @State private var importing = false
+    @State private var items: [(String, Int)] = []
+    let catalog = ["milk": 60, "eggs": 90, "bread": 45, "rice": 120, "atta": 210, "sugar": 50, "tea": 140, "coffee": 220]
+    var body: some View {
+        List {
+            Section {
+                TextField("Paste your list (one item per line)", text: $raw, axis: .vertical)
+                Button(importing ? "Matching…" : "Import list") {
+                    importing = true
+                    Task {
+                        try? await Task.sleep(nanoseconds: 1_000_000_000)
+                        items = raw.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespaces).lowercased() }.filter { !$0.isEmpty }.map { line in (line, catalog.first(where: { line.contains($0.key) })?.value ?? 99) }
+                        importing = false
+                    }
+                }.disabled(raw.isEmpty || importing)
+            }
+            ForEach(items, id: \.0) { name, price in
+                HStack { Text(name); Spacer(); Text("\(price)").foregroundColor(.accentColor) }
+            }
+            if !items.isEmpty {
+                Section { Button("Add All to Cart (\(items.map { $0.1 }.reduce(0, +)))") {} }
+            }
+        }.navigationTitle("Grocery List Import")
+    }
+}
+
+struct RecipeToCartView: View {
+    @State private var url = ""
+    @State private var servings = 4
+    @State private var loading = false
+    @State private var ingredients: [(String, String)] = []
+    var body: some View {
+        List {
+            Section {
+                TextField("Recipe URL", text: $url)
+                Picker("Servings", selection: $servings) { ForEach([2, 4, 6, 8], id: \.self) { Text("\($0)").tag($0) } }.pickerStyle(.segmented)
+                Button(loading ? "Converting…" : "Convert for \(servings) servings") {
+                    loading = true
+                    Task {
+                        try? await Task.sleep(nanoseconds: 1_200_000_000)
+                        let scale = Double(servings) / 4.0
+                        ingredients = [("Basmati Rice", "\(Int(500 * scale)) g"), ("Chicken", "\(Int(750 * scale)) g"), ("Onions", "\(Int(3 * scale)) pcs"), ("Biryani Masala", "\(Int(2 * scale)) tbsp"), ("Curd", "\(Int(250 * scale)) g")]
+                        loading = false
+                    }
+                }.disabled(url.isEmpty || loading)
+            }
+            ForEach(ingredients, id: \.0) { name, qty in
+                HStack { Text(name); Spacer(); Text(qty).foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("Recipe to Cart")
+    }
+}
+
+struct PetSuppliesView: View {
+    @State private var petType = "dog"
+    @State private var autoPilot = false
+    @State private var loading = false
+    var body: some View {
+        List {
+            Section {
+                Picker("Pet", selection: $petType) {
+                    Text("🐶 Dog").tag("dog")
+                    Text("🐱 Cat").tag("cat")
+                }.pickerStyle(.segmented)
+                ForEach(["Monthly food pack", "Treats rotation", "Grooming essentials", "Toy of the month"], id: \.self) { Text("• \($0)") }
+                Button(autoPilot ? "Auto-Pilot ON ✅" : loading ? "Setting up…" : "Enable Auto-Pilot") {
+                    loading = true
+                    Task { try? await Task.sleep(nanoseconds: 1_000_000_000); loading = false; autoPilot = true }
+                }.disabled(loading || autoPilot)
+            }
+        }.navigationTitle("Pet Supplies")
+    }
+}
+
+struct SchoolSuppliesView: View {
+    @State private var grade = "5"
+    @State private var items: [(Int, String, Int, Bool)] = []
+    let kit = [(1, "Notebook set (6 pcs)", 240), (2, "Geometry box", 150), (3, "Crayons 24 shades", 120), (4, "School bag", 899), (5, "Water bottle", 299), (6, "Lunch box", 349)]
+    var body: some View {
+        List {
+            Section {
+                TextField("Grade/Class", text: $grade).keyboardType(.numberPad)
+                Button("Generate list") {
+                    Task {
+                        try? await Task.sleep(nanoseconds: 1_000_000_000)
+                        items = kit.map { ($0.0, $0.1, $0.2, true) }
+                    }
+                }
+            }
+            ForEach(items, id: \.0) { id, name, price, checked in
+                HStack {
+                    Button(action: {
+                        if let i = items.firstIndex(where: { $0.0 == id }) { items[i].3.toggle() }
+                    }) { Image(systemName: checked ? "checkmark.square.fill" : "square") }
+                    Text(name)
+                    Spacer()
+                    Text("\(price)").foregroundColor(.accentColor)
+                }
+            }
+            if !items.isEmpty {
+                Section { Button("Add checked to cart") {} }
+            }
+        }.navigationTitle("School Supply Kit")
+    }
+}
+
+struct MovingKitView: View {
+    @State private var houseSize = "2bhk"
+    @State private var items: [(Int, String, Int, Bool)] = []
+    var body: some View {
+        List {
+            Section {
+                Picker("House", selection: $houseSize) { ForEach(["1bhk", "2bhk", "3bhk", "4bhk+"], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
+                Button("Generate kit") {
+                    Task {
+                        try? await Task.sleep(nanoseconds: 1_000_000_000)
+                        let mult = houseSize == "1bhk" ? 1 : houseSize == "2bhk" ? 2 : houseSize == "3bhk" ? 3 : 4
+                        items = [(1, "Carton boxes (\(mult * 10) pcs)", mult * 300, true), (2, "Bubble wrap (\(mult * 2) rolls)", mult * 180, true), (3, "Packing tape (\(mult * 3) pcs)", mult * 60, true), (4, "Markers + labels set", 120, true), (5, "Mattress cover", 250, true)]
+                    }
+                }
+            }
+            ForEach(items, id: \.0) { id, name, price, checked in
+                HStack {
+                    Button(action: {
+                        if let i = items.firstIndex(where: { $0.0 == id }) { items[i].3.toggle() }
+                    }) { Image(systemName: checked ? "checkmark.square.fill" : "square") }
+                    Text(name)
+                    Spacer()
+                    Text("\(price)").foregroundColor(.accentColor)
+                }
+            }
+            if !items.isEmpty {
+                Section { Button("Add checked to cart") {} }
+            }
+        }.navigationTitle("Moving House Kit")
+    }
+}
+
+struct ApplianceRepairView: View {
+    @State private var applianceType = ""
+    @State private var problem = ""
+    @State private var loading = false
+    @State private var found = false
+    let techs = [("Rahul Kumar", 4.8, 234, 299), ("Amit Singh", 4.9, 189, 349), ("Vikram Patel", 4.7, 312, 279)]
+    var body: some View {
+        List {
+            Section {
+                HStack { ForEach(["AC", "Fridge", "Washing Machine", "TV"], id: \.self) { t in Button(t) { applianceType = t }.buttonStyle(.borderedProminent).tint(applianceType == t ? .accentColor : .gray) } }
+                TextField("Describe the problem", text: $problem)
+                Button(loading ? "Finding…" : "Find technicians") {
+                    guard !applianceType.isEmpty, !problem.isEmpty else { return }
+                    loading = true
+                    Task { try? await Task.sleep(nanoseconds: 1_000_000_000); loading = false; found = true }
+                }.disabled(loading)
+            }
+            if found {
+                ForEach(techs, id: \.0) { name, rating, jobs, price in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("🔧 \(name)").font(.headline)
+                            Text(String(format: "⭐ %.1f · %d jobs · %d visit", rating, jobs, price)).font(.caption).foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Button("Book") {}
+                    }.padding(.vertical, 4)
+                }
+            }
+        }.navigationTitle("Appliance Repair")
+    }
+}
+
+struct SafetyRecallView: View {
+    @State private var productId = ""
+    @State private var checked = false
+    @State private var safe = true
+    var body: some View {
+        List {
+            Section {
+                TextField("Product ID / model", text: $productId)
+                Button("Check recall") {
+                    let id = productId.trimmingCharacters(in: .whitespaces).lowercased()
+                    safe = !(id.contains("x100") || id.hasSuffix("007"))
+                    checked = true
+                }.disabled(productId.isEmpty)
+            }
+            if checked {
+                Section {
+                    Text(safe ? "✅ Product is safe" : "⚠️ Recalled — stop use").font(.headline).foregroundColor(safe ? .accentColor : .red)
+                    Text(safe ? "No active recalls for this model." : "Contact support for a free replacement or refund.")
+                }
+            }
+        }.navigationTitle("Safety Recall Check")
+    }
+}
+
+struct VerifiedPhotosView: View {
+    let photos = [("Rahul M.", true, 24, "iPhone 15"), ("Priya K.", true, 18, "Samsung S24"), ("Amit S.", false, 5, "OnePlus 12")]
+    var body: some View {
+        List {
+            Section {
+                Text("Only verified buyers can upload").font(.caption).foregroundColor(.secondary)
+                Button("Upload Photo") {}
+            }
+            ForEach(photos, id: \.0) { user, verified, likes, product in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(product) \(verified ? "✅" : "")").font(.headline)
+                    Text("\(user) · ❤ \(likes)").font(.caption).foregroundColor(.secondary)
+                }.padding(.vertical, 4)
+            }
+        }.navigationTitle("Verified Photos")
+    }
+}

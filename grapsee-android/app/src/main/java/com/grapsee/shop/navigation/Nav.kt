@@ -181,6 +181,18 @@ object Routes {
     const val SUBEXPIRY = "subexpiry"
     const val ALTFINDER = "altfinder"
     const val ASSEMBLY = "assembly"
+    const val AUTOCOUPON = "autocoupon"
+    const val BULKBUY = "bulkbuy"
+    const val REORDER = "reorder"
+    const val PRICEDROPREFUND = "pricedroprefund"
+    const val GROCERY = "grocery"
+    const val RECIPE = "recipe"
+    const val PETSUP = "petsup"
+    const val SCHOOLSUP = "schoolsup"
+    const val MOVINGKIT = "movingkit"
+    const val APPLIANCE = "appliance"
+    const val SAFETY = "safety"
+    const val VERIFIEDPHOTOS = "verifiedphotos"
     const val BODYTYPE = "bodytype"
     const val USECASEMATCHER = "usecasematcher"
     const val WARDROBE = "wardrobe"
@@ -410,6 +422,18 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 route == "/subscription-expiry" -> navController.navigate(Routes.SUBEXPIRY)
                 route == "/alternative-finder" -> navController.navigate(Routes.ALTFINDER)
                 route == "/assembly-finder" -> navController.navigate(Routes.ASSEMBLY)
+                route == "/auto-coupon" -> navController.navigate(Routes.AUTOCOUPON)
+                route == "/bulk-buy" -> navController.navigate(Routes.BULKBUY)
+                route == "/one-click-reorder" -> navController.navigate(Routes.REORDER)
+                route == "/price-drop-refund" -> navController.navigate(Routes.PRICEDROPREFUND)
+                route == "/grocery-list-import" -> navController.navigate(Routes.GROCERY)
+                route == "/recipe-to-cart" -> navController.navigate(Routes.RECIPE)
+                route == "/pet-supplies" -> navController.navigate(Routes.PETSUP)
+                route == "/school-supplies" -> navController.navigate(Routes.SCHOOLSUP)
+                route == "/moving-kit" -> navController.navigate(Routes.MOVINGKIT)
+                route == "/appliance-repair" -> navController.navigate(Routes.APPLIANCE)
+                route == "/safety-recall" -> navController.navigate(Routes.SAFETY)
+                route == "/verified-photos" -> navController.navigate(Routes.VERIFIEDPHOTOS)
                 route == "/body-type" -> navController.navigate(Routes.BODYTYPE)
                 route == "/use-case-matcher" -> navController.navigate(Routes.USECASEMATCHER)
                 route == "/wardrobe-planner" -> navController.navigate(Routes.WARDROBE)
@@ -1355,6 +1379,54 @@ fun GrapseeAppRoot(navController: NavHostController) {
 
             composable(Routes.ASSEMBLY) {
                 com.grapsee.shop.features.tools.AssemblyFinderScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.AUTOCOUPON) {
+                com.grapsee.shop.features.tools.AutoCouponScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.BULKBUY) {
+                com.grapsee.shop.features.tools.BulkBuyScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.REORDER) {
+                com.grapsee.shop.features.tools.OneClickReorderScreen(onBack = { navController.popBackStack() }, onCart = { navController.navigate(Routes.CART) })
+            }
+
+            composable(Routes.PRICEDROPREFUND) {
+                com.grapsee.shop.features.tools.PriceDropRefundScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.GROCERY) {
+                com.grapsee.shop.features.tools.GroceryImportScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.RECIPE) {
+                com.grapsee.shop.features.tools.RecipeToCartScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.PETSUP) {
+                com.grapsee.shop.features.tools.PetSuppliesScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SCHOOLSUP) {
+                com.grapsee.shop.features.tools.SchoolSuppliesScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.MOVINGKIT) {
+                com.grapsee.shop.features.tools.MovingKitScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.APPLIANCE) {
+                com.grapsee.shop.features.tools.ApplianceRepairScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SAFETY) {
+                com.grapsee.shop.features.tools.SafetyRecallScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.VERIFIEDPHOTOS) {
+                com.grapsee.shop.features.tools.VerifiedPhotosScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.SMSORDER) {

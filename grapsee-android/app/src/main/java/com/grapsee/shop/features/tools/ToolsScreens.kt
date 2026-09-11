@@ -2313,7 +2313,7 @@ fun AlternativeFinderScreen(onBack: () -> Unit, vm: AlternativeFinderViewModel =
 
 // ---------------------------------------------- assembly finder (wave-C)
 
-private data class Technician(val name: String, val rating: Double, val jobs: Int, val price: Int)
+data class Technician(val name: String, val rating: Double, val jobs: Int, val price: Int)
 
 private val technicians = listOf(
     Technician("Rahul Kumar", 4.8, 234, 299),
@@ -2340,6 +2340,659 @@ fun AssemblyFinderScreen(onBack: () -> Unit) {
                             Text("${tech.price} visit", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
                         }
                         Button(onClick = { toast("Booked ${tech.name}! They'll arrive in 2 hours.") }) { Text("Book") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ----------------------------------------------- auto coupon (wave-D)
+
+data class DemoCoupon(val code: String, val desc: String, val off: String)
+
+private val demoCoupons = listOf(
+    DemoCoupon("WELCOME10", "10% off your first order", "10%"),
+    DemoCoupon("FLAT500", "Flat 500 off above 4999", "500"),
+    DemoCoupon("FREESHIP", "Free express shipping", "ship"),
+)
+
+class AutoCouponViewModel : ViewModel() {
+    var loading by mutableStateOf(true); private set
+    var coupons = mutableStateListOf<DemoCoupon>(); private set
+    init {
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1200)
+            coupons.addAll(demoCoupons)
+            loading = false
+        }
+    }
+    fun best(): DemoCoupon? = coupons.firstOrNull()
+}
+
+@Composable
+fun AutoCouponScreen(onBack: () -> Unit, vm: AutoCouponViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Auto Coupon", "Best code, applied for you", onBack)
+        if (vm.loading) { Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Finding coupons…") } } else {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            vm.best()?.let { best ->
+                item {
+                    ToolCard {
+                        Text("🏆 Best for cart (5000): ${best.code}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Text(best.desc, style = MaterialTheme.typography.bodyMedium)
+                        Button(onClick = { toast("Coupon code copied!") }, modifier = Modifier.fillMaxWidth()) { Text("Copy ${best.code}") }
+                    }
+                }
+            }
+            items(vm.coupons, key = { it.code }) { coupon ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(coupon.code, style = MaterialTheme.typography.titleSmall)
+                            Text(coupon.desc, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Button(onClick = { toast("Coupon code copied!") }) { Text("Copy") }
+                    }
+                }
+            }
+        }
+        }
+    }
+}
+
+// -------------------------------------------------- bulk buy (wave-D)
+
+class BulkBuyViewModel : ViewModel() {
+    var productId by mutableStateOf(""); private set
+    var targetPrice by mutableStateOf(""); private set
+    var quantity by mutableStateOf(5); private set
+    var loading by mutableStateOf(false); private set
+    var sent by mutableStateOf(false); private set
+    fun updateProductId(v: String) { productId = v; sent = false }
+    fun updateTargetPrice(v: String) { targetPrice = v.filter { it.isDigit() }; sent = false }
+    fun updateQuantity(v: Int) { quantity = v.coerceIn(1, 1000) }
+    fun send(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            loading = true
+            kotlinx.coroutines.delay(1200)
+            loading = false
+            sent = true
+            onDone("Request sent to 5 sellers!")
+        }
+    }
+}
+
+@Composable
+fun BulkBuyScreen(onBack: () -> Unit, vm: BulkBuyViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Bulk Buy", "Name your price, sellers compete", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.productId, onValueChange = vm::updateProductId, label = { Text("Product name or ID") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = vm.targetPrice, onValueChange = vm::updateTargetPrice, label = { Text("Target price per unit") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                    Text("Quantity: ${vm.quantity}", style = MaterialTheme.typography.bodyMedium)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(5, 10, 25, 100).forEach { q ->
+                            Button(onClick = { vm.updateQuantity(q) }) { Text("$q") }
+                        }
+                    }
+                    Button(onClick = { vm.send(::toast) }, enabled = vm.productId.isNotBlank() && !vm.loading, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.loading) "Sending…" else "Send request")
+                    }
+                }
+            }
+            if (vm.sent) {
+                item {
+                    ToolCard {
+                        Text("✅ Request live — sellers are bidding", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Text("You will be notified when a seller beats ${vm.targetPrice.ifBlank { "your target" }}.", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------- one-click reorder (wave-D)
+
+data class ReorderLine(val name: String, val price: Double)
+
+class OneClickReorderViewModel : ViewModel() {
+    var lines = mutableStateListOf(
+        ReorderLine("Wireless Earbuds", 1299.0),
+        ReorderLine("Phone Case", 499.0),
+    ); private set
+    var placing by mutableStateOf(false); private set
+    fun reorder(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            placing = true
+            lines.forEachIndexed { i, l ->
+                com.grapsee.shop.core.cart.CartStore.add(com.grapsee.shop.core.network.CartLine(id = "reorder-$i", productId = "reorder-$i", name = l.name, price = l.price, quantity = 1))
+            }
+            placing = false
+            onDone("${lines.size} items added to cart!")
+        }
+    }
+}
+
+@Composable
+fun OneClickReorderScreen(onBack: () -> Unit, onCart: () -> Unit, vm: OneClickReorderViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("One-Click Reorder", "Same as last time", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(vm.lines, key = { it.name }) { line ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(line.name, style = MaterialTheme.typography.titleSmall)
+                            Text("${line.price.toInt()}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+            }
+            item {
+                Button(onClick = { vm.reorder { toast(it); onCart() } }, enabled = !vm.placing, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (vm.placing) "Adding…" else "Reorder all (${vm.lines.size})")
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------ price drop refund (wave-D)
+
+data class DropRefund(val name: String, val orderId: String, val drop: Int, var claimed: Boolean = false)
+
+class PriceDropRefundViewModel : ViewModel() {
+    var refunds = mutableStateListOf(
+        DropRefund("Bluetooth Speaker", "ORD-1042", 350),
+        DropRefund("Running Shoes", "ORD-1038", 200),
+    ); private set
+    fun claim(orderId: String, onDone: (String) -> Unit) {
+        val i = refunds.indexOfFirst { it.orderId == orderId }
+        if (i >= 0) refunds[i] = refunds[i].copy(claimed = true)
+        onDone("Refund claimed! Money will be back in 5-7 days.")
+    }
+}
+
+@Composable
+fun PriceDropRefundScreen(onBack: () -> Unit, vm: PriceDropRefundViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Price-Drop Refunds", "Bought high? Get the gap back", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(vm.refunds, key = { it.orderId }) { refund ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(refund.name, style = MaterialTheme.typography.titleSmall)
+                            Text("${refund.orderId} · dropped ${refund.drop}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        if (refund.claimed) Text("Claimed ✅", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                        else Button(onClick = { vm.claim(refund.orderId, ::toast) }) { Text("Claim ${refund.drop}") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ----------------------------------------- grocery list import (wave-D)
+
+data class GroceryMatch(val name: String, val price: Int)
+
+class GroceryImportViewModel : ViewModel() {
+    var raw by mutableStateOf(""); private set
+    var importing by mutableStateOf(false); private set
+    var items = mutableStateListOf<GroceryMatch>(); private set
+    fun updateRaw(v: String) { raw = v }
+    fun import(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            importing = true
+            kotlinx.coroutines.delay(1000)
+            items.clear()
+            val catalog = mapOf("milk" to 60, "eggs" to 90, "bread" to 45, "rice" to 120, "atta" to 210, "sugar" to 50, "tea" to 140, "coffee" to 220)
+            raw.lines().map { it.trim().lowercase() }.filter { it.isNotEmpty() }.forEach { line ->
+                val hit = catalog.entries.firstOrNull { line.contains(it.key) }
+                items.add(GroceryMatch(line, hit?.value ?: 99))
+            }
+            importing = false
+            onDone("Found ${items.size} items!")
+        }
+    }
+}
+
+@Composable
+fun GroceryImportScreen(onBack: () -> Unit, vm: GroceryImportViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Grocery List Import", "Paste list, get matched cart", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.raw, onValueChange = vm::updateRaw, label = { Text("Paste your list (one item per line)") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
+                    Button(onClick = { vm.import(::toast) }, enabled = vm.raw.isNotBlank() && !vm.importing, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.importing) "Matching…" else "Import list")
+                    }
+                }
+            }
+            items(vm.items, key = { it.name }) { item ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(item.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Text("${item.price}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            if (vm.items.isNotEmpty()) {
+                item {
+                    Button(onClick = { toast("Added ${vm.items.size} items to cart!") }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Add All to Cart (${vm.items.sumOf { it.price }})")
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------- recipe to cart (wave-D)
+
+data class Ingredient(val name: String, val qty: String)
+
+class RecipeToCartViewModel : ViewModel() {
+    var url by mutableStateOf(""); private set
+    var servings by mutableStateOf(4); private set
+    var loading by mutableStateOf(false); private set
+    var ingredients = mutableStateListOf<Ingredient>(); private set
+    fun updateUrl(v: String) { url = v; ingredients.clear() }
+    fun pickServings(n: Int) { servings = n }
+    fun convert(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            loading = true
+            kotlinx.coroutines.delay(1200)
+            ingredients.clear()
+            val scale = servings / 4.0
+            ingredients.addAll(
+                listOf(
+                    Ingredient("Basmati Rice", "${(500 * scale).toInt()} g"),
+                    Ingredient("Chicken", "${(750 * scale).toInt()} g"),
+                    Ingredient("Onions", "${(3 * scale).toInt()} pcs"),
+                    Ingredient("Biryani Masala", "${(2 * scale).toInt()} tbsp"),
+                    Ingredient("Curd", "${(250 * scale).toInt()} g"),
+                )
+            )
+            loading = false
+            onDone("Added ${ingredients.size} ingredients to cart!")
+        }
+    }
+}
+
+@Composable
+fun RecipeToCartScreen(onBack: () -> Unit, vm: RecipeToCartViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Recipe to Cart", "Link in, ingredients out", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.url, onValueChange = vm::updateUrl, label = { Text("Recipe URL") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(2, 4, 6, 8).forEach { n ->
+                            val selected = vm.servings == n
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { vm.pickServings(n) },
+                            ) {
+                                Text("$n", modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), style = MaterialTheme.typography.labelLarge, color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                    Button(onClick = { vm.convert(::toast) }, enabled = vm.url.isNotBlank() && !vm.loading, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.loading) "Converting…" else "Convert for ${vm.servings} servings")
+                    }
+                }
+            }
+            items(vm.ingredients, key = { it.name }) { ing ->
+                ToolCard {
+                    Row {
+                        Text(ing.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Text(ing.qty, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------ pet supplies (wave-D)
+
+class PetSuppliesViewModel : ViewModel() {
+    var petType by mutableStateOf("dog"); private set
+    var autoPilot by mutableStateOf(false); private set
+    var loading by mutableStateOf(false); private set
+    fun pickPet(v: String) { petType = v }
+    fun setup(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            loading = true
+            kotlinx.coroutines.delay(1000)
+            loading = false
+            autoPilot = true
+            onDone("Pet Auto-Pilot enabled!")
+        }
+    }
+}
+
+@Composable
+fun PetSuppliesScreen(onBack: () -> Unit, vm: PetSuppliesViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Pet Supplies", "Auto-pilot for your buddy", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("dog" to "🐶 Dog", "cat" to "🐱 Cat").forEach { (value, label) ->
+                            val selected = vm.petType == value
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { vm.pickPet(value) },
+                            ) {
+                                Text(label, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), style = MaterialTheme.typography.labelLarge, color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                    listOf("Monthly food pack", "Treats rotation", "Grooming essentials", "Toy of the month").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                    Button(onClick = { vm.setup(::toast) }, enabled = !vm.loading && !vm.autoPilot, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.autoPilot) "Auto-Pilot ON ✅" else if (vm.loading) "Setting up…" else "Enable Auto-Pilot")
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- school supplies (wave-D)
+
+data class KitItem(val id: Int, val name: String, val price: Int, var checked: Boolean = true)
+
+class SchoolSuppliesViewModel : ViewModel() {
+    var grade by mutableStateOf("5"); private set
+    var items = mutableStateListOf<KitItem>(); private set
+    fun updateGrade(v: String) { grade = v.filter { it.isDigit() }.take(2) }
+    fun generate(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1000)
+            items.clear()
+            items.addAll(
+                listOf(
+                    KitItem(1, "Notebook set (6 pcs)", 240),
+                    KitItem(2, "Geometry box", 150),
+                    KitItem(3, "Crayons 24 shades", 120),
+                    KitItem(4, "School bag", 899),
+                    KitItem(5, "Water bottle", 299),
+                    KitItem(6, "Lunch box", 349),
+                )
+            )
+            onDone("Generated list for Grade ${grade.ifBlank { "5" }}")
+        }
+    }
+    fun toggle(id: Int) {
+        val i = items.indexOfFirst { it.id == id }
+        if (i >= 0) items[i] = items[i].copy(checked = !items[i].checked)
+    }
+}
+
+@Composable
+fun SchoolSuppliesScreen(onBack: () -> Unit, vm: SchoolSuppliesViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("School Supply Kit", "Grade-wise checklist", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.grade, onValueChange = vm::updateGrade, label = { Text("Grade/Class") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                    Button(onClick = { vm.generate(::toast) }, modifier = Modifier.fillMaxWidth()) { Text("Generate list") }
+                }
+            }
+            items(vm.items, key = { it.id }) { item ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.toggle(item.id) }) {
+                        Checkbox(checked = item.checked, onCheckedChange = { vm.toggle(item.id) })
+                        Text(item.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Text("${item.price}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            if (vm.items.isNotEmpty()) {
+                item {
+                    Button(onClick = { toast("${vm.items.count { it.checked }} items added to cart!") }, modifier = Modifier.fillMaxWidth()) { Text("Add checked to cart") }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- moving kit (wave-D)
+
+class MovingKitViewModel : ViewModel() {
+    var houseSize by mutableStateOf("2bhk"); private set
+    var items = mutableStateListOf<KitItem>(); private set
+    fun pickSize(v: String) { houseSize = v }
+    fun generate(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1000)
+            val mult = when (houseSize) { "1bhk" -> 1; "2bhk" -> 2; "3bhk" -> 3; else -> 4 }
+            items.clear()
+            items.addAll(
+                listOf(
+                    KitItem(1, "Carton boxes (${mult * 10} pcs)", mult * 300),
+                    KitItem(2, "Bubble wrap (${mult * 2} rolls)", mult * 180),
+                    KitItem(3, "Packing tape (${mult * 3} pcs)", mult * 60),
+                    KitItem(4, "Markers + labels set", 120),
+                    KitItem(5, "Mattress cover", 250),
+                )
+            )
+            onDone("Generated $houseSize moving kit!")
+        }
+    }
+    fun toggle(id: Int) {
+        val i = items.indexOfFirst { it.id == id }
+        if (i >= 0) items[i] = items[i].copy(checked = !items[i].checked)
+    }
+}
+
+@Composable
+fun MovingKitScreen(onBack: () -> Unit, vm: MovingKitViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Moving House Kit", "Pack like a pro", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("1bhk", "2bhk", "3bhk", "4bhk+").forEach { size ->
+                            val selected = vm.houseSize == size
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { vm.pickSize(size) },
+                            ) {
+                                Text(size, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), style = MaterialTheme.typography.labelLarge, color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                    Button(onClick = { vm.generate(::toast) }, modifier = Modifier.fillMaxWidth()) { Text("Generate kit") }
+                }
+            }
+            items(vm.items, key = { it.id }) { item ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.toggle(item.id) }) {
+                        Checkbox(checked = item.checked, onCheckedChange = { vm.toggle(item.id) })
+                        Text(item.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Text("${item.price}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            if (vm.items.isNotEmpty()) {
+                item {
+                    Button(onClick = { toast("${vm.items.count { it.checked }} items added to cart!") }, modifier = Modifier.fillMaxWidth()) { Text("Add checked to cart") }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- appliance repair (wave-D)
+
+class ApplianceRepairViewModel : ViewModel() {
+    var applianceType by mutableStateOf(""); private set
+    var problem by mutableStateOf(""); private set
+    var urgency by mutableStateOf("normal"); private set
+    var loading by mutableStateOf(false); private set
+    var techs = mutableStateListOf<Technician>(); private set
+    fun pickType(v: String) { applianceType = v }
+    fun updateProblem(v: String) { problem = v }
+    fun pickUrgency(v: String) { urgency = v }
+    fun find(onError: (String) -> Unit) {
+        if (applianceType.isBlank() || problem.isBlank()) { onError("Please fill all fields"); return }
+        viewModelScope.launch {
+            loading = true
+            kotlinx.coroutines.delay(1000)
+            techs.clear()
+            techs.addAll(technicians)
+            loading = false
+        }
+    }
+}
+
+@Composable
+fun ApplianceRepairScreen(onBack: () -> Unit, vm: ApplianceRepairViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Appliance Repair", "Certified technicians", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("AC", "Fridge", "Washing Machine", "TV").forEach { type ->
+                            val selected = vm.applianceType == type
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { vm.pickType(type) },
+                            ) {
+                                Text(type, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium, color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                    OutlinedTextField(value = vm.problem, onValueChange = vm::updateProblem, label = { Text("Describe the problem") }, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = { vm.find(::toast) }, enabled = !vm.loading, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.loading) "Finding…" else "Find technicians")
+                    }
+                }
+            }
+            items(vm.techs, key = { it.name }) { tech ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("🔧 ${tech.name}", style = MaterialTheme.typography.titleSmall)
+                            Text("⭐ ${tech.rating} · ${tech.jobs} jobs · ${tech.price} visit", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Button(onClick = { toast("Booked ${tech.name}! They'll arrive in 2 hours.") }) { Text("Book") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------ safety recall (wave-D)
+
+class SafetyRecallViewModel : ViewModel() {
+    var productId by mutableStateOf(""); private set
+    var checked by mutableStateOf(false); private set
+    var safe by mutableStateOf(true); private set
+    fun updateProductId(v: String) { productId = v; checked = false }
+    fun check(onSafe: (String) -> Unit, onRecalled: (String) -> Unit) {
+        val recalled = productId.trim().lowercase().contains("x100") || productId.trim().endsWith("007")
+        safe = !recalled
+        checked = true
+        if (recalled) onRecalled("Product has been recalled!") else onSafe("Product is safe!")
+    }
+}
+
+@Composable
+fun SafetyRecallScreen(onBack: () -> Unit, vm: SafetyRecallViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Safety Recall Check", "Is your product affected?", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.productId, onValueChange = vm::updateProductId, label = { Text("Product ID / model") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = { vm.check(::toast, ::toast) }, enabled = vm.productId.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Check recall") }
+                }
+            }
+            if (vm.checked) {
+                item {
+                    ToolCard {
+                        Text(if (vm.safe) "✅ Product is safe" else "⚠️ Recalled — stop use", style = MaterialTheme.typography.titleSmall, color = if (vm.safe) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                        Text(if (vm.safe) "No active recalls for this model." else "Contact support for a free replacement or refund.", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ----------------------------------------------- verified photos (wave-D)
+
+data class VerifiedPhoto(val user: String, val verified: Boolean, val likes: Int, val product: String)
+
+private val verifiedPhotos = listOf(
+    VerifiedPhoto("Rahul M.", true, 24, "iPhone 15"),
+    VerifiedPhoto("Priya K.", true, 18, "Samsung S24"),
+    VerifiedPhoto("Amit S.", false, 5, "OnePlus 12"),
+)
+
+@Composable
+fun VerifiedPhotosScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Verified Photos", "Only real buyers upload", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("Only verified buyers can upload", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Button(onClick = { toast("Photo uploaded for verification!") }, modifier = Modifier.fillMaxWidth()) { Text("Upload Photo") }
+                }
+            }
+            items(verifiedPhotos, key = { it.user + it.product }) { photo ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("${photo.product} ${if (photo.verified) "✅" else ""}", style = MaterialTheme.typography.titleSmall)
+                            Text("${photo.user} · ❤ ${photo.likes}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                 }
             }

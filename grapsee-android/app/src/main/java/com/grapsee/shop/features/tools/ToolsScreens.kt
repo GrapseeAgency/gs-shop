@@ -2999,3 +2999,420 @@ fun VerifiedPhotosScreen(onBack: () -> Unit) {
         }
     }
 }
+
+// ----------------------------------------------- child growth (wave-E)
+
+data class GrowthRec(val age: String, val items: List<String>)
+
+val growthRecs = listOf(
+    GrowthRec("0-6 months", listOf("Diapers", "Baby wipes", "Feeding bottles")),
+    GrowthRec("6-12 months", listOf("Solid foods", "Baby toys", "Crawling mats")),
+    GrowthRec("1-2 years", listOf("Walker", "Building blocks", "Story books")),
+)
+
+class ChildGrowthViewModel : ViewModel() {
+    var ageMonths by mutableStateOf(""); private set
+    var height by mutableStateOf(""); private set
+    var weight by mutableStateOf(""); private set
+    fun updateAge(v: String) { ageMonths = v.filter { it.isDigit() }.take(3) }
+    fun updateHeight(v: String) { height = v.filter { it.isDigit() }.take(3) }
+    fun updateWeight(v: String) { weight = v.filter { it.isDigit() }.take(3) }
+    fun current(): GrowthRec {
+        val years = (ageMonths.toIntOrNull() ?: 6) / 12
+        return growthRecs.firstOrNull { it.age.contains(years.toString()) } ?: growthRecs[0]
+    }
+}
+
+@Composable
+fun ChildGrowthScreen(onBack: () -> Unit, vm: ChildGrowthViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Child Growth Tracker", "Age-based essentials", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.ageMonths, onValueChange = vm::updateAge, label = { Text("Age (months)") }, placeholder = { Text("6") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = vm.height, onValueChange = vm::updateHeight, label = { Text("Height (cm)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = vm.weight, onValueChange = vm::updateWeight, label = { Text("Weight (kg)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                }
+            }
+            item {
+                val rec = vm.current()
+                ToolCard {
+                    Text("👶 Age group: ${rec.age}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    rec.items.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                    Text("Next: next size diapers + teething toys", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- diabetic scanner (wave-E)
+
+data class DiabeticResult(val food: String, val rating: String, val color: String, val note: String)
+
+class DiabeticScannerViewModel : ViewModel() {
+    var food by mutableStateOf(""); private set
+    var scanning by mutableStateOf(false); private set
+    var result by mutableStateOf<DiabeticResult?>(null); private set
+    fun updateFood(v: String) { food = v; result = null }
+    fun scan() {
+        viewModelScope.launch {
+            scanning = true
+            kotlinx.coroutines.delay(1500)
+            val low = food.lowercase()
+            result = when {
+                low.contains("apple") || low.contains("oat") || low.contains("dal") || low.contains("salad") ->
+                    DiabeticResult(food.trim(), "GOOD", "green", "Low glycemic impact, safe in normal portions.")
+                low.contains("cake") || low.contains("cola") || low.contains("sugar") || low.contains("candy") ->
+                    DiabeticResult(food.trim(), "AVOID", "red", "High sugar spike — skip or take a tiny portion.")
+                else -> DiabeticResult(food.trim(), "MODERATE", "yellow", "OK in small portions with protein or fibre.")
+            }
+            scanning = false
+        }
+    }
+}
+
+@Composable
+fun DiabeticScannerScreen(onBack: () -> Unit, vm: DiabeticScannerViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Diabetic Scanner", "Is this food safe for you?", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.food, onValueChange = vm::updateFood, label = { Text("Food name") }, placeholder = { Text("e.g. apple, cake, oats") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = vm::scan, enabled = vm.food.isNotBlank() && !vm.scanning, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.scanning) "Scanning…" else "Scan food")
+                    }
+                }
+            }
+            vm.result?.let { r ->
+                item {
+                    ToolCard {
+                        Text("${if (r.color == "green") "🟢" else if (r.color == "red") "🔴" else "🟡"} ${r.rating}", style = MaterialTheme.typography.titleMedium, color = if (r.color == "red") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                        Text(r.food, style = MaterialTheme.typography.titleSmall)
+                        Text(r.note, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------- ingredient scanner (wave-E)
+
+data class ScanIngredient(val name: String, val risk: String)
+
+val demoScanIngredients = listOf(
+    ScanIngredient("Sugar", "high"),
+    ScanIngredient("Palm Oil", "moderate"),
+    ScanIngredient("Whole Wheat", "safe"),
+    ScanIngredient("Preservative E202", "moderate"),
+)
+
+class IngredientScannerViewModel : ViewModel() {
+    var product by mutableStateOf(""); private set
+    var scanning by mutableStateOf(false); private set
+    var done by mutableStateOf(false); private set
+    fun updateProduct(v: String) { product = v; done = false }
+    fun scan() {
+        viewModelScope.launch {
+            scanning = true
+            kotlinx.coroutines.delay(1500)
+            scanning = false
+            done = true
+        }
+    }
+}
+
+@Composable
+fun IngredientScannerScreen(onBack: () -> Unit, vm: IngredientScannerViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Ingredient Scanner", "Safety score for packaged food", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.product, onValueChange = vm::updateProduct, label = { Text("Product name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = vm::scan, enabled = vm.product.isNotBlank() && !vm.scanning, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.scanning) "Scanning…" else "Scan product")
+                    }
+                }
+            }
+            if (vm.done) {
+                item {
+                    ToolCard {
+                        Text("Safety Score: 72/100", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                        demoScanIngredients.forEach { ing ->
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(ing.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                                Text(ing.risk, style = MaterialTheme.typography.labelLarge, color = if (ing.risk == "safe") MaterialTheme.colorScheme.primary else if (ing.risk == "high") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------- ingredient swap (wave-E)
+
+val swaps = mapOf(
+    "butter" to listOf("olive oil", "coconut oil", "ghee"),
+    "sugar" to listOf("honey", "stevia", "jaggery"),
+    "flour" to listOf("almond flour", "oat flour", "coconut flour"),
+    "milk" to listOf("almond milk", "oat milk", "soy milk"),
+    "egg" to listOf("banana", "applesauce", "flax egg"),
+)
+
+@Composable
+fun IngredientSwapScreen(onBack: () -> Unit) {
+    var ingredient by remember { mutableStateOf("") }
+    val suggestions = swaps[ingredient.trim().lowercase()].orEmpty()
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Ingredient Swap", "Substitutes for any ingredient", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = ingredient, onValueChange = { ingredient = it }, label = { Text("Ingredient to replace") }, placeholder = { Text("e.g., butter, sugar, milk, egg") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                }
+            }
+            if (suggestions.isNotEmpty()) {
+                item {
+                    ToolCard {
+                        Text("Substitutes for $ingredient:", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        suggestions.forEach { Text("✅ $it", style = MaterialTheme.typography.bodyMedium) }
+                    }
+                }
+            } else if (ingredient.isNotBlank()) {
+                item {
+                    ToolCard {
+                        Text("No swaps known for \"$ingredient\" yet — try butter, sugar, flour, milk or egg.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ----------------------------------------- medicine interaction (wave-E)
+
+val knownInteractions = listOf(
+    setOf("aspirin", "warfarin") to "Bleeding risk — consult your doctor immediately.",
+    setOf("ibuprofen", "lisinopril") to "May reduce blood-pressure control and harm kidneys.",
+    setOf("paracetamol", "alcohol") to "Liver strain — avoid alcohol with regular use.",
+)
+
+class MedicineInteractionViewModel : ViewModel() {
+    var meds = mutableStateListOf<String>(); private set
+    var newMed by mutableStateOf(""); private set
+    var checked by mutableStateOf(false); private set
+    fun updateNewMed(v: String) { newMed = v }
+    fun add() {
+        if (newMed.isBlank()) return
+        meds.add(newMed.trim())
+        newMed = ""
+        checked = false
+    }
+    fun remove(med: String) { meds.remove(med); checked = false }
+    fun markChecked() { checked = true }
+    fun warnings(): List<String> {
+        val lower = meds.map { it.lowercase() }.toSet()
+        return knownInteractions.mapNotNull { (pair, msg) -> if (lower.containsAll(pair)) msg else null }
+    }
+}
+
+@Composable
+fun MedicineInteractionScreen(onBack: () -> Unit, vm: MedicineInteractionViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Medicine Interaction Checker", "Catch dangerous combos", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(value = vm.newMed, onValueChange = vm::updateNewMed, label = { Text("Medicine name") }, singleLine = true, modifier = Modifier.weight(1f))
+                        Button(onClick = vm::add, enabled = vm.newMed.isNotBlank()) { Text("Add") }
+                    }
+                    Button(onClick = { vm.markChecked(); toast("Interaction check complete!") }, enabled = vm.meds.size >= 2, modifier = Modifier.fillMaxWidth()) { Text("Check interactions") }
+                }
+            }
+            items(vm.meds, key = { it }) { med ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("💊 $med", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Button(onClick = { vm.remove(med) }) { Text("Remove") }
+                    }
+                }
+            }
+            if (vm.checked) {
+                val warnings = vm.warnings()
+                item {
+                    ToolCard {
+                        if (warnings.isEmpty()) Text("✅ No known interactions between these medicines.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                        else warnings.forEach { Text("⚠️ $it", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- medicine tracker (wave-E)
+
+data class TrackedMed(val name: String, val dose: String, val time: String)
+
+class MedicineTrackerViewModel : ViewModel() {
+    var meds = mutableStateListOf(
+        TrackedMed("Paracetamol", "500mg", "8:00 AM"),
+        TrackedMed("Vitamin D", "1000 IU", "9:00 PM"),
+    ); private set
+    var scanning by mutableStateOf(false); private set
+    fun scan(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            scanning = true
+            kotlinx.coroutines.delay(1200)
+            meds.add(TrackedMed("Azithromycin", "250mg", "1:00 PM"))
+            scanning = false
+            onDone("Azithromycin added to tracker!")
+        }
+    }
+}
+
+@Composable
+fun MedicineTrackerScreen(onBack: () -> Unit, vm: MedicineTrackerViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Medicine Tracker", "Never miss a dose", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(vm.meds, key = { it.name }) { med ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("💊 ${med.name} · ${med.dose}", style = MaterialTheme.typography.titleSmall)
+                            Text("⏰ ${med.time}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+            item {
+                Button(onClick = { vm.scan(::toast) }, enabled = !vm.scanning, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (vm.scanning) "Scanning strip…" else "Scan medicine strip")
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------- prescription scan (wave-E)
+
+data class RxMed(val name: String, val qty: String, val price: Int)
+
+class PrescriptionScanViewModel : ViewModel() {
+    var scanning by mutableStateOf(false); private set
+    var meds = mutableStateListOf<RxMed>(); private set
+    fun scan(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            scanning = true
+            kotlinx.coroutines.delay(1500)
+            meds.clear()
+            meds.addAll(
+                listOf(
+                    RxMed("Paracetamol 500mg", "15 tablets", 45),
+                    RxMed("Azithromycin 250mg", "6 tablets", 120),
+                    RxMed("Cetirizine 10mg", "10 tablets", 60),
+                )
+            )
+            scanning = false
+            onDone("Found ${meds.size} medicines!")
+        }
+    }
+}
+
+@Composable
+fun PrescriptionScanScreen(onBack: () -> Unit, vm: PrescriptionScanViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Prescription Scan", "Photo to medicine cart", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                Button(onClick = { vm.scan(::toast) }, enabled = !vm.scanning, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (vm.scanning) "Reading prescription…" else "Scan prescription")
+                }
+            }
+            items(vm.meds, key = { it.name }) { med ->
+                ToolCard {
+                    Row {
+                        Column(Modifier.weight(1f)) {
+                            Text(med.name, style = MaterialTheme.typography.titleSmall)
+                            Text(med.qty, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text("${med.price}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            if (vm.meds.isNotEmpty()) {
+                item {
+                    ToolCard {
+                        Text("Total: ${vm.meds.sumOf { it.price }} (${vm.meds.size} medicines)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Button(onClick = { toast("${vm.meds.size} medicines added to cart!") }, modifier = Modifier.fillMaxWidth()) { Text("Order all") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------- health monitor (wave-E)
+
+data class HealthMetric(val name: String, val value: String)
+
+val healthMetrics = listOf(
+    HealthMetric("Uptime", "99.9%"),
+    HealthMetric("Response Time", "0.8s"),
+    HealthMetric("Error Rate", "0.02%"),
+    HealthMetric("SEO Score", "94/100"),
+)
+
+val healthHistory = listOf(
+    "Week 1" to "100%",
+    "Week 2" to "99.9%",
+    "Week 3" to "99.8%",
+    "Week 4" to "100%",
+)
+
+@Composable
+fun HealthMonitorScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Site Health Monitor", "Healthy · 99.9% uptime", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("💚 Status: healthy · checked 2 minutes ago · 0 errors · performance 94", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+            items(healthMetrics, key = { it.name }) { metric ->
+                ToolCard {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(metric.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Text("✅ ${metric.value}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+            item {
+                ToolCard {
+                    Text("4-week history", style = MaterialTheme.typography.titleSmall)
+                    healthHistory.forEach { (week, uptime) ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(week, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            Text(uptime, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -193,6 +193,14 @@ object Routes {
     const val APPLIANCE = "appliance"
     const val SAFETY = "safety"
     const val VERIFIEDPHOTOS = "verifiedphotos"
+    const val CHILDGROWTH = "childgrowth"
+    const val DIABETIC = "diabetic"
+    const val INGSCAN = "ingscan"
+    const val INGSWAP = "ingswap"
+    const val MEDINTERACT = "medinteract"
+    const val MEDTRACKER = "medtracker"
+    const val RXSCAN = "rxscan"
+    const val HEALTHMON = "healthmon"
     const val BODYTYPE = "bodytype"
     const val USECASEMATCHER = "usecasematcher"
     const val WARDROBE = "wardrobe"
@@ -434,6 +442,14 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 route == "/appliance-repair" -> navController.navigate(Routes.APPLIANCE)
                 route == "/safety-recall" -> navController.navigate(Routes.SAFETY)
                 route == "/verified-photos" -> navController.navigate(Routes.VERIFIEDPHOTOS)
+                route == "/child-growth" -> navController.navigate(Routes.CHILDGROWTH)
+                route == "/diabetic-scanner" -> navController.navigate(Routes.DIABETIC)
+                route == "/ingredient-scanner" -> navController.navigate(Routes.INGSCAN)
+                route == "/ingredient-swap" -> navController.navigate(Routes.INGSWAP)
+                route == "/medicine-interaction" -> navController.navigate(Routes.MEDINTERACT)
+                route == "/medicine-tracker" -> navController.navigate(Routes.MEDTRACKER)
+                route == "/prescription-scan" -> navController.navigate(Routes.RXSCAN)
+                route == "/health-monitor" -> navController.navigate(Routes.HEALTHMON)
                 route == "/body-type" -> navController.navigate(Routes.BODYTYPE)
                 route == "/use-case-matcher" -> navController.navigate(Routes.USECASEMATCHER)
                 route == "/wardrobe-planner" -> navController.navigate(Routes.WARDROBE)
@@ -1427,6 +1443,38 @@ fun GrapseeAppRoot(navController: NavHostController) {
 
             composable(Routes.VERIFIEDPHOTOS) {
                 com.grapsee.shop.features.tools.VerifiedPhotosScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.CHILDGROWTH) {
+                com.grapsee.shop.features.tools.ChildGrowthScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.DIABETIC) {
+                com.grapsee.shop.features.tools.DiabeticScannerScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.INGSCAN) {
+                com.grapsee.shop.features.tools.IngredientScannerScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.INGSWAP) {
+                com.grapsee.shop.features.tools.IngredientSwapScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.MEDINTERACT) {
+                com.grapsee.shop.features.tools.MedicineInteractionScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.MEDTRACKER) {
+                com.grapsee.shop.features.tools.MedicineTrackerScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.RXSCAN) {
+                com.grapsee.shop.features.tools.PrescriptionScanScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.HEALTHMON) {
+                com.grapsee.shop.features.tools.HealthMonitorScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.SMSORDER) {

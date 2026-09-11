@@ -1405,3 +1405,218 @@ struct VerifiedPhotosView: View {
         }.navigationTitle("Verified Photos")
     }
 }
+
+// MARK: - Tools wave-E
+
+struct ChildGrowthView: View {
+    @State private var ageMonths = ""
+    @State private var height = ""
+    @State private var weight = ""
+    let recs = [("0-6 months", ["Diapers", "Baby wipes", "Feeding bottles"]), ("6-12 months", ["Solid foods", "Baby toys", "Crawling mats"]), ("1-2 years", ["Walker", "Building blocks", "Story books"])]
+    var current: (String, [String]) {
+        let years = (Int(ageMonths) ?? 6) / 12
+        return recs.first(where: { $0.0.contains("\(years)") }) ?? recs[0]
+    }
+    var body: some View {
+        List {
+            Section {
+                TextField("Age (months)", text: $ageMonths).keyboardType(.numberPad)
+                TextField("Height (cm)", text: $height).keyboardType(.numberPad)
+                TextField("Weight (kg)", text: $weight).keyboardType(.numberPad)
+            }
+            Section {
+                Text("👶 Age group: \(current.0)").font(.headline).foregroundColor(.accentColor)
+                ForEach(current.1, id: \.self) { Text("• \($0)") }
+                Text("Next: next size diapers + teething toys").font(.caption).foregroundColor(.secondary)
+            }
+        }.navigationTitle("Child Growth Tracker")
+    }
+}
+
+struct DiabeticScannerView: View {
+    @State private var food = ""
+    @State private var scanning = false
+    @State private var result: (String, String, String)?
+    var body: some View {
+        List {
+            Section {
+                TextField("Food name (e.g. apple, cake, oats)", text: $food)
+                Button(scanning ? "Scanning…" : "Scan food") {
+                    scanning = true
+                    Task {
+                        try? await Task.sleep(nanoseconds: 1_500_000_000)
+                        let low = food.lowercased()
+                        if low.contains("apple") || low.contains("oat") || low.contains("dal") || low.contains("salad") {
+                            result = ("GOOD", "🟢", "Low glycemic impact, safe in normal portions.")
+                        } else if low.contains("cake") || low.contains("cola") || low.contains("sugar") || low.contains("candy") {
+                            result = ("AVOID", "🔴", "High sugar spike — skip or take a tiny portion.")
+                        } else {
+                            result = ("MODERATE", "🟡", "OK in small portions with protein or fibre.")
+                        }
+                        scanning = false
+                    }
+                }.disabled(food.isEmpty || scanning)
+            }
+            if let r = result {
+                Section {
+                    Text("\(r.1) \(r.0)").font(.title2).foregroundColor(r.0 == "AVOID" ? .red : .accentColor)
+                    Text(food).font(.headline)
+                    Text(r.2)
+                }
+            }
+        }.navigationTitle("Diabetic Scanner")
+    }
+}
+
+struct IngredientScannerView: View {
+    @State private var product = ""
+    @State private var scanning = false
+    @State private var done = false
+    let ingredients = [("Sugar", "high"), ("Palm Oil", "moderate"), ("Whole Wheat", "safe"), ("Preservative E202", "moderate")]
+    var body: some View {
+        List {
+            Section {
+                TextField("Product name", text: $product)
+                Button(scanning ? "Scanning…" : "Scan product") {
+                    scanning = true
+                    Task { try? await Task.sleep(nanoseconds: 1_500_000_000); scanning = false; done = true }
+                }.disabled(product.isEmpty || scanning)
+            }
+            if done {
+                Section {
+                    Text("Safety Score: 72/100").font(.title2).foregroundColor(.accentColor)
+                    ForEach(ingredients, id: \.0) { name, risk in
+                        HStack { Text(name); Spacer(); Text(risk).foregroundColor(risk == "safe" ? .accentColor : risk == "high" ? .red : .secondary) }
+                    }
+                }
+            }
+        }.navigationTitle("Ingredient Scanner")
+    }
+}
+
+struct IngredientSwapView: View {
+    @State private var ingredient = ""
+    let swaps = ["butter": ["olive oil", "coconut oil", "ghee"], "sugar": ["honey", "stevia", "jaggery"], "flour": ["almond flour", "oat flour", "coconut flour"], "milk": ["almond milk", "oat milk", "soy milk"], "egg": ["banana", "applesauce", "flax egg"]]
+    var body: some View {
+        List {
+            Section { TextField("Ingredient to replace", text: $ingredient) }
+            let suggestions = swaps[ingredient.trimmingCharacters(in: .whitespaces).lowercased()] ?? []
+            if !suggestions.isEmpty {
+                Section {
+                    Text("Substitutes for \(ingredient):").font(.headline).foregroundColor(.accentColor)
+                    ForEach(suggestions, id: \.self) { Text("✅ \($0)") }
+                }
+            } else if !ingredient.isEmpty {
+                Section { Text("No swaps known for \"\(ingredient)\" yet — try butter, sugar, flour, milk or egg.").foregroundColor(.secondary) }
+            }
+        }.navigationTitle("Ingredient Swap")
+    }
+}
+
+struct MedicineInteractionView: View {
+    @State private var meds: [String] = []
+    @State private var newMed = ""
+    @State private var checked = false
+    let known = [[("aspirin", "warfarin"), "Bleeding risk — consult your doctor immediately."], [("ibuprofen", "lisinopril"), "May reduce blood-pressure control and harm kidneys."], [("paracetamol", "alcohol"), "Liver strain — avoid alcohol with regular use."]]
+    var warnings: [String] {
+        let lower = Set(meds.map { $0.lowercased() })
+        return known.compactMap { pair, msg in lower.isSuperset(of: [pair.0, pair.1]) ? msg : nil }
+    }
+    var body: some View {
+        List {
+            Section {
+                HStack {
+                    TextField("Medicine name", text: $newMed)
+                    Button("Add") { if !newMed.isEmpty { meds.append(newMed.trimmingCharacters(in: .whitespaces)); newMed = ""; checked = false } }.disabled(newMed.isEmpty)
+                }
+                Button("Check interactions") { checked = true }.disabled(meds.count < 2)
+            }
+            ForEach(meds, id: \.self) { med in
+                HStack {
+                    Text("💊 \(med)")
+                    Spacer()
+                    Button("Remove") { meds.removeAll(where: { $0 == med }); checked = false }
+                }
+            }
+            if checked {
+                Section {
+                    if warnings.isEmpty { Text("✅ No known interactions between these medicines.").foregroundColor(.accentColor) }
+                    else { ForEach(warnings, id: \.self) { Text("⚠️ \($0)").foregroundColor(.red) } }
+                }
+            }
+        }.navigationTitle("Medicine Interaction Checker")
+    }
+}
+
+struct MedicineTrackerView: View {
+    @State private var meds = [("Paracetamol", "500mg", "8:00 AM"), ("Vitamin D", "1000 IU", "9:00 PM")]
+    @State private var scanning = false
+    @State private var added = false
+    var body: some View {
+        List {
+            ForEach(meds, id: \.0) { name, dose, time in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("💊 \(name) · \(dose)").font(.headline)
+                    Text("⏰ \(time)").font(.caption).foregroundColor(.secondary)
+                }.padding(.vertical, 4)
+            }
+            Section {
+                Button(scanning ? "Scanning strip…" : "Scan medicine strip") {
+                    scanning = true
+                    Task { try? await Task.sleep(nanoseconds: 1_200_000_000); meds.append(("Azithromycin", "250mg", "1:00 PM")); scanning = false; added = true }
+                }.disabled(scanning)
+                if added { Text("✅ Azithromycin added to tracker!").foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("Medicine Tracker")
+    }
+}
+
+struct PrescriptionScanView: View {
+    @State private var scanning = false
+    @State private var meds: [(String, String, Int)] = []
+    var body: some View {
+        List {
+            Section {
+                Button(scanning ? "Reading prescription…" : "Scan prescription") {
+                    scanning = true
+                    Task {
+                        try? await Task.sleep(nanoseconds: 1_500_000_000)
+                        meds = [("Paracetamol 500mg", "15 tablets", 45), ("Azithromycin 250mg", "6 tablets", 120), ("Cetirizine 10mg", "10 tablets", 60)]
+                        scanning = false
+                    }
+                }.disabled(scanning)
+            }
+            ForEach(meds, id: \.0) { name, qty, price in
+                HStack {
+                    VStack(alignment: .leading) { Text(name).font(.headline); Text(qty).font(.caption).foregroundColor(.secondary) }
+                    Spacer()
+                    Text("\(price)").font(.headline).foregroundColor(.accentColor)
+                }
+            }
+            if !meds.isEmpty {
+                Section {
+                    Text("Total: \(meds.map { $0.2 }.reduce(0, +)) (\(meds.count) medicines)").font(.headline).foregroundColor(.accentColor)
+                    Button("Order all") {}
+                }
+            }
+        }.navigationTitle("Prescription Scan")
+    }
+}
+
+struct HealthMonitorView: View {
+    let metrics = [("Uptime", "99.9%"), ("Response Time", "0.8s"), ("Error Rate", "0.02%"), ("SEO Score", "94/100")]
+    let history = [("Week 1", "100%"), ("Week 2", "99.9%"), ("Week 3", "99.8%"), ("Week 4", "100%")]
+    var body: some View {
+        List {
+            Section { Text("💚 Status: healthy · checked 2 minutes ago · 0 errors · performance 94").foregroundColor(.accentColor) }
+            ForEach(metrics, id: \.0) { name, value in
+                HStack { Text(name); Spacer(); Text("✅ \(value)") }
+            }
+            Section("4-week history") {
+                ForEach(history, id: \.0) { week, uptime in
+                    HStack { Text(week); Spacer(); Text(uptime) }
+                }
+            }
+        }.navigationTitle("Site Health Monitor")
+    }
+}

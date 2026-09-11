@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyAdminApiKey } from "@/lib/admin-auth";
+import { verifyAdminApiKey } from "@/lib/admin-api-auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {

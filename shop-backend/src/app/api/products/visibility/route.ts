@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
       // Record visibility decision (skip if table doesn't exist)
       try {
-        await prisma.productVisibility.upsert({
+        await (prisma as any).productVisibility.upsert({
           where: { 
             orderId_productId: {
               orderId,
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
 
       // Record visibility decision (skip if table doesn't exist)
       try {
-        await prisma.productVisibility.upsert({
+        await (prisma as any).productVisibility.upsert({
           where: { 
             orderId_productId: {
               orderId,
@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
     // Get visibility record (null if table doesn't exist)
     let visibility = null;
     try {
-      visibility = await prisma.productVisibility.findUnique({
+      visibility = await (prisma as any).productVisibility.findUnique({
         where: { 
           orderId_productId: {
             orderId,

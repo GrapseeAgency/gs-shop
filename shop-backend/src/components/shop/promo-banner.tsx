@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence, PanInfo } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import { ArrowRight, Gift, Crown, Sparkles, Truck, Percent, X, ChevronLeft, ChevronRight, Clock, Tag, Zap, Flame, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useShopRouter } from '@/hooks/use-shop-router'
@@ -267,7 +268,7 @@ export function PromoBanner() {
     currentPromo.action === 'search' ? goSearch() : currentPromo.action === 'deals' ? goDeals() : goLuxury()
   }
 
-  const slideVariants = {
+  const slideVariants: Variants = {
     enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
     center: { x: 0, opacity: 1 },
     exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),

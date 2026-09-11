@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import { Crown, Code2, Palette, BarChart3, Headphones, Settings } from 'lucide-react'
 import {
   ArrowLeft,
@@ -68,7 +69,7 @@ const awards = [
   { title: 'Most  Startup', org: 'Startup World', year: '2022' },
 ]
 
-const container = {
+const container: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -76,7 +77,7 @@ const container = {
   },
 }
 
-const item = {
+const item: Variants = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0 },
 }

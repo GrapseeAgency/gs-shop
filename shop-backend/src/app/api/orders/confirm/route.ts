@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       securityResults: {
         overallRiskScore: securityResults.overallRiskScore,
         decision: securityResults.decision,
-        checksPassed: securityResults.checksPassed
+        checksPassed: securityResults.passed
       }
     });
 

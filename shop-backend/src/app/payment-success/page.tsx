@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { CheckCircle, Sparkles, Mail, Smartphone, ShoppingBag, ArrowRight } from 'lucide-react';
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessInner() {
   const [isLoading, setIsLoading] = useState(true);
   const [orderData, setOrderData] = useState<any>(null);
   const [emailSent, setEmailSent] = useState(false);
@@ -64,7 +64,7 @@ export default function PaymentSuccessPage() {
     }
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -75,7 +75,7 @@ export default function PaymentSuccessPage() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
@@ -84,7 +84,7 @@ export default function PaymentSuccessPage() {
     }
   };
 
-  const sparkleVariants = {
+  const sparkleVariants: Variants = {
     hidden: { scale: 0, rotate: 0 },
     visible: {
       scale: 1,
@@ -274,5 +274,13 @@ export default function PaymentSuccessPage() {
         </motion.div>
       </motion.div>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading…</div>}>
+      <PaymentSuccessInner />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from "@/lib/auth-options"
 
 // POST - Process voice search
 // NOTE: This feature requires a speech-to-text API integration (Google, AWS, Azure, etc.)

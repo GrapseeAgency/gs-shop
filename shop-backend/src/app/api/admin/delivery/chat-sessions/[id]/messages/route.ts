@@ -77,10 +77,10 @@ export async function GET(
 // POST /api/admin/delivery/chat-sessions/[id]/messages - Admin sends message
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sessionId = params.id;
+    const { id: sessionId } = await params;
     const body = await request.json();
     const { message, agentId, agentName } = body;
 

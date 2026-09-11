@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import { X, Flame, Truck, Diamond, Gift, Timer } from 'lucide-react'
 
 const announcements: { icon: React.ComponentType<{ className?: string }>; text: string }[] = [
@@ -58,7 +59,7 @@ export function AnnouncementBar() {
 
   if (dismissed) return null
 
-  const slideVariants = {
+  const slideVariants: Variants = {
     enter: (dir: number) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
     center: { x: 0, opacity: 1 },
     exit: (dir: number) => ({ x: dir > 0 ? -80 : 80, opacity: 0 }),

@@ -43,17 +43,17 @@ export async function GET() {
     const results = [];
 
     for (const testIP of testIPs) {
-      const result = await checkFraudExternal(testIP.ip);
+      const result = await checkFraudExternal("test@grapsee.shop", testIP.ip);
       
       results.push({
         name: testIP.name,
         ip: testIP.ip,
         result: {
-          riskScore: result.riskScore,
-          isVPN: result.isVPN,
-          isProxy: result.isProxy,
-          isTor: result.isTor,
-          country: result.country,
+          riskScore: (result.data as any)?.riskScore ?? null,
+          isVPN: (result.data as any)?.isVPN ?? null,
+          isProxy: (result.data as any)?.isProxy ?? null,
+          isTor: (result.data as any)?.isTor ?? null,
+          country: (result.data as any)?.country ?? null,
           source: result.source
         }
       });

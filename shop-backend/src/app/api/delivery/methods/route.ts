@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     let delivery = null;
     try {
       delivery = await prisma.digitalDelivery.findFirst({
-        where: { orderId }
+        where: { productId: product.id }
       });
     } catch (e) {
       console.log("[Delivery API] digitalDelivery table not found, skipping...");
@@ -100,9 +100,9 @@ export async function GET(request: NextRequest) {
         type: product.productType || "digital"
       },
       methods,
-      selectedMethod: delivery?.method || null,
-      deliveryStatus: delivery?.status || "pending",
-      deliveredAt: delivery?.deliveredAt
+      selectedMethod: delivery?.githubRepoUrl ? "github" : delivery?.zipFileUrl ? "zip" : delivery?.folderStructure ? "folder" : null,
+      deliveryStatus: delivery?.zipUploadedAt ? "delivered" : "pending",
+      deliveredAt: delivery?.zipUploadedAt ?? null
     });
 
   } catch (error) {

@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
 }
 
 // GET user game history
-export async function GET_history(req: NextRequest) {
+async function GET_history(req: NextRequest) {
   try {
     const userId = req.headers.get('x-user-id')
     if (!userId) {

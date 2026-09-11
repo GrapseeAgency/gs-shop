@@ -207,7 +207,7 @@ export async function PUT(request: NextRequest) {
 }
 
 // POST /api/trend-council/propose - Submit trend proposal
-export async function POST_PROPOSE(request: NextRequest) {
+async function POST_PROPOSE(request: NextRequest) {
   try {
     const body = await request.json();
     const {
@@ -280,7 +280,7 @@ export async function POST_PROPOSE(request: NextRequest) {
 }
 
 // POST /api/trend-council/vote - Vote on proposal
-export async function POST_VOTE(request: NextRequest) {
+async function POST_VOTE(request: NextRequest) {
   try {
     const body = await request.json();
     const {
@@ -333,7 +333,7 @@ export async function POST_VOTE(request: NextRequest) {
 }
 
 // GET /api/trend-council/proposals - Get active proposals
-export async function GET_PROPOSALS(request: NextRequest) {
+async function GET_PROPOSALS(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -371,7 +371,7 @@ export async function GET_PROPOSALS(request: NextRequest) {
 }
 
 // POST /api/trend-council/quantum-prediction - Make quantum-enhanced prediction
-export async function POST_QUANTUM_PREDICTION(request: NextRequest) {
+async function POST_QUANTUM_PREDICTION(request: NextRequest) {
   try {
     const body = await request.json();
     const {

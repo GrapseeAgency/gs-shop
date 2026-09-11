@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from "@/lib/auth-options"
 
 const onboardingSteps = [
   { step: 1, title: 'Personal Information', fields: ['name', 'email', 'phone'] },

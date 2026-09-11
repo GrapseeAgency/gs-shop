@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     if (action === "send" && message) {
       // Store customer message
-      await prisma.chatMessage.create({
+      const newMessage = await prisma.chatMessage.create({
         data: {
           sessionId: chatSession.id,
           sender: "customer",

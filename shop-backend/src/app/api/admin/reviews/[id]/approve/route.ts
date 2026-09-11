@@ -14,7 +14,7 @@ export async function PUT(
   try {
     const review = await prisma.review.update({
       where: { id },
-      data: { isApproved: true, isVerified: true },
+      data: { isVerified: true },
       include: {
         user: { select: { id: true, name: true } },
         product: { select: { id: true, name: true } }

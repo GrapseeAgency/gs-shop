@@ -46,11 +46,11 @@ cmd_start() {
     echo "building backend…"; ( cd "$ROOT/shop-backend" && npx next build --webpack )
     echo "building frontend…"; ( cd "$ROOT/shop-frontend" && npx next build --webpack )
   fi
-  if running "$BACKEND_PID"; then echo "backend already up ($(cat $BACKEND_PID))"; else
+  if running "$BACKEND_PID"; then echo "backend already up ($(cat "$BACKEND_PID"))"; else
     supervise backend "$ROOT/shop-backend" "npx next start -p $BACKEND_PORT" "$BACKEND_PID" &
     echo "backend supervisor $!"
   fi
-  if running "$FRONTEND_PID"; then echo "frontend already up ($(cat $FRONTEND_PID))"; else
+  if running "$FRONTEND_PID"; then echo "frontend already up ($(cat "$FRONTEND_PID"))"; else
     supervise frontend "$ROOT/shop-frontend" "npx next start -p $FRONTEND_PORT" "$FRONTEND_PID" &
     echo "frontend supervisor $!"
   fi
@@ -78,8 +78,8 @@ cmd_check() {
 }
 
 cmd_status() {
-  running "$BACKEND_PID" && echo "backend supervisor: alive ($(cat $BACKEND_PID))" || echo "backend supervisor: STOPPED"
-  running "$FRONTEND_PID" && echo "frontend supervisor: alive ($(cat $FRONTEND_PID))" || echo "frontend supervisor: STOPPED"
+  running "$BACKEND_PID" && echo "backend supervisor: alive ($(cat "$BACKEND_PID"))" || echo "backend supervisor: STOPPED"
+  running "$FRONTEND_PID" && echo "frontend supervisor: alive ($(cat "$FRONTEND_PID"))" || echo "frontend supervisor: STOPPED"
   cmd_check || true
 }
 

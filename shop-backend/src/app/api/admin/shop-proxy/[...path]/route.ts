@@ -59,11 +59,8 @@ import { GET as getPricingLogs } from '../../pricing/logs/route'
 import { GET as getPendingSellers } from '../../sellers/pending/route'
 import { GET as getAllSellers } from '../../sellers/all/route'
 import { GET as getChatSessions } from '../../delivery/chat-sessions/route'
-import { GET as getPendingGithub } from '../../delivery/pending-github/route'
 import { GET as getAdminChatSessions } from '../../chat/sessions/route'
-import { GET as getAdminChatSession, POST as closeAdminChatSession } from '../../chat/sessions/[id]/route'
-import { POST as sendAdminChatMessage } from '../../chat/sessions/[id]/messages/route'
-import { POST as closeAdminChat } from '../../chat/sessions/[id]/close/route'
+import { GET as getPendingGithub } from '../../delivery/pending-github/route'
 
 // Map handlers to routes (base routes - GET/POST only)
 ROUTE_MAP['products'] = [

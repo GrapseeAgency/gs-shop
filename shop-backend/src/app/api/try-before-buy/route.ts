@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from "@/lib/auth-options"
 
 // Trial eligibility: products with comparePrice (on sale) and price between 500-50000
 const TRIAL_ELIGIBLE_CATEGORIES = ['electronics', 'furniture', 'clothing', 'shoes', 'jewelry', 'appliances']

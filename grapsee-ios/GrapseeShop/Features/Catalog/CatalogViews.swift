@@ -115,6 +115,7 @@ enum Route: Hashable {    case product(String), list(ListMode), collections, col
     case childgrowth, diabetic, ingscan, ingswap, medinteract, medtracker, rxscan, healthmon
     case projdash, projplan, milestones, deadline, scopechange, handoff, slagen, qbr
     case churn, clientltv, command, corpcredit, crowd, demand, dispute, vault, pricetest, liquidator, profit
+    case scheduler, seasonal, senior, svcconfig, svcsubs, subaudit, eco, ussd, videoverify, vision, warrantyexp, wabulk
     case bodytype, usecasematcher, wardrobe, revtokens, trendforecaster, eventstylist
     case aitools, aichat, audits, guides, cicd, envsetup, dbschemas, notion, tutorials
     case category(String, String), search(String), categories
@@ -340,6 +341,19 @@ func appRoute(for path: String) -> Route {
     case "/pricing-test": return .pricetest
     case "/product-liquidator": return .liquidator
     case "/profitability": return .profit
+    case "/resale-value-calculator": return .resale
+    case "/scheduler": return .scheduler
+    case "/seasonal-clothing": return .seasonal
+    case "/senior-mode": return .senior
+    case "/service-configurator": return .svcconfig
+    case "/service-subscriptions": return .svcsubs
+    case "/subscription-audit": return .subaudit
+    case "/sustainable-finder": return .eco
+    case "/ussd-menu": return .ussd
+    case "/video-verification": return .videoverify
+    case "/visual-impaired": return .vision
+    case "/warranty-expiry": return .warrantyexp
+    case "/whatsapp-bulk": return .wabulk
     case "/shopping-list-autocomplete": return .shopautocomplete
     case "/document-expiry": return .docexpiry
     case "/vehicle-service": return .vehicle

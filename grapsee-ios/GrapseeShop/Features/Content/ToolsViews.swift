@@ -2013,3 +2013,331 @@ struct ProfitabilityView: View {
         }.navigationTitle("Profitability")
     }
 }
+
+// MARK: - Tools wave-H
+
+struct SchedulerView: View {
+    @State private var date = ""
+    @State private var slot = ""
+    @State private var booking = false
+    @State private var booked = false
+    let slots = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"]
+    var body: some View {
+        List {
+            Section { TextField("Date (YYYY-MM-DD)", text: $date) }
+            Section("Available slots") {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                    ForEach(slots, id: \.self) { t in
+                        Button(t) { slot = t }
+                            .buttonStyle(.borderedProminent).tint(slot == t ? .accentColor : .gray)
+                    }
+                }.padding(.vertical, 4)
+            }
+            Section {
+                Button(booking ? "Booking…" : booked ? "Booked ✅" : "Book appointment") {
+                    guard !date.isEmpty, !slot.isEmpty else { return }
+                    booking = true
+                    Task { try? await Task.sleep(nanoseconds: 1_200_000_000); booking = false; booked = true }
+                }.disabled(booking)
+            }
+        }.navigationTitle("Book a Consultation")
+    }
+}
+
+struct SeasonalClothingView: View {
+    @State private var season = "summer"
+    let wardrobe = ["summer": [("Cotton T-Shirts", "Top", "25-35C"), ("Shorts", "Bottom", "25-35C"), ("Sunglasses", "Accessory", "All day")], "monsoon": [("Rain Jacket", "Outerwear", "20-30C"), ("Waterproof Shoes", "Footwear", "All day"), ("Umbrella", "Accessory", "All day")], "winter": [("Wool Sweaters", "Top", "5-20C"), ("Jackets", "Outerwear", "5-20C"), ("Warm Socks", "Footwear", "5-20C")]]
+    var body: some View {
+        List {
+            Section {
+                Picker("Season", selection: $season) {
+                    Text("☀️ Summer").tag("summer")
+                    Text("🌧️ Monsoon").tag("monsoon")
+                    Text("❄️ Winter").tag("winter")
+                }.pickerStyle(.segmented)
+            }
+            ForEach(wardrobe[season] ?? [], id: \.0) { name, type, temp in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name).font(.headline)
+                    Text("\(type) · \(temp)").font(.caption).foregroundColor(.secondary)
+                }.padding(.vertical, 2)
+            }
+        }.navigationTitle("Seasonal Clothing")
+    }
+}
+
+struct SeniorModeView: View {
+    @State private var largeText = true
+    @State private var highContrast = false
+    @State private var voiceAssist = true
+    @State private var simpleMode = true
+    @State private var saved = false
+    var body: some View {
+        List {
+            Toggle("Large text", isOn: $largeText)
+            Toggle("High contrast", isOn: $highContrast)
+            Toggle("Voice assistance", isOn: $voiceAssist)
+            Toggle("Simple layout", isOn: $simpleMode)
+            Section {
+                Button("Save settings") { saved = true }
+                if saved { Text("✅ Senior mode settings saved!").foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("Senior Mode")
+    }
+}
+
+struct ServiceConfiguratorView: View {
+    let services = [("website", "Website", 4999), ("webapp", "Web Application", 14999), ("mobile", "Mobile App", 24999), ("ecommerce", "E-commerce", 9999)]
+    let pages = [("home", "Home", 0), ("about", "About", 500), ("contact", "Contact", 500), ("blog", "Blog", 1500), ("portfolio", "Portfolio", 1000), ("services", "Services", 800)]
+    let feats = [("auth", "User Authentication", 2000), ("cms", "Content Management", 3000), ("payment", "Payment Integration", 2500), ("seo", "SEO Optimization", 1500), ("analytics", "Analytics Dashboard", 1000), ("chat", "Live Chat", 1200)]
+    @State private var serviceId = "website"
+    @State private var selPages: Set<String> = []
+    @State private var selFeats: Set<String> = []
+    @State private var requested = false
+    var price: Int {
+        (services.first(where: { $0.0 == serviceId })?.2 ?? 4999) + pages.filter { selPages.contains($0.0) }.map { $0.2 }.reduce(0, +) + feats.filter { selFeats.contains($0.0) }.map { $0.2 }.reduce(0, +)
+    }
+    var serviceName: String { services.first(where: { $0.0 == serviceId })?.1 ?? "Website" }
+    var body: some View {
+        List {
+            Section("1 · Service") {
+                ForEach(services, id: \.0) { id, name, base in
+                    HStack {
+                        Text("\(name) · \(base)")
+                        Spacer()
+                        if serviceId == id { Image(systemName: "checkmark.circle.fill").foregroundColor(.accentColor) }
+                    }.contentShape(Rectangle()).onTapGesture { serviceId = id }
+                }
+            }
+            Section("2 · Pages") {
+                ForEach(pages, id: \.0) { id, name, p in
+                    HStack {
+                        Text("\(name) \(p == 0 ? "(included)" : "+ \(p)")")
+                        Spacer()
+                        Button(action: {
+                            if selPages.contains(id) { selPages.remove(id) } else { selPages.insert(id) }
+                        }) { Image(systemName: selPages.contains(id) ? "checkmark.square.fill" : "square") }
+                    }
+                }
+            }
+            Section("3 · Features") {
+                ForEach(feats, id: \.0) { id, name, p in
+                    HStack {
+                        Text("\(name) +\(p)")
+                        Spacer()
+                        Button(action: {
+                            if selFeats.contains(id) { selFeats.remove(id) } else { selFeats.insert(id) }
+                        }) { Image(systemName: selFeats.contains(id) ? "checkmark.square.fill" : "square") }
+                    }
+                }
+            }
+            Section {
+                Text("🧾 \(serviceName) · \(selPages.count) pages · \(selFeats.count) features")
+                Text("Estimated: \(price)").font(.title2).foregroundColor(.accentColor)
+                Button("Request this quote") { requested = true }
+                if requested { Text("✅ Quote requested!").foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("Service Configurator")
+    }
+}
+
+struct ServiceSubscriptionsView: View {
+    let tiers = [("Basic Care", 999, ["Security updates", "Bug fixes", "Email support", "Monthly backups"], false), ("Pro Support", 1999, ["Everything in Basic", "Priority support", "Uptime monitoring", "Monthly report"], true), ("Enterprise", 4999, ["Everything in Pro", "Dedicated manager", "SLA 99.9%", "Quarterly roadmap"], false)]
+    @State private var subscribed: String?
+    var body: some View {
+        List(tiers, id: \.0) { name, price, features, popular in
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("🛡️ \(name) \(popular ? "⭐" : "")").font(.headline)
+                    Spacer()
+                    Text("\(price)/mo").font(.headline).foregroundColor(.accentColor)
+                }
+                ForEach(features, id: \.self) { Text("• \($0)").font(.subheadline) }
+                Button(subscribed == name ? "Subscribed ✅" : "Subscribe") { subscribed = name }.disabled(subscribed == name)
+            }.padding(.vertical, 4)
+        }.navigationTitle("Care Plans")
+    }
+}
+
+struct SubscriptionAuditView: View {
+    @State private var loading = true
+    @State private var subs = [(String, String, Int, String, Int)]()
+    var body: some View {
+        Group {
+            if loading {
+                VStack(spacing: 12) { ProgressView(); Text("Auditing subscriptions…").foregroundColor(.secondary) }
+                    .onAppear {
+                        Task {
+                            try? await Task.sleep(nanoseconds: 1_000_000_000)
+                            subs = [("1", "Netflix", 649, "active", 0), ("2", "Gym Pro", 1200, "unused", 1200), ("3", "Cloud 2TB", 800, "unused", 800), ("4", "Music Plus", 119, "active", 0)]
+                            loading = false
+                        }
+                    }
+            } else {
+                List {
+                    Section {
+                        let unused = subs.filter { $0.3 == "unused" }
+                        Text("💸 \(unused.count) unused · save \(unused.map { $0.4 }.reduce(0, +))/mo").font(.headline).foregroundColor(.accentColor)
+                    }
+                    ForEach(subs, id: \.0) { id, name, price, status, _ in
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("\(name) · \(price)/mo").font(.headline)
+                                Text(status).font(.caption).foregroundColor(status == "unused" ? .red : .accentColor)
+                            }
+                            Spacer()
+                            if status == "unused" { Button("Cancel") { subs.removeAll(where: { $0.0 == id }) } }
+                        }.padding(.vertical, 2)
+                    }
+                }
+            }
+        }.navigationTitle("Subscription Audit")
+    }
+}
+
+struct SustainableFinderView: View {
+    @State private var search = ""
+    let products = [("Bamboo Toothbrush", 95, 149, true), ("Reusable Water Bottle", 90, 399, false), ("Organic Cotton T-Shirt", 88, 599, true), ("Biodegradable Phone Case", 85, 299, false)]
+    var filtered: [(String, Int, Int, Bool)] { search.isEmpty ? products : products.filter { $0.0.localizedCaseInsensitiveContains(search) } }
+    var body: some View {
+        List {
+            Section { TextField("Search eco products", text: $search) }
+            ForEach(filtered, id: \.0) { name, score, price, organic in
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("🌱 \(name) \(organic ? "(organic)" : "")").font(.headline)
+                        Text("Eco-score \(score) · \(price)").font(.caption).foregroundColor(.accentColor)
+                    }
+                    Spacer()
+                    Button("Add") {}
+                }.padding(.vertical, 4)
+            }
+        }.navigationTitle("Sustainable Finder")
+    }
+}
+
+struct UssdMenuView: View {
+    @State private var current = "main"
+    @State private var history: [String] = []
+    @State private var cartCount = 0
+    @State private var notice: String?
+    let menus: [String: (String, [(String, String, String?, String?)])] = [
+        "main": ("Main Menu", [("1", "Browse Products", "categories", nil), ("2", "My Orders", "orders", nil), ("3", "Search", "search", nil), ("4", "Support", "support", nil)]),
+        "categories": ("Categories", [("1", "Groceries", "groceries", nil), ("2", "Electronics", "electronics", nil), ("0", "Back", "main", nil)]),
+        "groceries": ("Groceries", [("1", "Rice - 50/kg", nil, "add"), ("2", "Dal - 80/kg", nil, "add"), ("3", "Oil - 120/l", nil, "add"), ("9", "View Cart", "cart", nil), ("0", "Back", "categories", nil)]),
+        "orders": ("My Orders", [("1", "ORD-1042: In transit", nil, "info"), ("0", "Back", "main", nil)]),
+        "cart": ("Your Cart", [("1", "Checkout", nil, "info"), ("0", "Back", "groceries", nil)]),
+        "search": ("Search", [("1", "Rice: 12 results", nil, "info"), ("0", "Back", "main", nil)]),
+        "support": ("Support", [("1", "Call us", nil, "info"), ("0", "Back", "main", nil)]),
+        "electronics": ("Electronics", [("1", "Earbuds - 1299", nil, "add"), ("0", "Back", "categories", nil)])
+    ]
+    func press(_ opt: (String, String, String?, String?)) {
+        if opt.3 == "add" { cartCount += 1; notice = "Added to cart! (\(cartCount) items)"; return }
+        if opt.3 == "info" { notice = opt.1; return }
+        if let next = opt.2 {
+            if opt.0 == "0" { _ = history.popLast() } else { history.append(current) }
+            current = next
+        }
+    }
+    var body: some View {
+        List {
+            Section {
+                Text("*99# · \(menus[current]?.0 ?? "")").font(.headline).foregroundColor(.accentColor).monospaced()
+                if cartCount > 0 { Text("🛒 \(cartCount) items in cart").font(.caption) }
+                if let n = notice { Text(n).font(.caption).foregroundColor(.accentColor) }
+            }
+            ForEach(menus[current]?.1 ?? [], id: \.0) { opt in
+                Button(action: { press(opt) }) {
+                    Text("\(opt.0). \(opt.1)").monospaced()
+                }
+            }
+        }.navigationTitle("USSD Shop *99#")
+    }
+}
+
+struct VideoVerificationView: View {
+    @State private var status = "idle"
+    @State private var requesting = false
+    var body: some View {
+        List {
+            Section {
+                Text("A store agent shows the exact item on a live video call before dispatch.")
+                Button(requesting ? "Requesting…" : status == "scheduled" ? "Call scheduled ✅" : "Request video call") {
+                    requesting = true
+                    Task { try? await Task.sleep(nanoseconds: 1_200_000_000); requesting = false; status = "scheduled" }
+                }.disabled(requesting || status != "idle")
+            }
+            if status == "scheduled" {
+                Section { Text("📹 Slot: tomorrow, 11:00 AM · link arrives on SMS").foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("Video Verification")
+    }
+}
+
+struct VisualImpairedView: View {
+    @State private var screenReader = true
+    @State private var voiceNav = true
+    @State private var audioDesc = true
+    @State private var highContrast = true
+    @State private var playing = false
+    var body: some View {
+        List {
+            Toggle("Screen reader labels", isOn: $screenReader)
+            Toggle("Voice navigation", isOn: $voiceNav)
+            Toggle("Audio descriptions", isOn: $audioDesc)
+            Toggle("High contrast", isOn: $highContrast)
+            Section {
+                Button("Preview audio description") { playing = true }
+                if playing { Text("🔊 Playing audio description…").foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("Vision Accessibility")
+    }
+}
+
+struct WarrantyExpiryView: View {
+    let items = [("iPhone 15", "2025-09-15", 120), ("MacBook Pro", "2024-12-01", 45)]
+    @State private var extended: Set<String> = []
+    var body: some View {
+        List(items, id: \.0) { product, date, days in
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("🛡️ \(product)").font(.headline)
+                    Text("Expires \(date) · \(days) days left").font(.caption).foregroundColor(days < 60 ? .red : .secondary)
+                }
+                Spacer()
+                Button(extended.contains(product) ? "Extended ✅" : "Extend") { extended.insert(product) }.disabled(extended.contains(product))
+            }.padding(.vertical, 4)
+        }.navigationTitle("Warranty Expiry")
+    }
+}
+
+struct WhatsAppBulkView: View {
+    @State private var phone = ""
+    @State private var selected: Set<Int> = []
+    @State private var sending = false
+    @State private var sent = false
+    let catalog = [(1, "Rice 5kg", 250), (2, "Dal 1kg", 120), (3, "Oil 1L", 140), (4, "Sugar 2kg", 80), (5, "Salt 1kg", 20), (6, "Tea 250g", 60)]
+    var total: Int { catalog.filter { selected.contains($0.0) }.map { $0.2 }.reduce(0, +) }
+    var body: some View {
+        List {
+            Section { TextField("WhatsApp number", text: $phone).keyboardType(.numberPad) }
+            ForEach(catalog, id: \.0) { id, name, price in
+                HStack {
+                    Button(action: {
+                        if selected.contains(id) { selected.remove(id) } else { selected.insert(id) }
+                    }) { Image(systemName: selected.contains(id) ? "checkmark.square.fill" : "square") }
+                    Text(name)
+                    Spacer()
+                    Text("\(price)").foregroundColor(.accentColor)
+                }
+            }
+            Section {
+                Button(sending ? "Sending…" : sent ? "Order sent ✅ (\(total))" : "Send order (\(total))") {
+                    guard phone.count >= 10, !selected.isEmpty else { return }
+                    sending = true
+                    Task { try? await Task.sleep(nanoseconds: 1_200_000_000); sending = false; sent = true }
+                }.disabled(sending)
+            }
+        }.navigationTitle("WhatsApp Bulk Order")
+    }
+}

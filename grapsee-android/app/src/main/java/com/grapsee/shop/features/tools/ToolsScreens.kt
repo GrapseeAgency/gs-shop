@@ -4147,3 +4147,616 @@ fun ProfitabilityScreen(onBack: () -> Unit) {
         }
     }
 }
+
+// ------------------------------------------------- scheduler (wave-H)
+
+val timeSlots = listOf("09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30")
+
+class SchedulerViewModel : ViewModel() {
+    var date by mutableStateOf(""); private set
+    var slot by mutableStateOf(""); private set
+    var booking by mutableStateOf(false); private set
+    var booked by mutableStateOf(false); private set
+    fun updateDate(v: String) { date = v; booked = false }
+    fun pickSlot(v: String) { slot = v; booked = false }
+    fun book(onError: (String) -> Unit, onDone: (String) -> Unit) {
+        if (date.isBlank() || slot.isBlank()) { onError("Please select date and time"); return }
+        viewModelScope.launch {
+            booking = true
+            kotlinx.coroutines.delay(1200)
+            booking = false
+            booked = true
+            onDone("Appointment booked! Check your email.")
+        }
+    }
+}
+
+@Composable
+fun SchedulerScreen(onBack: () -> Unit, vm: SchedulerViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Book a Consultation", "Pick a slot that suits you", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.date, onValueChange = vm::updateDate, label = { Text("Date (YYYY-MM-DD)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                }
+            }
+            item {
+                ToolCard {
+                    Text("Available slots", style = MaterialTheme.typography.titleSmall)
+                    timeSlots.chunked(3).forEach { row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            row.forEach { t ->
+                                val on = vm.slot == t
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                    modifier = Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).clickable { vm.pickSlot(t) },
+                                ) {
+                                    Text(t, modifier = Modifier.padding(vertical = 10.dp), style = MaterialTheme.typography.labelMedium, color = if (on) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                Button(onClick = { vm.book(::toast, ::toast) }, enabled = !vm.booking, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (vm.booking) "Booking…" else if (vm.booked) "Booked ✅" else "Book appointment")
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------- seasonal clothing (wave-H)
+
+data class SeasonItem(val name: String, val type: String, val temp: String)
+
+val seasonWardrobe = mapOf(
+    "summer" to listOf(SeasonItem("Cotton T-Shirts", "Top", "25-35C"), SeasonItem("Shorts", "Bottom", "25-35C"), SeasonItem("Sunglasses", "Accessory", "All day")),
+    "monsoon" to listOf(SeasonItem("Rain Jacket", "Outerwear", "20-30C"), SeasonItem("Waterproof Shoes", "Footwear", "All day"), SeasonItem("Umbrella", "Accessory", "All day")),
+    "winter" to listOf(SeasonItem("Wool Sweaters", "Top", "5-20C"), SeasonItem("Jackets", "Outerwear", "5-20C"), SeasonItem("Warm Socks", "Footwear", "5-20C")),
+)
+
+@Composable
+fun SeasonalClothingScreen(onBack: () -> Unit) {
+    var season by remember { mutableStateOf("summer") }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Seasonal Clothing", "Dress for the weather", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("summer" to "☀️ Summer", "monsoon" to "🌧️ Monsoon", "winter" to "❄️ Winter").forEach { (value, label) ->
+                        val on = season == value
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { season = value },
+                        ) {
+                            Text(label, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), style = MaterialTheme.typography.labelLarge, color = if (on) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            }
+            items(seasonWardrobe[season].orEmpty(), key = { it.name }) { item ->
+                ToolCard {
+                    Row {
+                        Column(Modifier.weight(1f)) {
+                            Text(item.name, style = MaterialTheme.typography.titleSmall)
+                            Text("${item.type} · ${item.temp}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- senior mode (wave-H)
+
+class SeniorModeViewModel : ViewModel() {
+    var largeText by mutableStateOf(true); private set
+    var highContrast by mutableStateOf(false); private set
+    var voiceAssist by mutableStateOf(true); private set
+    var simpleMode by mutableStateOf(true); private set
+    fun toggle(key: String) {
+        when (key) {
+            "largeText" -> largeText = !largeText
+            "highContrast" -> highContrast = !highContrast
+            "voiceAssist" -> voiceAssist = !voiceAssist
+            "simpleMode" -> simpleMode = !simpleMode
+        }
+    }
+    fun setting(key: String): Boolean = when (key) {
+        "largeText" -> largeText
+        "highContrast" -> highContrast
+        "voiceAssist" -> voiceAssist
+        else -> simpleMode
+    }
+}
+
+@Composable
+fun SeniorModeScreen(onBack: () -> Unit, vm: SeniorModeViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Senior Mode", "Bigger, simpler, calmer", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            listOf("largeText" to "Large text", "highContrast" to "High contrast", "voiceAssist" to "Voice assistance", "simpleMode" to "Simple layout").forEach { (key, label) ->
+                item {
+                    ToolCard {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.toggle(key) }) {
+                            Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                            Checkbox(checked = vm.setting(key), onCheckedChange = { vm.toggle(key) })
+                        }
+                    }
+                }
+            }
+            item {
+                Button(onClick = { toast("Senior mode settings saved!") }, modifier = Modifier.fillMaxWidth()) { Text("Save settings") }
+            }
+        }
+    }
+}
+
+// ---------------------------------------- service configurator (wave-H)
+
+data class ServiceOpt(val id: String, val name: String, val basePrice: Int)
+
+val serviceOpts = listOf(
+    ServiceOpt("website", "Website", 4999),
+    ServiceOpt("webapp", "Web Application", 14999),
+    ServiceOpt("mobile", "Mobile App", 24999),
+    ServiceOpt("ecommerce", "E-commerce", 9999),
+)
+
+data class PricedOpt(val id: String, val name: String, val price: Int)
+
+val pageOpts = listOf(
+    PricedOpt("home", "Home", 0),
+    PricedOpt("about", "About", 500),
+    PricedOpt("contact", "Contact", 500),
+    PricedOpt("blog", "Blog", 1500),
+    PricedOpt("portfolio", "Portfolio", 1000),
+    PricedOpt("services", "Services", 800),
+)
+
+val configFeatureOpts = listOf(
+    PricedOpt("auth", "User Authentication", 2000),
+    PricedOpt("cms", "Content Management", 3000),
+    PricedOpt("payment", "Payment Integration", 2500),
+    PricedOpt("seo", "SEO Optimization", 1500),
+    PricedOpt("analytics", "Analytics Dashboard", 1000),
+    PricedOpt("chat", "Live Chat", 1200),
+)
+
+class ServiceConfigViewModel : ViewModel() {
+    var serviceId by mutableStateOf("website"); private set
+    var pages = mutableStateListOf<String>(); private set
+    var features = mutableStateListOf<String>(); private set
+    fun pickService(id: String) { serviceId = id }
+    fun togglePage(id: String) { if (pages.contains(id)) pages.remove(id) else pages.add(id) }
+    fun toggleFeature(id: String) { if (features.contains(id)) features.remove(id) else features.add(id) }
+    fun price(): Int {
+        val base = serviceOpts.firstOrNull { it.id == serviceId }?.basePrice ?: 4999
+        return base + pageOpts.filter { pages.contains(it.id) }.sumOf { it.price } + configFeatureOpts.filter { features.contains(it.id) }.sumOf { it.price }
+    }
+    fun serviceName(): String = serviceOpts.firstOrNull { it.id == serviceId }?.name ?: "Website"
+}
+
+@Composable
+fun ServiceConfiguratorScreen(onBack: () -> Unit, vm: ServiceConfigViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Service Configurator", "Build your quote live", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("1 · Service", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    serviceOpts.forEach { s ->
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.pickService(s.id) }) {
+                            Text("${s.name} · ${s.basePrice}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            Checkbox(checked = vm.serviceId == s.id, onCheckedChange = { vm.pickService(s.id) })
+                        }
+                    }
+                }
+            }
+            item {
+                ToolCard {
+                    Text("2 · Pages", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    pageOpts.forEach { p ->
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.togglePage(p.id) }) {
+                            Text("${p.name} ${if (p.price == 0) "(included)" else "+${p.price}"}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            Checkbox(checked = vm.pages.contains(p.id), onCheckedChange = { vm.togglePage(p.id) })
+                        }
+                    }
+                }
+            }
+            item {
+                ToolCard {
+                    Text("3 · Features", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    configFeatureOpts.forEach { f ->
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.toggleFeature(f.id) }) {
+                            Text("${f.name} +${f.price}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            Checkbox(checked = vm.features.contains(f.id), onCheckedChange = { vm.toggleFeature(f.id) })
+                        }
+                    }
+                }
+            }
+            item {
+                ToolCard {
+                    Text("🧾 ${vm.serviceName()} · ${vm.pages.size} pages · ${vm.features.size} features", style = MaterialTheme.typography.bodyMedium)
+                    Text("Estimated: ${vm.price()}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    Button(onClick = { toast("Quote requested for ${vm.serviceName()} — ${vm.price()}!") }, modifier = Modifier.fillMaxWidth()) { Text("Request this quote") }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------- service subscriptions (wave-H)
+
+data class CareTier(val name: String, val price: Int, val features: List<String>, val popular: Boolean)
+
+val careTiers = listOf(
+    CareTier("Basic Care", 999, listOf("Security updates", "Bug fixes", "Email support", "Monthly backups"), false),
+    CareTier("Pro Support", 1999, listOf("Everything in Basic", "Priority support", "Uptime monitoring", "Monthly report"), true),
+    CareTier("Enterprise", 4999, listOf("Everything in Pro", "Dedicated manager", "SLA 99.9%", "Quarterly roadmap"), false),
+)
+
+@Composable
+fun ServiceSubscriptionsScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Care Plans", "We maintain, you relax", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(careTiers, key = { it.name }) { tier ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🛡️ ${tier.name} ${if (tier.popular) "⭐" else ""}", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                        Text("${tier.price}/mo", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                    tier.features.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                    Button(onClick = { toast("Subscribed to ${tier.name} plan!") }, modifier = Modifier.fillMaxWidth()) { Text("Subscribe") }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------- subscription audit (wave-H)
+
+data class AuditSub(val id: String, val name: String, val price: Int, val status: String, val savings: Int)
+
+class SubscriptionAuditViewModel : ViewModel() {
+    var loading by mutableStateOf(true); private set
+    var subs = mutableStateListOf<AuditSub>(); private set
+    init {
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1000)
+            subs.addAll(
+                listOf(
+                    AuditSub("1", "Netflix", 649, "active", 0),
+                    AuditSub("2", "Gym Pro", 1200, "unused", 1200),
+                    AuditSub("3", "Cloud 2TB", 800, "unused", 800),
+                    AuditSub("4", "Music Plus", 119, "active", 0),
+                )
+            )
+            loading = false
+        }
+    }
+    fun unusedCount(): Int = subs.count { it.status == "unused" }
+    fun potentialSavings(): Int = subs.filter { it.status == "unused" }.sumOf { it.savings }
+    fun cancel(id: String, onDone: (String) -> Unit) {
+        subs.removeAll { it.id == id }
+        onDone("Cancellation request sent!")
+    }
+}
+
+@Composable
+fun SubscriptionAuditScreen(onBack: () -> Unit, vm: SubscriptionAuditViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Subscription Audit", "Stop paying for unused", onBack)
+        if (vm.loading) { Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Auditing subscriptions…") } } else {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("💸 ${vm.unusedCount()} unused · save ${vm.potentialSavings()}/mo", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+            items(vm.subs, key = { it.id }) { sub ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("${sub.name} · ${sub.price}/mo", style = MaterialTheme.typography.titleSmall)
+                            Text(sub.status, style = MaterialTheme.typography.bodySmall, color = if (sub.status == "unused") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                        }
+                        if (sub.status == "unused") Button(onClick = { vm.cancel(sub.id, ::toast) }) { Text("Cancel") }
+                    }
+                }
+            }
+        }
+        }
+    }
+}
+
+// -------------------------------------------- sustainable finder (wave-H)
+
+data class EcoProduct(val name: String, val ecoScore: Int, val price: Int, val organic: Boolean)
+
+val ecoProducts = listOf(
+    EcoProduct("Bamboo Toothbrush", 95, 149, true),
+    EcoProduct("Reusable Water Bottle", 90, 399, false),
+    EcoProduct("Organic Cotton T-Shirt", 88, 599, true),
+    EcoProduct("Biodegradable Phone Case", 85, 299, false),
+)
+
+@Composable
+fun SustainableFinderScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    var search by remember { mutableStateOf("") }
+    val filtered = ecoProducts.filter { search.isBlank() || it.name.contains(search, ignoreCase = true) }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Sustainable Finder", "Shop by eco-score", onBack)
+        OutlinedTextField(value = search, onValueChange = { search = it }, label = { Text("Search eco products") }, singleLine = true, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp))
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(filtered, key = { it.name }) { product ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("🌱 ${product.name} ${if (product.organic) "(organic)" else ""}", style = MaterialTheme.typography.titleSmall)
+                            Text("Eco-score ${product.ecoScore} · ${product.price}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Button(onClick = { toast("${product.name} added! Eco-score: ${product.ecoScore}") }) { Text("Add") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------------- ussd menu (wave-H)
+
+data class UssdOption(val number: String, val label: String, val next: String? = null, val action: String? = null)
+
+val ussdMenus = mapOf(
+    "main" to ("Main Menu" to listOf(UssdOption("1", "Browse Products", "categories"), UssdOption("2", "My Orders", "orders"), UssdOption("3", "Search", "search"), UssdOption("4", "Support", "support"))),
+    "categories" to ("Categories" to listOf(UssdOption("1", "Groceries", "groceries"), UssdOption("2", "Electronics", "electronics"), UssdOption("0", "Back", "main"))),
+    "groceries" to ("Groceries" to listOf(UssdOption("1", "Rice - 50/kg", action = "add"), UssdOption("2", "Dal - 80/kg", action = "add"), UssdOption("3", "Oil - 120/l", action = "add"), UssdOption("9", "View Cart", "cart"), UssdOption("0", "Back", "categories"))),
+    "orders" to ("My Orders" to listOf(UssdOption("1", "ORD-1042: In transit", action = "info"), UssdOption("0", "Back", "main"))),
+    "cart" to ("Your Cart (3 items · 310)" to listOf(UssdOption("1", "Checkout", action = "info"), UssdOption("0", "Back", "groceries"))),
+    "search" to ("Search" to listOf(UssdOption("1", "Rice: 12 results", action = "info"), UssdOption("0", "Back", "main"))),
+    "support" to ("Support" to listOf(UssdOption("1", "Call us", action = "info"), UssdOption("0", "Back", "main"))),
+    "electronics" to ("Electronics" to listOf(UssdOption("1", "Earbuds - 1299", action = "add"), UssdOption("0", "Back", "categories"))),
+)
+
+class UssdViewModel : ViewModel() {
+    var current by mutableStateOf("main"); private set
+    var history = mutableStateListOf<String>(); private set
+    var cartCount by mutableStateOf(0); private set
+    fun press(option: UssdOption, onInfo: (String) -> Unit) {
+        if (option.action == "add") { cartCount++; onInfo("Added to cart! ($cartCount items)"); return }
+        if (option.action == "info") { onInfo(option.label); return }
+        option.next?.let { next ->
+            if (option.number == "0") history.removeLastOrNull() else history.add(current)
+            current = next
+        }
+    }
+}
+
+@Composable
+fun UssdMenuScreen(onBack: () -> Unit, vm: UssdViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    val (title, options) = ussdMenus[vm.current] ?: ("" to emptyList())
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("USSD Shop *99#", "No internet? No problem", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            item {
+                ToolCard {
+                    Text("*99# · $title", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                    if (vm.cartCount > 0) Text("🛒 ${vm.cartCount} items in cart", style = MaterialTheme.typography.bodySmall)
+                }
+            }
+            items(options, key = { it.number }) { option ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.press(option, ::toast) }) {
+                        Text("${option.number}. ${option.label}", style = MaterialTheme.typography.bodyMedium, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- video verification (wave-H)
+
+class VideoVerifyViewModel : ViewModel() {
+    var status by mutableStateOf("idle"); private set
+    var requesting by mutableStateOf(false); private set
+    fun request(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            requesting = true
+            kotlinx.coroutines.delay(1200)
+            requesting = false
+            status = "scheduled"
+            onDone("Video call requested!")
+        }
+    }
+}
+
+@Composable
+fun VideoVerificationScreen(onBack: () -> Unit, vm: VideoVerifyViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Video Verification", "See your product live", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("A store agent shows the exact item on a live video call before dispatch.", style = MaterialTheme.typography.bodyMedium)
+                    Button(onClick = { vm.request(::toast) }, enabled = !vm.requesting && vm.status == "idle", modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.requesting) "Requesting…" else if (vm.status == "scheduled") "Call scheduled ✅" else "Request video call")
+                    }
+                }
+            }
+            if (vm.status == "scheduled") {
+                item {
+                    ToolCard {
+                        Text("📹 Slot: tomorrow, 11:00 AM · link arrives on SMS", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------- visual impaired (wave-H)
+
+class VisualImpairedViewModel : ViewModel() {
+    var screenReader by mutableStateOf(true); private set
+    var voiceNav by mutableStateOf(true); private set
+    var audioDesc by mutableStateOf(true); private set
+    var highContrast by mutableStateOf(true); private set
+    fun toggle(key: String) {
+        when (key) {
+            "screenReader" -> screenReader = !screenReader
+            "voiceNav" -> voiceNav = !voiceNav
+            "audioDesc" -> audioDesc = !audioDesc
+            "highContrast" -> highContrast = !highContrast
+        }
+    }
+    fun setting(key: String): Boolean = when (key) {
+        "screenReader" -> screenReader
+        "voiceNav" -> voiceNav
+        "audioDesc" -> audioDesc
+        else -> highContrast
+    }
+}
+
+@Composable
+fun VisualImpairedScreen(onBack: () -> Unit, vm: VisualImpairedViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Vision Accessibility", "Shop by ear and touch", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            listOf("screenReader" to "Screen reader labels", "voiceNav" to "Voice navigation", "audioDesc" to "Audio descriptions", "highContrast" to "High contrast").forEach { (key, label) ->
+                item {
+                    ToolCard {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.toggle(key) }) {
+                            Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                            Checkbox(checked = vm.setting(key), onCheckedChange = { vm.toggle(key) })
+                        }
+                    }
+                }
+            }
+            item {
+                Button(onClick = { toast("Playing audio description...") }, modifier = Modifier.fillMaxWidth()) { Text("Preview audio description") }
+            }
+        }
+    }
+}
+
+// ----------------------------------------------- warranty expiry (wave-H)
+
+data class Warranty(val product: String, val expiryDate: String, val daysLeft: Int)
+
+val warranties = listOf(
+    Warranty("iPhone 15", "2025-09-15", 120),
+    Warranty("MacBook Pro", "2024-12-01", 45),
+)
+
+@Composable
+fun WarrantyExpiryScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Warranty Expiry", "Extend before it lapses", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(warranties, key = { it.product }) { w ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("🛡️ ${w.product}", style = MaterialTheme.typography.titleSmall)
+                            Text("Expires ${w.expiryDate} · ${w.daysLeft} days left", style = MaterialTheme.typography.bodySmall, color = if (w.daysLeft < 60) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Button(onClick = { toast("Extended warranty for ${w.product}!") }) { Text("Extend") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------ whatsapp bulk (wave-H)
+
+data class BulkItem(val id: Int, val name: String, val price: Int)
+
+val bulkCatalog = listOf(
+    BulkItem(1, "Rice 5kg", 250),
+    BulkItem(2, "Dal 1kg", 120),
+    BulkItem(3, "Oil 1L", 140),
+    BulkItem(4, "Sugar 2kg", 80),
+    BulkItem(5, "Salt 1kg", 20),
+    BulkItem(6, "Tea 250g", 60),
+)
+
+class WhatsAppBulkViewModel : ViewModel() {
+    var phone by mutableStateOf(""); private set
+    var selected = mutableStateListOf<Int>(); private set
+    var sent by mutableStateOf(false); private set
+    var sending by mutableStateOf(false); private set
+    fun updatePhone(v: String) { phone = v.filter { it.isDigit() }.take(12); sent = false }
+    fun toggle(id: Int) { if (selected.contains(id)) selected.remove(id) else selected.add(id) }
+    fun total(): Int = bulkCatalog.filter { selected.contains(it.id) }.sumOf { it.price }
+    fun send(onError: (String) -> Unit, onDone: (String) -> Unit) {
+        if (phone.length < 10 || selected.isEmpty()) { onError("Please fill all fields"); return }
+        viewModelScope.launch {
+            sending = true
+            kotlinx.coroutines.delay(1200)
+            sending = false
+            sent = true
+            onDone("Order placed via WhatsApp!")
+        }
+    }
+}
+
+@Composable
+fun WhatsAppBulkScreen(onBack: () -> Unit, vm: WhatsAppBulkViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("WhatsApp Bulk Order", "Kirana list over chat", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.phone, onValueChange = vm::updatePhone, label = { Text("WhatsApp number") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                }
+            }
+            items(bulkCatalog, key = { it.id }) { item ->
+                val on = vm.selected.contains(item.id)
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.toggle(item.id) }) {
+                        Checkbox(checked = on, onCheckedChange = { vm.toggle(item.id) })
+                        Text(item.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Text("${item.price}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            item {
+                Button(onClick = { vm.send(::toast, ::toast) }, enabled = !vm.sending, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (vm.sending) "Sending…" else if (vm.sent) "Order sent ✅ (${vm.total()})" else "Send order (${vm.total()})")
+                }
+            }
+        }
+    }
+}

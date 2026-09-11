@@ -220,6 +220,18 @@ object Routes {
     const val PRICETEST = "pricetest"
     const val LIQUIDATOR = "liquidator"
     const val PROFIT = "profit"
+    const val SCHEDULER = "scheduler"
+    const val SEASONAL = "seasonal"
+    const val SENIOR = "senior"
+    const val SVCCONFIG = "svcconfig"
+    const val SVCSUBS = "svcsubs"
+    const val SUBAUDIT = "subaudit"
+    const val ECO = "eco"
+    const val USSD = "ussd"
+    const val VIDEOVERIFY = "videoverify"
+    const val VISION = "vision"
+    const val WARRANTYEXP = "warrantyexp"
+    const val WABULK = "wabulk"
     const val BODYTYPE = "bodytype"
     const val USECASEMATCHER = "usecasematcher"
     const val WARDROBE = "wardrobe"
@@ -489,6 +501,19 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 route == "/pricing-test" -> navController.navigate(Routes.PRICETEST)
                 route == "/product-liquidator" -> navController.navigate(Routes.LIQUIDATOR)
                 route == "/profitability" -> navController.navigate(Routes.PROFIT)
+                route == "/resale-value-calculator" -> navController.navigate(Routes.RESALE)
+                route == "/scheduler" -> navController.navigate(Routes.SCHEDULER)
+                route == "/seasonal-clothing" -> navController.navigate(Routes.SEASONAL)
+                route == "/senior-mode" -> navController.navigate(Routes.SENIOR)
+                route == "/service-configurator" -> navController.navigate(Routes.SVCCONFIG)
+                route == "/service-subscriptions" -> navController.navigate(Routes.SVCSUBS)
+                route == "/subscription-audit" -> navController.navigate(Routes.SUBAUDIT)
+                route == "/sustainable-finder" -> navController.navigate(Routes.ECO)
+                route == "/ussd-menu" -> navController.navigate(Routes.USSD)
+                route == "/video-verification" -> navController.navigate(Routes.VIDEOVERIFY)
+                route == "/visual-impaired" -> navController.navigate(Routes.VISION)
+                route == "/warranty-expiry" -> navController.navigate(Routes.WARRANTYEXP)
+                route == "/whatsapp-bulk" -> navController.navigate(Routes.WABULK)
                 route == "/body-type" -> navController.navigate(Routes.BODYTYPE)
                 route == "/use-case-matcher" -> navController.navigate(Routes.USECASEMATCHER)
                 route == "/wardrobe-planner" -> navController.navigate(Routes.WARDROBE)
@@ -1590,6 +1615,54 @@ fun GrapseeAppRoot(navController: NavHostController) {
 
             composable(Routes.PROFIT) {
                 com.grapsee.shop.features.tools.ProfitabilityScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SCHEDULER) {
+                com.grapsee.shop.features.tools.SchedulerScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SEASONAL) {
+                com.grapsee.shop.features.tools.SeasonalClothingScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SENIOR) {
+                com.grapsee.shop.features.tools.SeniorModeScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SVCCONFIG) {
+                com.grapsee.shop.features.tools.ServiceConfiguratorScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SVCSUBS) {
+                com.grapsee.shop.features.tools.ServiceSubscriptionsScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SUBAUDIT) {
+                com.grapsee.shop.features.tools.SubscriptionAuditScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.ECO) {
+                com.grapsee.shop.features.tools.SustainableFinderScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.USSD) {
+                com.grapsee.shop.features.tools.UssdMenuScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.VIDEOVERIFY) {
+                com.grapsee.shop.features.tools.VideoVerificationScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.VISION) {
+                com.grapsee.shop.features.tools.VisualImpairedScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.WARRANTYEXP) {
+                com.grapsee.shop.features.tools.WarrantyExpiryScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.WABULK) {
+                com.grapsee.shop.features.tools.WhatsAppBulkScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.SMSORDER) {

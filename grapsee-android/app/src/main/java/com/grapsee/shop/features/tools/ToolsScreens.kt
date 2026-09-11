@@ -3416,3 +3416,329 @@ fun HealthMonitorScreen(onBack: () -> Unit) {
         }
     }
 }
+
+// ------------------------------------------- project dashboard (wave-F)
+
+data class DashMilestone(val name: String, val status: String, val date: String)
+
+val dashMilestones = listOf(
+    DashMilestone("Discovery", "completed", "Day 1-2"),
+    DashMilestone("Design", "completed", "Day 3-7"),
+    DashMilestone("Development", "in-progress", "Day 8-14"),
+    DashMilestone("Testing", "pending", "Day 15-16"),
+    DashMilestone("Launch", "pending", "Day 17"),
+)
+
+@Composable
+fun ProjectDashboardScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Live Project Dashboard", "E-commerce Website · In Progress", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Progress 60%", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Text("Day 8 of 14 · Development", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    LinearProgressIndicator(progress = { 0.6f }, modifier = Modifier.fillMaxWidth())
+                }
+            }
+            items(dashMilestones, key = { it.name }) { ms ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(if (ms.status == "completed") "✅" else if (ms.status == "in-progress") "🔄" else "⏳", style = MaterialTheme.typography.titleMedium)
+                        Column(Modifier.padding(start = 8.dp)) {
+                            Text(ms.name, style = MaterialTheme.typography.titleSmall)
+                            Text("${ms.status} · ${ms.date}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- project planner (wave-F)
+
+val diyProjects = mapOf(
+    "bookshelf" to listOf("Wood planks (6)", "Screws (20)", "Wood glue", "Sandpaper", "Paint"),
+    "photo frame" to listOf("Cardboard", "Scissors", "Glue", "Decorations"),
+    "garden bed" to listOf("Wood (4 planks)", "Soil", "Seeds", "Nails"),
+)
+
+@Composable
+fun ProjectPlannerScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    var project by remember { mutableStateOf("") }
+    var materials by remember { mutableStateOf<List<String>>(emptyList()) }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Project Planner", "DIY materials calculator", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = project, onValueChange = { project = it; materials = emptyList() }, label = { Text("Project (bookshelf, photo frame, garden bed)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = {
+                        materials = diyProjects[project.trim().lowercase()].orEmpty()
+                        if (materials.isNotEmpty()) toast("Materials list generated!")
+                    }, modifier = Modifier.fillMaxWidth()) { Text("Generate list") }
+                }
+            }
+            items(materials, key = { it }) { item ->
+                ToolCard { Text("• $item", style = MaterialTheme.typography.bodyMedium) }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- milestones (wave-F)
+
+data class Milestone(val id: Int, val name: String, val status: String, val deliverables: List<String>, val approved: Boolean)
+
+class MilestonesViewModel : ViewModel() {
+    var milestones = mutableStateListOf(
+        Milestone(1, "Wireframes", "completed", listOf("Homepage wireframe", "About page wireframe"), true),
+        Milestone(2, "Design", "in-review", listOf("Homepage design", "Mobile design"), false),
+        Milestone(3, "Frontend Development", "pending", listOf("HTML/CSS", "React components"), false),
+        Milestone(4, "Backend Integration", "pending", listOf("API endpoints", "Database setup"), false),
+    ); private set
+    var feedback by mutableStateOf(""); private set
+    fun updateFeedback(v: String) { feedback = v }
+    fun approve(id: Int, onDone: (String) -> Unit) {
+        val i = milestones.indexOfFirst { it.id == id }
+        if (i >= 0) milestones[i] = milestones[i].copy(status = "completed", approved = true)
+        onDone("Milestone approved!")
+    }
+}
+
+@Composable
+fun MilestonesScreen(onBack: () -> Unit, vm: MilestonesViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Milestones", "Review & approve deliverables", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(vm.milestones, key = { it.id }) { ms ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("${ms.id}. ${ms.name} ${if (ms.approved) "✅" else ""}", style = MaterialTheme.typography.titleSmall)
+                            Text(ms.status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                            ms.deliverables.forEach { Text("• $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                        }
+                        if (!ms.approved) Button(onClick = { vm.approve(ms.id, ::toast) }) { Text("Approve") }
+                    }
+                }
+            }
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.feedback, onValueChange = vm::updateFeedback, label = { Text("Feedback for the team") }, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = { toast("Feedback sent!"); vm.updateFeedback("") }, enabled = vm.feedback.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Send feedback") }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------- deadline predictor (wave-F)
+
+data class FeatureOpt(val id: String, val name: String, val days: Int)
+
+val featureOpts = listOf(
+    FeatureOpt("auth", "User Authentication", 3),
+    FeatureOpt("payment", "Payment Integration", 4),
+    FeatureOpt("cms", "Content Management", 5),
+    FeatureOpt("analytics", "Analytics Dashboard", 3),
+    FeatureOpt("chat", "Live Chat", 2),
+    FeatureOpt("search", "Advanced Search", 3),
+)
+
+class DeadlinePredictorViewModel : ViewModel() {
+    var selected = mutableStateListOf<String>(); private set
+    var complexity by mutableStateOf("medium"); private set
+    fun toggle(id: String) { if (selected.contains(id)) selected.remove(id) else selected.add(id) }
+    fun pickComplexity(v: String) { complexity = v }
+    fun baseDays(): Int = if (complexity == "simple") 7 else if (complexity == "medium") 14 else 21
+    fun totalDays(): Int = baseDays() + featureOpts.filter { selected.contains(it.id) }.sumOf { it.days }
+    fun rushDays(): Int = Math.ceil(totalDays() * 0.6).toInt()
+}
+
+@Composable
+fun DeadlinePredictorScreen(onBack: () -> Unit, vm: DeadlinePredictorViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Deadline Predictor", "Honest timelines, upfront", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("Complexity", style = MaterialTheme.typography.titleSmall)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("simple", "medium", "complex").forEach { c ->
+                            val on = vm.complexity == c
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { vm.pickComplexity(c) },
+                            ) {
+                                Text(c, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), style = MaterialTheme.typography.labelLarge, color = if (on) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                }
+            }
+            items(featureOpts, key = { it.id }) { feat ->
+                val on = vm.selected.contains(feat.id)
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.toggle(feat.id) }) {
+                        Checkbox(checked = on, onCheckedChange = { vm.toggle(feat.id) })
+                        Text(feat.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Text("+${feat.days}d", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            item {
+                ToolCard {
+                    Text("📅 Standard: ${vm.totalDays()} days · ⚡ Rush: ${vm.rushDays()} days", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    Text("Base ${vm.baseDays()}d + features ${vm.totalDays() - vm.baseDays()}d", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+// ----------------------------------------------- scope change (wave-F)
+
+class ScopeChangeViewModel : ViewModel() {
+    var requested by mutableStateOf(""); private set
+    var analyzed by mutableStateOf(false); private set
+    fun updateRequested(v: String) { requested = v; analyzed = false }
+    fun analyze() { analyzed = true }
+}
+
+@Composable
+fun ScopeChangeScreen(onBack: () -> Unit, vm: ScopeChangeViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Scope Change Detector", "Fair pricing for extras", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.requested, onValueChange = vm::updateRequested, label = { Text("Describe the change") }, modifier = Modifier.fillMaxWidth(), minLines = 2)
+                    Button(onClick = vm::analyze, enabled = vm.requested.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Analyze change") }
+                }
+            }
+            if (vm.analyzed) {
+                item {
+                    ToolCard {
+                        Text("⚠️ Out of scope", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.error)
+                        Text("Not included in original requirements document.", style = MaterialTheme.typography.bodyMedium)
+                        Text("Estimated: 8 hours · 3999 · adds 2 days", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Button(onClick = { toast("Scope change approved! New timeline and cost updated.") }, modifier = Modifier.fillMaxWidth()) { Text("Approve change") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------- handoff portal (wave-F)
+
+data class Deliverable(val name: String, val type: String, val size: String, val files: List<String>)
+
+val deliverables = listOf(
+    Deliverable("Source Code", "code", "24 MB", listOf("src/", "components/", "api/")),
+    Deliverable("Design Assets", "assets", "156 MB", listOf("logos/", "icons/", "banners/")),
+    Deliverable("Documentation", "docs", "2.4 MB", listOf("README.md", "API.md", "DEPLOY.md")),
+    Deliverable("Video Tutorials", "video", "450 MB", listOf("setup.mp4", "admin-guide.mp4")),
+)
+
+@Composable
+fun HandoffPortalScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Handoff Portal", "Everything you own, in one place", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                Button(onClick = { toast("Starting download of all deliverables...") }, modifier = Modifier.fillMaxWidth()) { Text("Download all") }
+            }
+            items(deliverables, key = { it.name }) { d ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("📦 ${d.name} · ${d.size}", style = MaterialTheme.typography.titleSmall)
+                            Text(d.files.joinToString(", "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Button(onClick = { toast("Downloading ${d.name}...") }) { Text("Get") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ----------------------------------------------- sla generator (wave-F)
+
+class SlaViewModel : ViewModel() {
+    var generated by mutableStateOf(false); private set
+    fun generate() { generated = true }
+}
+
+val slaClauses = listOf(
+    "Client must provide all content within 3 days of request",
+    "Revisions must be requested within 7 days of milestone delivery",
+    "Scope changes require written approval and may adjust timeline",
+    "Payment milestones tied to deliverable approval",
+    "Intellectual property transfers upon final payment",
+)
+
+@Composable
+fun SlaGeneratorScreen(onBack: () -> Unit, vm: SlaViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("SLA Generator", "Website package terms", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                Button(onClick = { vm.generate(); toast("SLA generated!") }, modifier = Modifier.fillMaxWidth()) { Text("Generate SLA") }
+            }
+            if (vm.generated) {
+                item {
+                    ToolCard {
+                        Text("📄 Website Development SLA", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        listOf("Response time: 24 hours", "Revisions: 3 rounds included", "Delivery: 14-21 days", "Support: 30 days post-delivery", "Uptime: 99.5%", "Penalty: 10% discount per week delayed").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                        slaClauses.forEachIndexed { i, clause -> Text("${i + 1}. $clause", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- qbr reports (wave-F)
+
+@Composable
+fun QbrReportsScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Quarterly Business Reviews", "90-day insights", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("📊 Q4 2024 · completed", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    listOf("Traffic" to "+45%", "Conversions" to "+22%", "Revenue" to "+38%").forEach { (k, v) ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(k, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            Text(v, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+            item {
+                ToolCard {
+                    Text("Recommendations", style = MaterialTheme.typography.titleSmall)
+                    listOf("Optimize product page load times", "Add customer testimonials section", "Implement abandoned cart recovery").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                }
+            }
+        }
+    }
+}

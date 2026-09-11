@@ -1620,3 +1620,185 @@ struct HealthMonitorView: View {
         }.navigationTitle("Site Health Monitor")
     }
 }
+
+// MARK: - Tools wave-F
+
+struct ProjectDashboardView: View {
+    let milestones = [("Discovery", "completed", "Day 1-2"), ("Design", "completed", "Day 3-7"), ("Development", "in-progress", "Day 8-14"), ("Testing", "pending", "Day 15-16"), ("Launch", "pending", "Day 17")]
+    var body: some View {
+        List {
+            Section {
+                HStack {
+                    Text("Progress 60%").font(.headline).foregroundColor(.accentColor)
+                    Spacer()
+                    Text("Day 8 of 14 · Development").font(.caption).foregroundColor(.secondary)
+                }
+                ProgressView(value: 0.6)
+            }
+            ForEach(milestones, id: \.0) { name, status, date in
+                HStack {
+                    Text(status == "completed" ? "✅" : status == "in-progress" ? "🔄" : "⏳")
+                    VStack(alignment: .leading) {
+                        Text(name).font(.headline)
+                        Text("\(status) · \(date)").font(.caption).foregroundColor(.secondary)
+                    }
+                }.padding(.vertical, 2)
+            }
+        }.navigationTitle("Live Project Dashboard")
+    }
+}
+
+struct ProjectPlannerView: View {
+    @State private var project = ""
+    @State private var materials: [String] = []
+    let diy = ["bookshelf": ["Wood planks (6)", "Screws (20)", "Wood glue", "Sandpaper", "Paint"], "photo frame": ["Cardboard", "Scissors", "Glue", "Decorations"], "garden bed": ["Wood (4 planks)", "Soil", "Seeds", "Nails"]]
+    var body: some View {
+        List {
+            Section {
+                TextField("Project (bookshelf, photo frame, garden bed)", text: $project)
+                Button("Generate list") { materials = diy[project.trimmingCharacters(in: .whitespaces).lowercased()] ?? [] }
+            }
+            ForEach(materials, id: \.self) { Text("• \($0)") }
+        }.navigationTitle("Project Planner")
+    }
+}
+
+struct MilestonesView: View {
+    @State private var milestones = [(1, "Wireframes", "completed", ["Homepage wireframe", "About page wireframe"], true), (2, "Design", "in-review", ["Homepage design", "Mobile design"], false), (3, "Frontend Development", "pending", ["HTML/CSS", "React components"], false), (4, "Backend Integration", "pending", ["API endpoints", "Database setup"], false)]
+    @State private var feedback = ""
+    @State private var sent = false
+    var body: some View {
+        List {
+            ForEach(milestones, id: \.0) { id, name, status, deliverables, approved in
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("\(id). \(name) \(approved ? "✅" : "")").font(.headline)
+                        Spacer()
+                        if !approved {
+                            Button("Approve") {
+                                if let i = milestones.firstIndex(where: { $0.0 == id }) { milestones[i].2 = "completed"; milestones[i].4 = true }
+                            }
+                        }
+                    }
+                    Text(status).font(.caption).foregroundColor(.accentColor)
+                    ForEach(deliverables, id: \.self) { Text("• \($0)").font(.caption).foregroundColor(.secondary) }
+                }.padding(.vertical, 4)
+            }
+            Section("Feedback") {
+                TextField("Feedback for the team", text: $feedback)
+                Button("Send feedback") { sent = true; feedback = "" }.disabled(feedback.isEmpty)
+                if sent { Text("✅ Feedback sent!").foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("Milestones")
+    }
+}
+
+struct DeadlinePredictorView: View {
+    let opts = [("auth", "User Authentication", 3), ("payment", "Payment Integration", 4), ("cms", "Content Management", 5), ("analytics", "Analytics Dashboard", 3), ("chat", "Live Chat", 2), ("search", "Advanced Search", 3)]
+    @State private var selected: Set<String> = []
+    @State private var complexity = "medium"
+    var base: Int { complexity == "simple" ? 7 : complexity == "medium" ? 14 : 21 }
+    var total: Int { base + opts.filter { selected.contains($0.0) }.map { $0.2 }.reduce(0, +) }
+    var rush: Int { Int(ceil(Double(total) * 0.6)) }
+    var body: some View {
+        List {
+            Section("Complexity") {
+                Picker("Complexity", selection: $complexity) { ForEach(["simple", "medium", "complex"], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
+            }
+            ForEach(opts, id: \.0) { id, name, days in
+                HStack {
+                    Button(action: {
+                        if selected.contains(id) { selected.remove(id) } else { selected.insert(id) }
+                    }) { Image(systemName: selected.contains(id) ? "checkmark.square.fill" : "square") }
+                    Text(name)
+                    Spacer()
+                    Text("+\(days)d").foregroundColor(.accentColor)
+                }
+            }
+            Section {
+                Text("📅 Standard: \(total) days · ⚡ Rush: \(rush) days").font(.headline).foregroundColor(.accentColor)
+                Text("Base \(base)d + features \(total - base)d").font(.caption).foregroundColor(.secondary)
+            }
+        }.navigationTitle("Deadline Predictor")
+    }
+}
+
+struct ScopeChangeView: View {
+    @State private var requested = ""
+    @State private var analyzed = false
+    @State private var approved = false
+    var body: some View {
+        List {
+            Section {
+                TextField("Describe the change", text: $requested, axis: .vertical)
+                Button("Analyze change") { analyzed = true }.disabled(requested.isEmpty)
+            }
+            if analyzed {
+                Section {
+                    Text("⚠️ Out of scope").font(.headline).foregroundColor(.red)
+                    Text("Not included in original requirements document.")
+                    Text("Estimated: 8 hours · 3999 · adds 2 days").font(.headline).foregroundColor(.accentColor)
+                    Button("Approve change") { approved = true }
+                    if approved { Text("✅ Scope change approved! New timeline and cost updated.").foregroundColor(.accentColor) }
+                }
+            }
+        }.navigationTitle("Scope Change Detector")
+    }
+}
+
+struct HandoffPortalView: View {
+    let deliverables = [("Source Code", "24 MB", "src/, components/, api/"), ("Design Assets", "156 MB", "logos/, icons/, banners/"), ("Documentation", "2.4 MB", "README.md, API.md, DEPLOY.md"), ("Video Tutorials", "450 MB", "setup.mp4, admin-guide.mp4")]
+    var body: some View {
+        List {
+            Section { Button("Download all") {} }
+            ForEach(deliverables, id: \.0) { name, size, files in
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("📦 \(name) · \(size)").font(.headline)
+                        Text(files).font(.caption).foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Button("Get") {}
+                }.padding(.vertical, 4)
+            }
+        }.navigationTitle("Handoff Portal")
+    }
+}
+
+struct SlaGeneratorView: View {
+    @State private var generated = false
+    let terms = ["Response time: 24 hours", "Revisions: 3 rounds included", "Delivery: 14-21 days", "Support: 30 days post-delivery", "Uptime: 99.5%", "Penalty: 10% discount per week delayed"]
+    let clauses = ["Client must provide all content within 3 days of request", "Revisions must be requested within 7 days of milestone delivery", "Scope changes require written approval and may adjust timeline", "Payment milestones tied to deliverable approval", "Intellectual property transfers upon final payment"]
+    var body: some View {
+        List {
+            Section { Button("Generate SLA") { generated = true } }
+            if generated {
+                Section {
+                    Text("📄 Website Development SLA").font(.headline).foregroundColor(.accentColor)
+                    ForEach(terms, id: \.self) { Text("• \($0)") }
+                    ForEach(Array(clauses.enumerated()), id: \.offset) { i, clause in
+                        Text("\(i + 1). \(clause)").font(.caption).foregroundColor(.secondary)
+                    }
+                }
+            }
+        }.navigationTitle("SLA Generator")
+    }
+}
+
+struct QbrReportsView: View {
+    let metrics = [("Traffic", "+45%"), ("Conversions", "+22%"), ("Revenue", "+38%")]
+    let recs = ["Optimize product page load times", "Add customer testimonials section", "Implement abandoned cart recovery"]
+    var body: some View {
+        List {
+            Section {
+                Text("📊 Q4 2024 · completed").font(.headline).foregroundColor(.accentColor)
+                ForEach(metrics, id: \.0) { k, v in
+                    HStack { Text(k); Spacer(); Text(v).bold() }
+                }
+            }
+            Section("Recommendations") {
+                ForEach(recs, id: \.self) { Text("• \($0)") }
+            }
+        }.navigationTitle("Quarterly Business Reviews")
+    }
+}

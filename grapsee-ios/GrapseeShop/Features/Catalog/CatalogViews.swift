@@ -113,6 +113,7 @@ enum Route: Hashable {    case product(String), list(ListMode), collections, col
     case emergencybuy, clipboardbuy, flashback, expiryguar, priceguar, smartupsell, studentbudget, subexpiry, altfinder, assembly
     case autocoupon, bulkbuy, reorder, pricedroprefund, grocery, recipe, petsup, schoolsup, movingkit, appliance, safety, verifiedphotos
     case childgrowth, diabetic, ingscan, ingswap, medinteract, medtracker, rxscan, healthmon
+    case projdash, projplan, milestones, deadline, scopechange, handoff, slagen, qbr
     case bodytype, usecasematcher, wardrobe, revtokens, trendforecaster, eventstylist
     case aitools, aichat, audits, guides, cicd, envsetup, dbschemas, notion, tutorials
     case category(String, String), search(String), categories
@@ -318,6 +319,14 @@ func appRoute(for path: String) -> Route {
     case "/medicine-tracker": return .medtracker
     case "/prescription-scan": return .rxscan
     case "/health-monitor": return .healthmon
+    case "/project-dashboard": return .projdash
+    case "/project-planner": return .projplan
+    case "/milestones": return .milestones
+    case "/deadline-predictor": return .deadline
+    case "/scope-change": return .scopechange
+    case "/handoff-portal": return .handoff
+    case "/sla-generator": return .slagen
+    case "/qbr-reports": return .qbr
     case "/shopping-list-autocomplete": return .shopautocomplete
     case "/document-expiry": return .docexpiry
     case "/vehicle-service": return .vehicle

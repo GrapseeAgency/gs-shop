@@ -201,6 +201,14 @@ object Routes {
     const val MEDTRACKER = "medtracker"
     const val RXSCAN = "rxscan"
     const val HEALTHMON = "healthmon"
+    const val PROJDASH = "projdash"
+    const val PROJPLAN = "projplan"
+    const val MILESTONES = "milestones"
+    const val DEADLINE = "deadline"
+    const val SCOPECHANGE = "scopechange"
+    const val HANDOFF = "handoff"
+    const val SLAGEN = "slagen"
+    const val QBR = "qbr"
     const val BODYTYPE = "bodytype"
     const val USECASEMATCHER = "usecasematcher"
     const val WARDROBE = "wardrobe"
@@ -450,6 +458,14 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 route == "/medicine-tracker" -> navController.navigate(Routes.MEDTRACKER)
                 route == "/prescription-scan" -> navController.navigate(Routes.RXSCAN)
                 route == "/health-monitor" -> navController.navigate(Routes.HEALTHMON)
+                route == "/project-dashboard" -> navController.navigate(Routes.PROJDASH)
+                route == "/project-planner" -> navController.navigate(Routes.PROJPLAN)
+                route == "/milestones" -> navController.navigate(Routes.MILESTONES)
+                route == "/deadline-predictor" -> navController.navigate(Routes.DEADLINE)
+                route == "/scope-change" -> navController.navigate(Routes.SCOPECHANGE)
+                route == "/handoff-portal" -> navController.navigate(Routes.HANDOFF)
+                route == "/sla-generator" -> navController.navigate(Routes.SLAGEN)
+                route == "/qbr-reports" -> navController.navigate(Routes.QBR)
                 route == "/body-type" -> navController.navigate(Routes.BODYTYPE)
                 route == "/use-case-matcher" -> navController.navigate(Routes.USECASEMATCHER)
                 route == "/wardrobe-planner" -> navController.navigate(Routes.WARDROBE)
@@ -1475,6 +1491,38 @@ fun GrapseeAppRoot(navController: NavHostController) {
 
             composable(Routes.HEALTHMON) {
                 com.grapsee.shop.features.tools.HealthMonitorScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.PROJDASH) {
+                com.grapsee.shop.features.tools.ProjectDashboardScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.PROJPLAN) {
+                com.grapsee.shop.features.tools.ProjectPlannerScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.MILESTONES) {
+                com.grapsee.shop.features.tools.MilestonesScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.DEADLINE) {
+                com.grapsee.shop.features.tools.DeadlinePredictorScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SCOPECHANGE) {
+                com.grapsee.shop.features.tools.ScopeChangeScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.HANDOFF) {
+                com.grapsee.shop.features.tools.HandoffPortalScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SLAGEN) {
+                com.grapsee.shop.features.tools.SlaGeneratorScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.QBR) {
+                com.grapsee.shop.features.tools.QbrReportsScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.SMSORDER) {

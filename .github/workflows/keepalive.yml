@@ -1,0 +1,47 @@
+name: Keep-alive
+
+# Every 10 minutes, ON the server machine: probe both servers, restart
+# whatever is down, and open/update a GitHub issue if recovery fails.
+# This is what keeps the servers always up — GitHub is the watchdog,
+# the self-hosted runner is the hands.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: [self-hosted, grapsee]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Probe
+        id: probe
+        run: |
+          chmod +x scripts/serve.sh
+          ./scripts/serve.sh status || true
+          if ./scripts/serve.sh check; then
+            echo "healthy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "healthy=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restart what is down
+        if: steps.probe.outputs.healthy != 'true'
+        run: |
+          ./scripts/serve.sh stop || true
+          ./scripts/serve.sh start
+          sleep 30
+          ./scripts/serve.sh check && echo "recovered=true" >> "$GITHUB_ENV" || echo "recovered=false" >> "$GITHUB_ENV"
+
+      - name: Report outage (issue)
+        # Org blocks workflow write for GITHUB_TOKEN: use the release PAT.
+        if: steps.probe.outputs.healthy != 'true' && env.recovered != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
+        run: |
+          STATUS=$(./scripts/serve.sh status || true)
+          gh issue create --repo "${{ github.repository }}" \
+            --title "🔴 Servers down $(date -u +%F-%T)" \
+            --body "Keep-alive could not recover the stack:\n\`\`\`\n$STATUS\n\`\`\`\nLast 30 log lines backend:\n\`\`\`\n$(tail -30 logs/backend.log 2>/dev/null)\n\`\`\`\nLast 30 log lines frontend:\n\`\`\`\n$(tail -30 logs/frontend.log 2>/dev/null)\n\`\`\`" \
+            || echo "issue creation failed (check RELEASE_PAT)"

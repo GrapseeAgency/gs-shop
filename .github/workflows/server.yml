@@ -1,0 +1,47 @@
+name: Servers
+
+# Deploys + supervises the backend/frontend on the self-hosted "grapsee"
+# runner (your always-on machine). Push new code -> rebuilt + restarted.
+# Manual restart any time from the Actions tab.
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "shop-backend/src/**"
+      - "shop-frontend/src/**"
+      - "scripts/serve.sh"
+      - ".github/workflows/server.yml"
+  workflow_dispatch:
+    inputs:
+      build:
+        description: "Rebuild before restart (true/false)"
+        default: "false"
+
+concurrency:
+  group: grapsee-servers
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, grapsee]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Restart servers (rebuild on code push)
+        run: |
+          chmod +x scripts/serve.sh
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.build }}" = "true" ]; then
+            ./scripts/serve.sh stop || true
+            ./scripts/serve.sh start --build
+          else
+            ./scripts/serve.sh stop || true
+            ./scripts/serve.sh start
+          fi
+
+      - name: Verify both are up
+        run: |
+          for i in 1 2 3 4 5 6; do
+            ./scripts/serve.sh check && exit 0
+            sleep 10
+          done
+          echo "servers did not come up"; ./scripts/serve.sh status; exit 1

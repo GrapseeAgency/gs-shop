@@ -542,3 +542,130 @@ struct InsuranceView: View {
         }.navigationTitle("Insurance Claim")
     }
 }
+
+// MARK: - Tools wave-A
+
+struct BodyTypeView: View {
+    @State private var picked = ""
+    let types = [("Hourglass", "Balanced shoulders and hips, defined waist"), ("Pear", "Hips wider than shoulders"), ("Apple", "Fuller midsection, slim legs"), ("Rectangle", "Straight silhouette, minimal waist"), ("Inverted Triangle", "Shoulders wider than hips")]
+    var body: some View {
+        List {
+            ForEach(types, id: \.0) { name, desc in
+                Button { picked = name } label: {
+                    HStack { Text(picked == name ? "✅" : "○"); VStack(alignment: .leading) { Text(name).font(.headline); Text(desc).font(.caption).foregroundColor(.secondary) } }
+                }.foregroundColor(.primary)
+            }
+            if !picked.isEmpty {
+                Section("Recommended sizes for \(picked)") { Text("• Top: M"); Text("• Bottom: L"); Text("• Dress: M") }
+            }
+        }.navigationTitle("Body Type Guide")
+    }
+}
+
+struct UseCaseMatcherView: View {
+    @State private var step = 0
+    @State private var answers: [String] = []
+    let questions = [("What do you need?", ["Work", "Gaming", "Study", "Travel"]), ("Budget range?", ["Under 10k", "10-30k", "30-50k", "50k+"]), ("Brand preference?", ["Any", "Premium", "Value", "Local"])]
+    let results = ["Work|10-30k|Any": ["Laptop A - Office ready", "Laptop B - Budget friendly"], "Gaming|30-50k|Premium": ["Gaming Laptop X", "Gaming PC Build Y"]]
+    let fallback = ["Laptop General Purpose", "Desktop Starter"]
+    var body: some View {
+        List {
+            if step < questions.count {
+                Section("Question \(step + 1) of \(questions.count)") {
+                    Text(questions[step].0).font(.headline)
+                    ForEach(questions[step].1, id: \.self) { opt in
+                        Button { answers.append(opt); if step < questions.count - 1 { step += 1 } } label: { Text(opt) }.foregroundColor(.primary)
+                    }
+                }
+            } else {
+                Section {
+                    Text("🎯 Recommendations ready!").font(.headline).foregroundColor(.accentColor)
+                    ForEach(results[answers.joined(separator: "|")] ?? fallback, id: \.self) { r in
+                        NavigationLink(value: Route.search(r)) { Text(r) }
+                    }
+                    Button("Start over") { step = 0; answers = [] }
+                }
+            }
+        }.navigationTitle("Use Case Matcher")
+    }
+}
+
+struct WardrobePlannerView: View {
+    @State private var items = [("White Shirt", "Top", true), ("Blue Jeans", "Bottom", true), ("Black Blazer", "Outer", false)]
+    @State private var newItem = ""
+    let combinations = ["White Shirt + Blue Jeans", "White Shirt + Black Blazer", "Blue Jeans + Black Blazer"]
+    var body: some View {
+        List {
+            Section("Your wardrobe items") {
+                HStack {
+                    TextField("Add item (e.g. Red Dress)", text: $newItem)
+                    Button("Add") { if !newItem.isEmpty { items.append((newItem, "Other", true)); newItem = "" } }.disabled(newItem.isEmpty)
+                }
+                ForEach(items.indices, id: \.self) { i in
+                    Button { items[i].2.toggle() } label: {
+                        HStack { Text(items[i].2 ? "☑" : "☐").foregroundColor(.accentColor); Text(items[i].0); Spacer(); Text(items[i].1).font(.caption).foregroundColor(.secondary) }
+                    }.foregroundColor(.primary)
+                }
+            }
+            Section("Suggested combinations ✨") { ForEach(combinations, id: \.self) { Text($0) } }
+        }.navigationTitle("Wardrobe Planner")
+    }
+}
+
+struct RevisionTokensView: View {
+    @State private var tokens = 3
+    @State private var buying = false
+    @State private var bought: String?
+    let packages = [(1, 499, "Single Token"), (3, 1299, "Triple Pack"), (5, 1999, "Value Pack")]
+    var body: some View {
+        List {
+            Section("Wallet: \(tokens) tokens") {
+                ForEach(packages, id: \.0) { qty, price, label in
+                    HStack {
+                        VStack(alignment: .leading) { Text(label).font(.headline); Text("\(qty) token\(qty > 1 ? "s" : "") · $\(price)").font(.caption).foregroundColor(.secondary) }
+                        Spacer()
+                        Button(buying ? "…" : "Buy") {
+                            buying = true
+                            Task { try? await Task.sleep(nanoseconds: 1_000_000_000); tokens += qty; buying = false; bought = "Added \(qty) tokens!" }
+                        }.disabled(buying)
+                    }
+                }
+                if let b = bought { Text("✅ \(b)").font(.caption).foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("Revision Tokens")
+    }
+}
+
+struct TrendForecasterView: View {
+    @State private var season = "summer-2024"
+    let seasons = ["summer-2024": [("Pastel Colors", "+45%", "rising"), ("Crochet Tops", "+32%", "hot"), ("Wide Leg Pants", "+28%", "stable")], "winter-2024": [("Oversized Coats", "+38%", "hot"), ("Chunky Boots", "+25%", "rising"), ("Turtlenecks", "+18%", "stable")]]
+    var body: some View {
+        List {
+            Picker("Season", selection: $season) { ForEach(Array(seasons.keys).sorted(), id: \.self) { Text($0.replacingOccurrences(of: "-", with: " ").uppercased()).tag($0) } }.pickerStyle(.segmented)
+            ForEach(seasons[season] ?? [], id: \.0) { name, growth, status in
+                HStack { VStack(alignment: .leading) { Text(name).font(.headline); Text(status).font(.caption).foregroundColor(.secondary) }; Spacer(); Text(growth).font(.headline).foregroundColor(.accentColor) }
+            }
+        }.navigationTitle("Trend Forecaster")
+    }
+}
+
+struct EventStylistView: View {
+    @State private var event = ""
+    let looks = ["wedding": ("Traditional Kurta + Nehru Jacket", ["Pocket Square", "Ethnic Watch", "Kolhapuris"], ["Navy", "Maroon", "Cream"]), "office-party": ("Blazer + Chinos + Shirt", ["Tie", "Leather Belt", "Formal Shoes"], ["Charcoal", "Burgundy", "White"]), "casual-brunch": ("Polo + Denim + Sneakers", ["Sunglasses", "Watch", "Canvas Bag"], ["Pastel Blue", "White", "Khaki"])]
+    var body: some View {
+        List {
+            Section("Select occasion") {
+                ForEach(Array(looks.keys).sorted(), id: \.self) { key in
+                    Button { event = key } label: { HStack { Text(key.replacingOccurrences(of: "-", with: " ").capitalized); Spacer(); if event == key { Image(systemName: "checkmark.circle.fill").foregroundColor(.accentColor) } } }.foregroundColor(.primary)
+                }
+            }
+            if let look = looks[event] {
+                Section {
+                    Text("👔 \(look.0)").font(.headline).foregroundColor(.accentColor)
+                    Text("Accessories: \(look.1.joined(separator: ", "))")
+                    Text("Colors: \(look.2.joined(separator: ", "))")
+                }
+            }
+        }.navigationTitle("Event Stylist")
+    }
+}

@@ -1279,3 +1279,321 @@ fun InsuranceScreen(onBack: () -> Unit, onLogin: () -> Unit, vm: InsuranceViewMo
         }
     }
 }
+
+// ---------------------------------------------------- body type (wave-A)
+
+private val bodyTypes = listOf(
+    "Hourglass" to "Balanced shoulders and hips, defined waist",
+    "Pear" to "Hips wider than shoulders",
+    "Apple" to "Fuller midsection, slim legs",
+    "Rectangle" to "Straight silhouette, minimal waist",
+    "Inverted Triangle" to "Shoulders wider than hips",
+)
+
+class BodyTypeViewModel : ViewModel() {
+    var picked by mutableStateOf(""); private set
+    fun pick(v: String) { picked = v }
+}
+
+@Composable
+fun BodyTypeScreen(onBack: () -> Unit, vm: BodyTypeViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Body Type Guide", "Size recommendations by shape", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(bodyTypes, key = { it.first }) { (name, desc) ->
+                val selected = vm.picked == name
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface,
+                    tonalElevation = 1.dp,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { vm.pick(name) },
+                ) {
+                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(if (selected) "✅" else "○")
+                        Column {
+                            Text(name, style = MaterialTheme.typography.titleSmall, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                            Text(desc, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+            if (vm.picked.isNotEmpty()) {
+                item {
+                    ToolCard {
+                        Text("Recommended sizes for ${vm.picked}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        listOf("Top: M", "Bottom: L", "Dress: M").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- use case matcher (wave-A)
+
+private val ucmQuestions = listOf(
+    "What do you need?" to listOf("Work", "Gaming", "Study", "Travel"),
+    "Budget range?" to listOf("Under 10k", "10-30k", "30-50k", "50k+"),
+    "Brand preference?" to listOf("Any", "Premium", "Value", "Local"),
+)
+private val ucmResults = mapOf(
+    "Work|10-30k|Any" to listOf("Laptop A - Office ready", "Laptop B - Budget friendly"),
+    "Gaming|30-50k|Premium" to listOf("Gaming Laptop X", "Gaming PC Build Y"),
+)
+private val ucmFallback = listOf("Laptop General Purpose", "Desktop Starter")
+
+class UseCaseMatcherViewModel : ViewModel() {
+    var step by mutableStateOf(0); private set
+    var answers by mutableStateOf<List<String>>(emptyList()); private set
+    fun answer(option: String) {
+        answers = answers + option
+        if (step < ucmQuestions.size - 1) step++
+    }
+    fun restart() { step = 0; answers = emptyList() }
+    fun results(): List<String> = ucmResults[answers.joinToString("|")] ?: ucmFallback
+}
+
+@Composable
+fun UseCaseMatcherScreen(onBack: () -> Unit, onSearch: (String) -> Unit, vm: UseCaseMatcherViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Use Case Matcher", "The right gear for the job", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (vm.step < ucmQuestions.size) {
+                val (q, options) = ucmQuestions[vm.step]
+                item {
+                    ToolCard {
+                        Text("Question ${vm.step + 1} of ${ucmQuestions.size}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                        Text(q, style = MaterialTheme.typography.titleMedium)
+                        options.forEach { option ->
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                tonalElevation = 1.dp,
+                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { vm.answer(option) },
+                            ) {
+                                Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Text(option, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                                    Text("→", color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                item {
+                    ToolCard {
+                        Text("🎯  Recommendations ready!", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                        vm.results().forEach { item ->
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Text(item, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                                Button(onClick = { onSearch(item) }) { Text("View") }
+                            }
+                        }
+                        Button(onClick = vm::restart, modifier = Modifier.fillMaxWidth()) { Text("Start over") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------ wardrobe planner (wave-A)
+
+class WardrobePlannerViewModel : ViewModel() {
+    var items by mutableStateOf(
+        listOf(
+            Triple("White Shirt", "Top", true),
+            Triple("Blue Jeans", "Bottom", true),
+            Triple("Black Blazer", "Outer", false),
+        )
+    ); private set
+    var newItem by mutableStateOf(""); private set
+    val combinations = listOf(
+        "White Shirt + Blue Jeans",
+        "White Shirt + Black Blazer",
+        "Blue Jeans + Black Blazer",
+    )
+    fun updateNewItem(v: String) { newItem = v }
+    fun add() {
+        if (newItem.isBlank()) return
+        items = items + Triple(newItem.trim(), "Other", true)
+        newItem = ""
+    }
+    fun toggle(index: Int) {
+        items = items.mapIndexed { i, t -> if (i == index) t.copy(third = !t.third) else t }
+    }
+}
+
+@Composable
+fun WardrobePlannerScreen(onBack: () -> Unit, vm: WardrobePlannerViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Wardrobe Planner", "Mix and match outfits", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("Your wardrobe items", style = MaterialTheme.typography.titleSmall)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(value = vm.newItem, onValueChange = vm::updateNewItem, label = { Text("Add item (e.g. Red Dress)") }, singleLine = true, modifier = Modifier.weight(1f))
+                        Button(onClick = vm::add, enabled = vm.newItem.isNotBlank()) { Text("Add") }
+                    }
+                    vm.items.forEachIndexed { index, item ->
+                        Row(
+                            Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).clickable { vm.toggle(index) }.padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(if (item.third) "☑" else "☐", color = MaterialTheme.colorScheme.primary)
+                            Text(item.first, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                            Text(item.second, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+            item { Text("Suggested combinations ✨", style = MaterialTheme.typography.titleSmall) }
+            items(vm.combinations, key = { it }) { combo ->
+                ToolCard { Text(combo, style = MaterialTheme.typography.bodyMedium) }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------ revision tokens (wave-A)
+
+private val tokenPackages = listOf(
+    Triple(1, 499, "Single Token"),
+    Triple(3, 1299, "Triple Pack"),
+    Triple(5, 1999, "Value Pack"),
+)
+
+class RevisionTokensViewModel : ViewModel() {
+    var tokens by mutableStateOf(3); private set
+    var buying by mutableStateOf(false); private set
+    var bought by mutableStateOf<String?>(null); private set
+    fun buy(quantity: Int) {
+        viewModelScope.launch {
+            buying = true
+            kotlinx.coroutines.delay(1000)
+            tokens += quantity
+            buying = false
+            bought = "Added $quantity tokens!"
+        }
+    }
+}
+
+@Composable
+fun RevisionTokensScreen(onBack: () -> Unit, vm: RevisionTokensViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Revision Tokens", "${vm.tokens} tokens in wallet", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(tokenPackages, key = { it.first }) { (quantity, price, label) ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(label, style = MaterialTheme.typography.titleSmall)
+                            Text("$quantity token${if (quantity > 1) "s" else ""} · $$price", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Button(onClick = { vm.buy(quantity) }, enabled = !vm.buying) { Text(if (vm.buying) "…" else "Buy") }
+                    }
+                }
+            }
+            vm.bought?.let {
+                item { ToolCard { Text("✅ $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) } }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------ trend forecaster (wave-A)
+
+private val trendSeasons = mapOf(
+    "summer-2024" to listOf(
+        Triple("Pastel Colors", "+45%", "rising"),
+        Triple("Crochet Tops", "+32%", "hot"),
+        Triple("Wide Leg Pants", "+28%", "stable"),
+    ),
+    "winter-2024" to listOf(
+        Triple("Oversized Coats", "+38%", "hot"),
+        Triple("Chunky Boots", "+25%", "rising"),
+        Triple("Turtlenecks", "+18%", "stable"),
+    ),
+)
+
+class TrendForecasterViewModel : ViewModel() {
+    var season by mutableStateOf("summer-2024"); private set
+    fun pick(v: String) { season = v }
+}
+
+@Composable
+fun TrendForecasterScreen(onBack: () -> Unit, vm: TrendForecasterViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Trend Forecaster", "Upcoming fashion trends", onBack)
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            trendSeasons.keys.sorted().forEach { key ->
+                val selected = vm.season == key
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { vm.pick(key) },
+                ) {
+                    Text(key.replace("-", " ").uppercase(), modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), style = MaterialTheme.typography.labelLarge, color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                }
+            }
+        }
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(trendSeasons[vm.season].orEmpty(), key = { it.first }) { (name, growth, status) ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(name, style = MaterialTheme.typography.titleSmall)
+                            Text(status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text(growth, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------------- event stylist (wave-A)
+
+private data class StylistLook(val outfit: String, val accessories: List<String>, val colors: List<String>)
+private val stylistLooks = mapOf(
+    "wedding" to StylistLook("Traditional Kurta + Nehru Jacket", listOf("Pocket Square", "Ethnic Watch", "Kolhapuris"), listOf("Navy", "Maroon", "Cream")),
+    "office-party" to StylistLook("Blazer + Chinos + Shirt", listOf("Tie", "Leather Belt", "Formal Shoes"), listOf("Charcoal", "Burgundy", "White")),
+    "casual-brunch" to StylistLook("Polo + Denim + Sneakers", listOf("Sunglasses", "Watch", "Canvas Bag"), listOf("Pastel Blue", "White", "Khaki")),
+)
+
+class EventStylistViewModel : ViewModel() {
+    var event by mutableStateOf(""); private set
+    fun pick(v: String) { event = v }
+}
+
+@Composable
+fun EventStylistScreen(onBack: () -> Unit, vm: EventStylistViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Event Stylist", "Outfits for any occasion", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item { Text("Select occasion", style = MaterialTheme.typography.titleSmall) }
+            items(stylistLooks.keys.sorted(), key = { it }) { key ->
+                val selected = vm.event == key
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface,
+                    tonalElevation = 1.dp,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { vm.pick(key) },
+                ) {
+                    Text(key.replace("-", " ").replaceFirstChar { it.uppercase() }, modifier = Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                }
+            }
+            stylistLooks[vm.event]?.let { look ->
+                item {
+                    ToolCard {
+                        Text("👔 ${look.outfit}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Text("Accessories: ${look.accessories.joinToString(", ")}", style = MaterialTheme.typography.bodyMedium)
+                        Text("Colors: ${look.colors.joinToString(", ")}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}

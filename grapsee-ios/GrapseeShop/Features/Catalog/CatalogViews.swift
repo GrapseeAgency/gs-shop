@@ -109,6 +109,7 @@ enum Route: Hashable {    case product(String), list(ListMode), collections, col
     case taxrefund, pricelock, unitprice, smartreorder, giftmatcher, stylequiz, allergy, halal
     case submanager, coloradvisor, sizepredictor, discountstack, dealauth, speccompare
     case smsorder, shopautocomplete, docexpiry, vehicle, legaldocs, formbuilder, resumebuilder, insurance
+    case bodytype, usecasematcher, wardrobe, revtokens, trendforecaster, eventstylist
     case aitools, aichat, audits, guides, cicd, envsetup, dbschemas, notion, tutorials
     case category(String, String), search(String), categories
 }
@@ -282,6 +283,12 @@ func appRoute(for path: String) -> Route {
     case "/form-builder": return .formbuilder
     case "/resume-builder": return .resumebuilder
     case "/insurance-claim": return .insurance
+    case "/body-type": return .bodytype
+    case "/use-case-matcher": return .usecasematcher
+    case "/wardrobe-planner": return .wardrobe
+    case "/revision-tokens": return .revtokens
+    case "/trend-forecaster": return .trendforecaster
+    case "/event-stylist": return .eventstylist
     case "/ai-tools": return .aitools
     case "/ai-chatbot": return .aichat
     case "/audits": return .audits

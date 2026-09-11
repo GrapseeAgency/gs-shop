@@ -163,6 +163,12 @@ object Routes {
     const val DEALAUTH = "dealauth"
     const val SPECCOMPARE = "speccompare"
     const val SMSORDER = "smsorder"
+    const val BODYTYPE = "bodytype"
+    const val USECASEMATCHER = "usecasematcher"
+    const val WARDROBE = "wardrobe"
+    const val REVTOKENS = "revtokens"
+    const val TRENDFORECASTER = "trendforecaster"
+    const val EVENTSTYLIST = "eventstylist"
     const val SHOPAUTOCOMPLETE = "shopautocomplete"
     const val DOCEXPIRY = "docexpiry"
     const val VEHICLE = "vehicle"
@@ -368,6 +374,12 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 route == "/deal-authenticity" -> navController.navigate(Routes.DEALAUTH)
                 route == "/spec-compare" -> navController.navigate(Routes.SPECCOMPARE)
                 route == "/sms-order" -> navController.navigate(Routes.SMSORDER)
+                route == "/body-type" -> navController.navigate(Routes.BODYTYPE)
+                route == "/use-case-matcher" -> navController.navigate(Routes.USECASEMATCHER)
+                route == "/wardrobe-planner" -> navController.navigate(Routes.WARDROBE)
+                route == "/revision-tokens" -> navController.navigate(Routes.REVTOKENS)
+                route == "/trend-forecaster" -> navController.navigate(Routes.TRENDFORECASTER)
+                route == "/event-stylist" -> navController.navigate(Routes.EVENTSTYLIST)
                 route == "/shopping-list-autocomplete" -> navController.navigate(Routes.SHOPAUTOCOMPLETE)
                 route == "/document-expiry" -> navController.navigate(Routes.DOCEXPIRY)
                 route == "/vehicle-service" -> navController.navigate(Routes.VEHICLE)
@@ -1200,6 +1212,43 @@ fun GrapseeAppRoot(navController: NavHostController) {
             }
 
             // Tools wave-4 destinations (all native).
+            composable(Routes.BODYTYPE) {
+                com.grapsee.shop.features.tools.BodyTypeScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(Routes.USECASEMATCHER) {
+                com.grapsee.shop.features.tools.UseCaseMatcherScreen(
+                    onBack = { navController.popBackStack() },
+                    onSearch = { query -> navController.navigate(Routes.list("search:$query", "Matches")) },
+                )
+            }
+
+            composable(Routes.WARDROBE) {
+                com.grapsee.shop.features.tools.WardrobePlannerScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(Routes.REVTOKENS) {
+                com.grapsee.shop.features.tools.RevisionTokensScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(Routes.TRENDFORECASTER) {
+                com.grapsee.shop.features.tools.TrendForecasterScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(Routes.EVENTSTYLIST) {
+                com.grapsee.shop.features.tools.EventStylistScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
             composable(Routes.SMSORDER) {
                 com.grapsee.shop.features.tools.SmsOrderScreen(
                     onBack = { navController.popBackStack() },

@@ -209,6 +209,17 @@ object Routes {
     const val HANDOFF = "handoff"
     const val SLAGEN = "slagen"
     const val QBR = "qbr"
+    const val CHURN = "churn"
+    const val CLIENTLTV = "clientltv"
+    const val COMMAND = "command"
+    const val CORPCREDIT = "corpcredit"
+    const val CROWD = "crowd"
+    const val DEMAND = "demand"
+    const val DISPUTE = "dispute"
+    const val VAULT = "vault"
+    const val PRICETEST = "pricetest"
+    const val LIQUIDATOR = "liquidator"
+    const val PROFIT = "profit"
     const val BODYTYPE = "bodytype"
     const val USECASEMATCHER = "usecasematcher"
     const val WARDROBE = "wardrobe"
@@ -466,6 +477,18 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 route == "/handoff-portal" -> navController.navigate(Routes.HANDOFF)
                 route == "/sla-generator" -> navController.navigate(Routes.SLAGEN)
                 route == "/qbr-reports" -> navController.navigate(Routes.QBR)
+                route == "/churn-prediction" -> navController.navigate(Routes.CHURN)
+                route == "/client-community" -> navController.navigate(Routes.COMMUNITY)
+                route == "/client-ltv" -> navController.navigate(Routes.CLIENTLTV)
+                route == "/command-center" -> navController.navigate(Routes.COMMAND)
+                route == "/corporate-credit" -> navController.navigate(Routes.CORPCREDIT)
+                route == "/crowd-wisdom" -> navController.navigate(Routes.CROWD)
+                route == "/demand-forecast" -> navController.navigate(Routes.DEMAND)
+                route == "/dispute-resolution" -> navController.navigate(Routes.DISPUTE)
+                route == "/guarantee-vault" -> navController.navigate(Routes.VAULT)
+                route == "/pricing-test" -> navController.navigate(Routes.PRICETEST)
+                route == "/product-liquidator" -> navController.navigate(Routes.LIQUIDATOR)
+                route == "/profitability" -> navController.navigate(Routes.PROFIT)
                 route == "/body-type" -> navController.navigate(Routes.BODYTYPE)
                 route == "/use-case-matcher" -> navController.navigate(Routes.USECASEMATCHER)
                 route == "/wardrobe-planner" -> navController.navigate(Routes.WARDROBE)
@@ -1523,6 +1546,50 @@ fun GrapseeAppRoot(navController: NavHostController) {
 
             composable(Routes.QBR) {
                 com.grapsee.shop.features.tools.QbrReportsScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.CHURN) {
+                com.grapsee.shop.features.tools.ChurnPredictionScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.CLIENTLTV) {
+                com.grapsee.shop.features.tools.ClientLtvScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.COMMAND) {
+                com.grapsee.shop.features.tools.CommandCenterScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.CORPCREDIT) {
+                com.grapsee.shop.features.tools.CorporateCreditScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.CROWD) {
+                com.grapsee.shop.features.tools.CrowdWisdomScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.DEMAND) {
+                com.grapsee.shop.features.tools.DemandForecastScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.DISPUTE) {
+                com.grapsee.shop.features.tools.DisputeResolutionScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.VAULT) {
+                com.grapsee.shop.features.tools.GuaranteeVaultScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.PRICETEST) {
+                com.grapsee.shop.features.tools.PricingTestScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.LIQUIDATOR) {
+                com.grapsee.shop.features.tools.ProductLiquidatorScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.PROFIT) {
+                com.grapsee.shop.features.tools.ProfitabilityScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.SMSORDER) {

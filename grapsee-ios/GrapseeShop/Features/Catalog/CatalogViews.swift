@@ -114,6 +114,7 @@ enum Route: Hashable {    case product(String), list(ListMode), collections, col
     case autocoupon, bulkbuy, reorder, pricedroprefund, grocery, recipe, petsup, schoolsup, movingkit, appliance, safety, verifiedphotos
     case childgrowth, diabetic, ingscan, ingswap, medinteract, medtracker, rxscan, healthmon
     case projdash, projplan, milestones, deadline, scopechange, handoff, slagen, qbr
+    case churn, clientltv, command, corpcredit, crowd, demand, dispute, vault, pricetest, liquidator, profit
     case bodytype, usecasematcher, wardrobe, revtokens, trendforecaster, eventstylist
     case aitools, aichat, audits, guides, cicd, envsetup, dbschemas, notion, tutorials
     case category(String, String), search(String), categories
@@ -327,6 +328,18 @@ func appRoute(for path: String) -> Route {
     case "/handoff-portal": return .handoff
     case "/sla-generator": return .slagen
     case "/qbr-reports": return .qbr
+    case "/churn-prediction": return .churn
+    case "/client-community": return .community
+    case "/client-ltv": return .clientltv
+    case "/command-center": return .command
+    case "/corporate-credit": return .corpcredit
+    case "/crowd-wisdom": return .crowd
+    case "/demand-forecast": return .demand
+    case "/dispute-resolution": return .dispute
+    case "/guarantee-vault": return .vault
+    case "/pricing-test": return .pricetest
+    case "/product-liquidator": return .liquidator
+    case "/profitability": return .profit
     case "/shopping-list-autocomplete": return .shopautocomplete
     case "/document-expiry": return .docexpiry
     case "/vehicle-service": return .vehicle

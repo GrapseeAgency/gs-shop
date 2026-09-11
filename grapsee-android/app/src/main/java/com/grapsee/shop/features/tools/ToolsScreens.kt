@@ -3742,3 +3742,408 @@ fun QbrReportsScreen(onBack: () -> Unit) {
         }
     }
 }
+
+// -------------------------------------------- churn prediction (wave-G)
+
+data class AtRiskClient(val name: String, val risk: Int, val lastLogin: String, val renewal: String, val action: String)
+
+val atRiskClients = listOf(
+    AtRiskClient("TechStart Inc.", 78, "45 days ago", "2 weeks", "Send personalized offer"),
+    AtRiskClient("Fashion Boutique", 65, "32 days ago", "1 month", "Schedule check-in call"),
+    AtRiskClient("Dr. Ahmed Clinic", 52, "28 days ago", "3 weeks", "Send QBR report"),
+)
+
+@Composable
+fun ChurnPredictionScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Churn Prediction", "Save clients before they leave", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(atRiskClients, key = { it.name }) { client ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("${client.name} · risk ${client.risk}%", style = MaterialTheme.typography.titleSmall, color = if (client.risk >= 70) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
+                            Text("Last login ${client.lastLogin} · renews in ${client.renewal}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(client.action, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Button(onClick = { toast("Offer sent to ${client.name}") }) { Text("Act") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------- client ltv (wave-G)
+
+data class LtvSegment(val name: String, val count: Int, val avgLtv: Int, val total: Int)
+
+val ltvSegments = listOf(
+    LtvSegment("VIP Clients", 15, 85000, 1275000),
+    LtvSegment("Regular Clients", 45, 25000, 1125000),
+    LtvSegment("One-time Clients", 120, 8000, 960000),
+)
+
+@Composable
+fun ClientLtvScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Client Lifetime Value", "Know your best segments", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(ltvSegments, key = { it.name }) { seg ->
+                ToolCard {
+                    Text("👑 ${seg.name} · ${seg.count} clients", style = MaterialTheme.typography.titleSmall)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Avg LTV ${seg.avgLtv}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Text("${seg.total}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------ command center (wave-G)
+
+@Composable
+fun CommandCenterScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Client Command Center", "2 active projects · 34998 spent", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    listOf("Upcoming renewals" to "1", "Unread messages" to "3").forEach { (k, v) ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(k, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            Text(v, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+            listOf("E-commerce Website" to 60, "Mobile App" to 15).forEach { (name, progress) ->
+                item {
+                    ToolCard {
+                        Text("$name — $progress%", style = MaterialTheme.typography.titleSmall)
+                        LinearProgressIndicator(progress = { progress / 100f }, modifier = Modifier.fillMaxWidth())
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------- corporate credit (wave-G)
+
+class CorporateCreditViewModel : ViewModel() {
+    var company by mutableStateOf(""); private set
+    var email by mutableStateOf(""); private set
+    var revenue by mutableStateOf(""); private set
+    var submitted by mutableStateOf(false); private set
+    fun updateCompany(v: String) { company = v; submitted = false }
+    fun updateEmail(v: String) { email = v.trim(); submitted = false }
+    fun updateRevenue(v: String) { revenue = v.filter { it.isDigit() }; submitted = false }
+    fun apply(onError: (String) -> Unit, onDone: (String) -> Unit) {
+        if (company.isBlank() || email.isBlank() || revenue.isBlank()) { onError("Please fill in all fields"); return }
+        submitted = true
+        onDone("Application submitted!")
+    }
+}
+
+@Composable
+fun CorporateCreditScreen(onBack: () -> Unit, vm: CorporateCreditViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Corporate Credit Account", "Net-30 terms for businesses", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.company, onValueChange = vm::updateCompany, label = { Text("Company name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = vm.email, onValueChange = vm::updateEmail, label = { Text("Work email") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = vm.revenue, onValueChange = vm::updateRevenue, label = { Text("Annual revenue") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                    Button(onClick = { vm.apply(::toast, ::toast) }, modifier = Modifier.fillMaxWidth()) { Text("Apply") }
+                }
+            }
+            if (vm.submitted) {
+                item {
+                    ToolCard {
+                        Text("✅ Application received for ${vm.company}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Text("Our credit team responds within 2 business days.", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- crowd wisdom (wave-G)
+
+class CrowdWisdomViewModel : ViewModel() {
+    var loading by mutableStateOf(false); private set
+    var done by mutableStateOf(false); private set
+    fun ask() {
+        viewModelScope.launch {
+            loading = true
+            kotlinx.coroutines.delay(1200)
+            loading = false
+            done = true
+        }
+    }
+}
+
+@Composable
+fun CrowdWisdomScreen(onBack: () -> Unit, vm: CrowdWisdomViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Crowd Wisdom", "See what 10,000+ people chose", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                Button(onClick = vm::ask, enabled = !vm.loading, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (vm.loading) "Asking the crowd…" else "Get crowd wisdom")
+                }
+            }
+            if (vm.done) {
+                item {
+                    ToolCard {
+                        Text("🏆 Crowd pick: Wireless Earbuds", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        listOf("Wireless Earbuds" to 0.62f, "Wired Earphones" to 0.25f, "Over-ear Headphones" to 0.13f).forEach { (name, share) ->
+                            Text(name, style = MaterialTheme.typography.bodyMedium)
+                            LinearProgressIndicator(progress = { share }, modifier = Modifier.fillMaxWidth())
+                        }
+                        Text("6,200 of 10,000 buyers chose this · 4.6★ average", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ----------------------------------------------- demand forecast (wave-G)
+
+data class Forecast(val month: String, val demand: String, val service: String, val reason: String)
+
+val forecasts = listOf(
+    Forecast("January", "High", "E-commerce", "New Year sales prep"),
+    Forecast("February", "Medium", "General Websites", "Budget renewals"),
+    Forecast("March", "High", "Mobile Apps", "Q1 launches"),
+    Forecast("April", "Low", "Maintenance", "Post-launch support"),
+    Forecast("May", "Medium", "Web Apps", "Mid-year upgrades"),
+)
+
+@Composable
+fun DemandForecastScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Demand Forecast", "Plan capacity by month", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(forecasts, key = { it.month }) { fc ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("${fc.month} · ${fc.service}", style = MaterialTheme.typography.titleSmall)
+                            Text(fc.reason, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text(fc.demand, style = MaterialTheme.typography.labelLarge, color = if (fc.demand == "High") MaterialTheme.colorScheme.primary else if (fc.demand == "Low") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- dispute resolution (wave-G)
+
+class DisputeViewModel : ViewModel() {
+    var step by mutableStateOf(1); private set
+    var description by mutableStateOf(""); private set
+    var project by mutableStateOf("E-commerce Website"); private set
+    fun updateDescription(v: String) { description = v }
+    fun pickProject(v: String) { project = v }
+    fun submit(onDone: (String) -> Unit) {
+        step = 2
+        onDone("Dispute filed. Team will respond within 24 hours.")
+    }
+}
+
+@Composable
+fun DisputeResolutionScreen(onBack: () -> Unit, vm: DisputeViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Dispute Resolution", "Fair resolution within 48 hours", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (vm.step == 1) {
+                item {
+                    ToolCard {
+                        Text("File a Dispute", style = MaterialTheme.typography.titleSmall)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("E-commerce Website", "Mobile App").forEach { p ->
+                                val on = vm.project == p
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                    modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { vm.pickProject(p) },
+                                ) {
+                                    Text(p, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium, color = if (on) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                                }
+                            }
+                        }
+                        OutlinedTextField(value = vm.description, onValueChange = vm::updateDescription, label = { Text("What went wrong?") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
+                        Button(onClick = { vm.submit(::toast) }, enabled = vm.description.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("File dispute") }
+                    }
+                }
+            } else {
+                item {
+                    ToolCard {
+                        Text("✅ Dispute filed for ${vm.project}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        listOf("Team responds within 24 hours", "Evidence review with both sides", "Binding resolution within 48 hours").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------- guarantee vault (wave-G)
+
+data class VaultMilestone(val name: String, val status: String, val amount: Int, val date: String)
+
+val vaultMilestones = listOf(
+    VaultMilestone("Deposit", "released", 7500, "Released Jan 15"),
+    VaultMilestone("Design Complete", "held", 7500, "Held - awaiting approval"),
+    VaultMilestone("Development", "held", 7500, "Held"),
+    VaultMilestone("Final Delivery", "held", 4999, "Held"),
+)
+
+@Composable
+fun GuaranteeVaultScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Guarantee Vault", "Escrow: 24999 secured ✅", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(vaultMilestones, key = { it.name }) { ms ->
+                ToolCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("${ms.name} ${if (ms.status == "released") "✅" else "🔒"}", style = MaterialTheme.typography.titleSmall)
+                            Text(ms.date, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text("${ms.amount}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- pricing test (wave-G)
+
+@Composable
+fun PricingTestScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Pricing A/B Test", "Website Development", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("Variant A: 4999 · 1200 visitors · 45 conversions · 224955 revenue 🏆", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Text("Variant B: 5499 · 1200 visitors · 38 conversions · 208962 revenue", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            item {
+                ToolCard {
+                    Text("Insight: the 4999 price point generates 15,993 more revenue despite the lower price.", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------- product liquidator (wave-G)
+
+class LiquidatorViewModel : ViewModel() {
+    var productName by mutableStateOf(""); private set
+    var condition by mutableStateOf("good"); private set
+    var age by mutableStateOf("1"); private set
+    var loading by mutableStateOf(false); private set
+    var estimate by mutableStateOf<Int?>(null); private set
+    fun updateProductName(v: String) { productName = v; estimate = null }
+    fun pickCondition(v: String) { condition = v; estimate = null }
+    fun updateAge(v: String) { age = v.filter { it.isDigit() }.take(2); estimate = null }
+    fun getEstimate(onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            loading = true
+            kotlinx.coroutines.delay(1200)
+            val base = 10000
+            val condF = if (condition == "excellent") 0.8 else if (condition == "good") 0.6 else 0.4
+            val ageF = 1.0 / ((age.toIntOrNull() ?: 1).coerceAtLeast(1))
+            estimate = (base * condF * (0.5 + 0.5 * ageF)).toInt()
+            loading = false
+            onDone("Listed on 5 platforms!")
+        }
+    }
+}
+
+@Composable
+fun ProductLiquidatorScreen(onBack: () -> Unit, vm: LiquidatorViewModel = viewModel()) {
+    val context = LocalContext.current
+    fun toast(m: String) { android.widget.Toast.makeText(context, m, android.widget.Toast.LENGTH_SHORT).show() }
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Product Liquidator", "Sell dead stock fast", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.productName, onValueChange = vm::updateProductName, label = { Text("Product name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("excellent", "good", "fair").forEach { c ->
+                            val on = vm.condition == c
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { vm.pickCondition(c) },
+                            ) {
+                                Text(c, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium, color = if (on) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                    OutlinedTextField(value = vm.age, onValueChange = vm::updateAge, label = { Text("Age (years)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                    Button(onClick = { vm.getEstimate(::toast) }, enabled = vm.productName.isNotBlank() && !vm.loading, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.loading) "Estimating…" else "Get estimate & list")
+                    }
+                }
+            }
+            vm.estimate?.let { est ->
+                item {
+                    ToolCard {
+                        Text("💰 Estimated resale: $est", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                        Text("Auto-listed on 5 resale platforms with photos and pickup.", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- profitability (wave-G)
+
+data class ProfitRow(val name: String, val revenue: Int, val hours: Int, val profit: Int, val margin: Int)
+
+val profitRows = listOf(
+    ProfitRow("Website Development", 245000, 180, 98000, 40),
+    ProfitRow("Web Applications", 380000, 220, 152000, 40),
+    ProfitRow("E-commerce", 165000, 120, 82500, 50),
+    ProfitRow("Mobile Apps", 480000, 280, 192000, 40),
+)
+
+@Composable
+fun ProfitabilityScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Profitability", "Margin by service line", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(profitRows, key = { it.name }) { row ->
+                ToolCard {
+                    Text("💼 ${row.name} · ${row.margin}% margin", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    Text("Revenue ${row.revenue} · ${row.hours}h · profit ${row.profit}", style = MaterialTheme.typography.bodyMedium)
+                    LinearProgressIndicator(progress = { row.margin / 100f }, modifier = Modifier.fillMaxWidth())
+                }
+            }
+        }
+    }
+}

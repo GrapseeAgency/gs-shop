@@ -1802,3 +1802,214 @@ struct QbrReportsView: View {
         }.navigationTitle("Quarterly Business Reviews")
     }
 }
+
+// MARK: - Tools wave-G
+
+struct ChurnPredictionView: View {
+    let clients = [("TechStart Inc.", 78, "45 days ago", "2 weeks", "Send personalized offer"), ("Fashion Boutique", 65, "32 days ago", "1 month", "Schedule check-in call"), ("Dr. Ahmed Clinic", 52, "28 days ago", "3 weeks", "Send QBR report")]
+    var body: some View {
+        List(clients, id: \.0) { name, risk, login, renewal, action in
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(name) · risk \(risk)%").font(.headline).foregroundColor(risk >= 70 ? .red : .primary)
+                    Text("Last login \(login) · renews in \(renewal)").font(.caption).foregroundColor(.secondary)
+                    Text(action).font(.caption).foregroundColor(.accentColor)
+                }
+                Spacer()
+                Button("Act") {}
+            }.padding(.vertical, 4)
+        }.navigationTitle("Churn Prediction")
+    }
+}
+
+struct ClientLtvView: View {
+    let segs = [("VIP Clients", 15, 85000, 1275000), ("Regular Clients", 45, 25000, 1125000), ("One-time Clients", 120, 8000, 960000)]
+    var body: some View {
+        List(segs, id: \.0) { name, count, avg, total in
+            VStack(alignment: .leading, spacing: 2) {
+                Text("👑 \(name) · \(count) clients").font(.headline)
+                HStack { Text("Avg LTV \(avg)"); Spacer(); Text("\(total)").bold().foregroundColor(.accentColor) }
+            }.padding(.vertical, 4)
+        }.navigationTitle("Client Lifetime Value")
+    }
+}
+
+struct CommandCenterView: View {
+    var body: some View {
+        List {
+            Section {
+                HStack { Text("Upcoming renewals"); Spacer(); Text("1").bold() }
+                HStack { Text("Unread messages"); Spacer(); Text("3").bold() }
+            }
+            Section("Projects") {
+                VStack(alignment: .leading) { Text("E-commerce Website — 60%").font(.headline); ProgressView(value: 0.6) }
+                VStack(alignment: .leading) { Text("Mobile App — 15%").font(.headline); ProgressView(value: 0.15) }
+            }
+        }.navigationTitle("Client Command Center")
+    }
+}
+
+struct CorporateCreditView: View {
+    @State private var company = ""
+    @State private var email = ""
+    @State private var revenue = ""
+    @State private var submitted = false
+    var body: some View {
+        List {
+            Section {
+                TextField("Company name", text: $company)
+                TextField("Work email", text: $email)
+                TextField("Annual revenue", text: $revenue).keyboardType(.numberPad)
+                Button("Apply") {
+                    guard !company.isEmpty, !email.isEmpty, !revenue.isEmpty else { return }
+                    submitted = true
+                }
+            }
+            if submitted {
+                Section {
+                    Text("✅ Application received for \(company)").font(.headline).foregroundColor(.accentColor)
+                    Text("Our credit team responds within 2 business days.")
+                }
+            }
+        }.navigationTitle("Corporate Credit Account")
+    }
+}
+
+struct CrowdWisdomView: View {
+    @State private var loading = false
+    @State private var done = false
+    var body: some View {
+        List {
+            Section {
+                Button(loading ? "Asking the crowd…" : "Get crowd wisdom") {
+                    loading = true
+                    Task { try? await Task.sleep(nanoseconds: 1_200_000_000); loading = false; done = true }
+                }.disabled(loading)
+            }
+            if done {
+                Section {
+                    Text("🏆 Crowd pick: Wireless Earbuds").font(.headline).foregroundColor(.accentColor)
+                    VStack(alignment: .leading) { Text("Wireless Earbuds"); ProgressView(value: 0.62) }
+                    VStack(alignment: .leading) { Text("Wired Earphones"); ProgressView(value: 0.25) }
+                    VStack(alignment: .leading) { Text("Over-ear Headphones"); ProgressView(value: 0.13) }
+                    Text("6,200 of 10,000 buyers chose this · 4.6★ average").font(.caption).foregroundColor(.secondary)
+                }
+            }
+        }.navigationTitle("Crowd Wisdom")
+    }
+}
+
+struct DemandForecastView: View {
+    let rows = [("January", "High", "E-commerce", "New Year sales prep"), ("February", "Medium", "General Websites", "Budget renewals"), ("March", "High", "Mobile Apps", "Q1 launches"), ("April", "Low", "Maintenance", "Post-launch support"), ("May", "Medium", "Web Apps", "Mid-year upgrades")]
+    var body: some View {
+        List(rows, id: \.0) { month, demand, service, reason in
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(month) · \(service)").font(.headline)
+                    Text(reason).font(.caption).foregroundColor(.secondary)
+                }
+                Spacer()
+                Text(demand).foregroundColor(demand == "High" ? .accentColor : demand == "Low" ? .red : .secondary)
+            }.padding(.vertical, 4)
+        }.navigationTitle("Demand Forecast")
+    }
+}
+
+struct DisputeResolutionView: View {
+    @State private var step = 1
+    @State private var description = ""
+    @State private var project = "E-commerce Website"
+    @State private var filed = false
+    var body: some View {
+        List {
+            if step == 1 {
+                Section("File a Dispute") {
+                    Picker("Project", selection: $project) { ForEach(["E-commerce Website", "Mobile App"], id: \.self) { Text($0).tag($0) } }
+                    TextField("What went wrong?", text: $description, axis: .vertical)
+                    Button("File dispute") { step = 2; filed = true }.disabled(description.isEmpty)
+                }
+            } else {
+                Section {
+                    Text("✅ Dispute filed for \(project)").font(.headline).foregroundColor(.accentColor)
+                    ForEach(["Team responds within 24 hours", "Evidence review with both sides", "Binding resolution within 48 hours"], id: \.self) { Text("• \($0)") }
+                }
+            }
+        }.navigationTitle("Dispute Resolution")
+    }
+}
+
+struct GuaranteeVaultView: View {
+    let items = [("Deposit", "released", 7500, "Released Jan 15"), ("Design Complete", "held", 7500, "Held - awaiting approval"), ("Development", "held", 7500, "Held"), ("Final Delivery", "held", 4999, "Held")]
+    var body: some View {
+        List(items, id: \.0) { name, status, amount, date in
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(name) \(status == "released" ? "✅" : "🔒")").font(.headline)
+                    Text(date).font(.caption).foregroundColor(.secondary)
+                }
+                Spacer()
+                Text("\(amount)").font(.headline).foregroundColor(.accentColor)
+            }.padding(.vertical, 4)
+        }.navigationTitle("Guarantee Vault")
+    }
+}
+
+struct PricingTestView: View {
+    var body: some View {
+        List {
+            Section {
+                Text("Variant A: 4999 · 1200 visitors · 45 conversions · 224955 revenue 🏆").foregroundColor(.accentColor)
+                Text("Variant B: 5499 · 1200 visitors · 38 conversions · 208962 revenue")
+            }
+            Section {
+                Text("Insight: the 4999 price point generates 15,993 more revenue despite the lower price.")
+            }
+        }.navigationTitle("Pricing A/B Test")
+    }
+}
+
+struct ProductLiquidatorView: View {
+    @State private var productName = ""
+    @State private var condition = "good"
+    @State private var age = "1"
+    @State private var loading = false
+    @State private var estimate: Int?
+    var body: some View {
+        List {
+            Section {
+                TextField("Product name", text: $productName)
+                Picker("Condition", selection: $condition) { ForEach(["excellent", "good", "fair"], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
+                TextField("Age (years)", text: $age).keyboardType(.numberPad)
+                Button(loading ? "Estimating…" : "Get estimate & list") {
+                    loading = true
+                    Task {
+                        try? await Task.sleep(nanoseconds: 1_200_000_000)
+                        let condF = condition == "excellent" ? 0.8 : condition == "good" ? 0.6 : 0.4
+                        let ageF = 1.0 / Double(max(Int(age) ?? 1, 1))
+                        estimate = Int(10000.0 * condF * (0.5 + 0.5 * ageF))
+                        loading = false
+                    }
+                }.disabled(productName.isEmpty || loading)
+            }
+            if let est = estimate {
+                Section {
+                    Text("💰 Estimated resale: \(est)").font(.title2).foregroundColor(.accentColor)
+                    Text("Auto-listed on 5 resale platforms with photos and pickup.")
+                }
+            }
+        }.navigationTitle("Product Liquidator")
+    }
+}
+
+struct ProfitabilityView: View {
+    let rows = [("Website Development", 245000, 180, 98000, 40), ("Web Applications", 380000, 220, 152000, 40), ("E-commerce", 165000, 120, 82500, 50), ("Mobile Apps", 480000, 280, 192000, 40)]
+    var body: some View {
+        List(rows, id: \.0) { name, revenue, hours, profit, margin in
+            VStack(alignment: .leading, spacing: 4) {
+                Text("💼 \(name) · \(margin)% margin").font(.headline).foregroundColor(.accentColor)
+                Text("Revenue \(revenue) · \(hours)h · profit \(profit)").font(.subheadline)
+                ProgressView(value: Double(margin) / 100.0)
+            }.padding(.vertical, 4)
+        }.navigationTitle("Profitability")
+    }
+}

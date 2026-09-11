@@ -1597,3 +1597,318 @@ fun EventStylistScreen(onBack: () -> Unit, vm: EventStylistViewModel = viewModel
         }
     }
 }
+
+// ---------------------------------------------------- ai scoper (wave-B)
+
+class AiScoperViewModel : ViewModel() {
+    var description by mutableStateOf(""); private set
+    var generating by mutableStateOf(false); private set
+    var done by mutableStateOf(false); private set
+    fun updateDescription(v: String) { description = v; done = false }
+    fun generate() {
+        viewModelScope.launch {
+            generating = true
+            kotlinx.coroutines.delay(2000)
+            generating = false
+            done = true
+        }
+    }
+}
+
+@Composable
+fun AiScoperScreen(onBack: () -> Unit, vm: AiScoperViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("AI Project Scoper", "Scope doc in seconds", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.description, onValueChange = vm::updateDescription, label = { Text("Describe your project") }, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = vm::generate, enabled = vm.description.isNotBlank() && !vm.generating, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.generating) "Generating…" else "Generate scope")
+                    }
+                }
+            }
+            if (vm.done) {
+                item {
+                    ToolCard {
+                        Text("📄 Project Scope Document", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        listOf("User authentication system", "Dashboard with analytics", "Payment integration", "Mobile-responsive design", "SEO optimization").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                        Text("Timeline: 14-18 days · $14999", style = MaterialTheme.typography.titleSmall)
+                        Text("Next.js · React · Node.js · PostgreSQL · Stripe", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------------- ai competitor (wave-B)
+
+class AiCompetitorViewModel : ViewModel() {
+    var url by mutableStateOf(""); private set
+    var analyzing by mutableStateOf(false); private set
+    var done by mutableStateOf(false); private set
+    fun updateUrl(v: String) { url = v.trim(); done = false }
+    fun analyze() {
+        viewModelScope.launch {
+            analyzing = true
+            kotlinx.coroutines.delay(2500)
+            analyzing = false
+            done = true
+        }
+    }
+}
+
+@Composable
+fun AiCompetitorScreen(onBack: () -> Unit, vm: AiCompetitorViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("AI Competitor Analysis", "Know their weaknesses", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.url, onValueChange = vm::updateUrl, label = { Text("Competitor URL") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = vm::analyze, enabled = vm.url.isNotBlank() && !vm.analyzing, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.analyzing) "Analyzing…" else "Analyze")
+                    }
+                }
+            }
+            if (vm.done) {
+                item {
+                    ToolCard {
+                        Text("✅ Strengths", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        listOf("Fast loading speed", "Mobile responsive", "Clear call-to-actions").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                    }
+                }
+                item {
+                    ToolCard {
+                        Text("⚠️ Weaknesses", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.error)
+                        listOf("No blog content", "Poor SEO optimization", "Missing social proof", "No live chat").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                    }
+                }
+                item {
+                    ToolCard {
+                        Text("🚀 Opportunities", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        listOf("Content marketing gap", "Local SEO not optimized", "No video content", "Missing FAQ section").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------------- ai preview (wave-B)
+
+class AiPreviewViewModel : ViewModel() {
+    var businessName by mutableStateOf(""); private set
+    var industry by mutableStateOf("restaurant"); private set
+    var generating by mutableStateOf(false); private set
+    var done by mutableStateOf(false); private set
+    fun updateBusinessName(v: String) { businessName = v; done = false }
+    fun pickIndustry(v: String) { industry = v; done = false }
+    fun generate() {
+        viewModelScope.launch {
+            generating = true
+            kotlinx.coroutines.delay(2000)
+            generating = false
+            done = true
+        }
+    }
+    fun price(): Int = if (industry == "restaurant") 6999 else if (industry == "clinic") 8999 else 4999
+}
+
+@Composable
+fun AiPreviewScreen(onBack: () -> Unit, vm: AiPreviewViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("AI Design Preview", "See it before we build", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.businessName, onValueChange = vm::updateBusinessName, label = { Text("Business name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("restaurant", "clinic", "shop").forEach { option ->
+                            val selected = vm.industry == option
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { vm.pickIndustry(option) },
+                            ) {
+                                Text(option, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), style = MaterialTheme.typography.labelLarge, color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                    Button(onClick = vm::generate, enabled = vm.businessName.isNotBlank() && !vm.generating, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.generating) "Generating…" else "Generate preview")
+                    }
+                }
+            }
+            if (vm.done) {
+                item {
+                    ToolCard {
+                        Text("🎨 Preview for ${vm.businessName}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Text("Palette: #3B82F6 · #10B981 · #F59E0B", style = MaterialTheme.typography.bodyMedium)
+                        listOf("Hero section", "Services grid", "Testimonials", "Contact form").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                        Text("Estimated price: $${vm.price()}", style = MaterialTheme.typography.titleSmall)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------- ai proposal (wave-B)
+
+class AiProposalViewModel : ViewModel() {
+    var generating by mutableStateOf(false); private set
+    var done by mutableStateOf(false); private set
+    fun generate() {
+        viewModelScope.launch {
+            generating = true
+            kotlinx.coroutines.delay(2000)
+            generating = false
+            done = true
+        }
+    }
+}
+
+@Composable
+fun AiProposalScreen(onBack: () -> Unit, vm: AiProposalViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("AI Proposal", "Client-ready in seconds", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    Text("E-commerce Website Development · $24999 · 21 days", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Button(onClick = vm::generate, enabled = !vm.generating, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.generating) "Generating…" else "Generate proposal")
+                    }
+                }
+            }
+            if (vm.done) {
+                item {
+                    ToolCard {
+                        Text("📝 Proposal ready", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Text("A modern, responsive e-commerce platform with payment integration, inventory management, and customer dashboard.", style = MaterialTheme.typography.bodyMedium)
+                        listOf("Custom website design", "Mobile-responsive layout", "Payment gateway integration", "Admin dashboard", "SEO optimization", "3 months support").forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                        listOf("Design & Prototyping" to 5000).forEach { (item, cost) -> Text("$item — $$cost", style = MaterialTheme.typography.bodyMedium) }
+                        Text("Timeline: 21 days · Total: $24999", style = MaterialTheme.typography.titleSmall)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------- free audit (wave-B)
+
+class FreeAuditViewModel : ViewModel() {
+    var url by mutableStateOf(""); private set
+    var scanning by mutableStateOf(false); private set
+    var done by mutableStateOf(false); private set
+    fun updateUrl(v: String) { url = v.trim(); done = false }
+    fun scan() {
+        viewModelScope.launch {
+            scanning = true
+            kotlinx.coroutines.delay(2000)
+            scanning = false
+            done = true
+        }
+    }
+}
+
+@Composable
+fun FreeAuditScreen(onBack: () -> Unit, vm: FreeAuditViewModel = viewModel()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Free Audit", "5-point site check", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    OutlinedTextField(value = vm.url, onValueChange = vm::updateUrl, label = { Text("Website URL") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = vm::scan, enabled = vm.url.isNotBlank() && !vm.scanning, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (vm.scanning) "Scanning…" else "Run free audit")
+                    }
+                }
+            }
+            if (vm.done) {
+                item {
+                    ToolCard {
+                        Text("Overall: 67/100", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                        listOf("Speed" to 72, "SEO" to 85, "Mobile" to 90, "Security" to 45, "Design" to 60).forEach { (name, score) ->
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                                Text("$score", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------- quality certificate (wave-B)
+
+@Composable
+fun QualityCertificateScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Quality Certificate", "E-commerce Website · 92/100", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                ToolCard {
+                    listOf("Code Quality" to 95, "Security Scan" to 88, "Performance" to 94, "Accessibility" to 91, "SEO" to 89, "Test Coverage" to 87).forEach { (name, score) ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("$name ✅", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            Text("$score", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    Text("0 vulnerabilities · 87% coverage · 12,450 lines", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------- portfolio proof (wave-B)
+
+private val proofProjects = listOf(
+    Triple("TechStart SaaS Platform", "Next.js · Node.js · PostgreSQL · 21 days · ⭐ 5", "12K/mo visitors · 99.9% uptime"),
+    Triple("Fashion E-commerce", "React · Stripe · MongoDB · 14 days · ⭐ 5", "verified seller"),
+)
+
+@Composable
+fun PortfolioProofScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Portfolio Proof", "Verified deliveries", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(proofProjects, key = { it.first }) { (name, tech, metrics) ->
+                ToolCard {
+                    Text("✅ $name", style = MaterialTheme.typography.titleSmall)
+                    Text(tech, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(metrics, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------------- case studies (wave-B)
+
+private val caseStudies = listOf(
+    Triple("TechStart Inc. · SaaS · $24999", "3x user engagement increase · traffic +180% · conversion +45% · revenue +220%", "Grapsee delivered exactly what we needed, on time and on budget."),
+    Triple("Fashion Boutique · E-commerce · $12999", "Online sales launched in 2 weeks · traffic +250% · conversion +60% · revenue +300%", "Our online store paid for itself in the first month."),
+)
+
+@Composable
+fun CaseStudiesScreen(onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        ToolHeader("Case Studies", "Real client wins", onBack)
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(caseStudies, key = { it.first }) { (title, results, quote) ->
+                ToolCard {
+                    Text("📈 $title", style = MaterialTheme.typography.titleSmall)
+                    Text(results, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Text("\"$quote\"", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}

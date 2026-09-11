@@ -669,3 +669,168 @@ struct EventStylistView: View {
         }.navigationTitle("Event Stylist")
     }
 }
+
+// MARK: - Tools wave-B
+
+struct AiScoperView: View {
+    @State private var description = ""
+    @State private var generating = false
+    @State private var done = false
+    var body: some View {
+        List {
+            Section {
+                TextField("Describe your project", text: $description, axis: .vertical)
+                Button(generating ? "Generating…" : "Generate scope") {
+                    generating = true
+                    Task { try? await Task.sleep(nanoseconds: 2_000_000_000); generating = false; done = true }
+                }.disabled(description.isEmpty || generating)
+            }
+            if done {
+                Section {
+                    Text("📄 Project Scope Document").font(.headline).foregroundColor(.accentColor)
+                    ForEach(["User authentication system", "Dashboard with analytics", "Payment integration", "Mobile-responsive design", "SEO optimization"], id: \.self) { Text("• \($0)") }
+                    Text("Timeline: 14-18 days · $14999").font(.headline)
+                    Text("Next.js · React · Node.js · PostgreSQL · Stripe").font(.caption).foregroundColor(.secondary)
+                }
+            }
+        }.navigationTitle("AI Project Scoper")
+    }
+}
+
+struct AiCompetitorView: View {
+    @State private var url = ""
+    @State private var analyzing = false
+    @State private var done = false
+    var body: some View {
+        List {
+            Section {
+                TextField("Competitor URL", text: $url)
+                Button(analyzing ? "Analyzing…" : "Analyze") {
+                    analyzing = true
+                    Task { try? await Task.sleep(nanoseconds: 2_500_000_000); analyzing = false; done = true }
+                }.disabled(url.isEmpty || analyzing)
+            }
+            if done {
+                Section { Text("✅ Strengths").font(.headline).foregroundColor(.accentColor); ForEach(["Fast loading speed", "Mobile responsive", "Clear call-to-actions"], id: \.self) { Text("• \($0)") } }
+                Section { Text("⚠️ Weaknesses").font(.headline).foregroundColor(.red); ForEach(["No blog content", "Poor SEO optimization", "Missing social proof", "No live chat"], id: \.self) { Text("• \($0)") } }
+                Section { Text("🚀 Opportunities").font(.headline).foregroundColor(.accentColor); ForEach(["Content marketing gap", "Local SEO not optimized", "No video content", "Missing FAQ section"], id: \.self) { Text("• \($0)") } }
+            }
+        }.navigationTitle("AI Competitor Analysis")
+    }
+}
+
+struct AiPreviewView: View {
+    @State private var businessName = ""
+    @State private var industry = "restaurant"
+    @State private var generating = false
+    @State private var done = false
+    var price: Int { industry == "restaurant" ? 6999 : industry == "clinic" ? 8999 : 4999 }
+    var body: some View {
+        List {
+            Section {
+                TextField("Business name", text: $businessName)
+                Picker("Industry", selection: $industry) { ForEach(["restaurant", "clinic", "shop"], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
+                Button(generating ? "Generating…" : "Generate preview") {
+                    generating = true
+                    Task { try? await Task.sleep(nanoseconds: 2_000_000_000); generating = false; done = true }
+                }.disabled(businessName.isEmpty || generating)
+            }
+            if done {
+                Section {
+                    Text("🎨 Preview for \(businessName)").font(.headline).foregroundColor(.accentColor)
+                    Text("Palette: #3B82F6 · #10B981 · #F59E0B")
+                    ForEach(["Hero section", "Services grid", "Testimonials", "Contact form"], id: \.self) { Text("• \($0)") }
+                    Text("Estimated price: $\(price)").font(.headline)
+                }
+            }
+        }.navigationTitle("AI Design Preview")
+    }
+}
+
+struct AiProposalView: View {
+    @State private var generating = false
+    @State private var done = false
+    var body: some View {
+        List {
+            Section {
+                Text("E-commerce Website Development · $24999 · 21 days").font(.subheadline).foregroundColor(.secondary)
+                Button(generating ? "Generating…" : "Generate proposal") {
+                    generating = true
+                    Task { try? await Task.sleep(nanoseconds: 2_000_000_000); generating = false; done = true }
+                }.disabled(generating)
+            }
+            if done {
+                Section {
+                    Text("📝 Proposal ready").font(.headline).foregroundColor(.accentColor)
+                    Text("A modern, responsive e-commerce platform with payment integration, inventory management, and customer dashboard.")
+                    ForEach(["Custom website design", "Mobile-responsive layout", "Payment gateway integration", "Admin dashboard", "SEO optimization", "3 months support"], id: \.self) { Text("• \($0)") }
+                    Text("Timeline: 21 days · Total: $24999").font(.headline)
+                }
+            }
+        }.navigationTitle("AI Proposal")
+    }
+}
+
+struct FreeAuditView: View {
+    @State private var url = ""
+    @State private var scanning = false
+    @State private var done = false
+    var body: some View {
+        List {
+            Section {
+                TextField("Website URL", text: $url)
+                Button(scanning ? "Scanning…" : "Run free audit") {
+                    scanning = true
+                    Task { try? await Task.sleep(nanoseconds: 2_000_000_000); scanning = false; done = true }
+                }.disabled(url.isEmpty || scanning)
+            }
+            if done {
+                Section {
+                    Text("Overall: 67/100").font(.title2).foregroundColor(.accentColor)
+                    ForEach([("Speed", 72), ("SEO", 85), ("Mobile", 90), ("Security", 45), ("Design", 60)], id: \.0) { name, score in
+                        HStack { Text(name); Spacer(); Text("\(score)").bold() }
+                    }
+                }
+            }
+        }.navigationTitle("Free Audit")
+    }
+}
+
+struct QualityCertificateView: View {
+    var body: some View {
+        List {
+            Section {
+                ForEach([("Code Quality", 95), ("Security Scan", 88), ("Performance", 94), ("Accessibility", 91), ("SEO", 89), ("Test Coverage", 87)], id: \.0) { name, score in
+                    HStack { Text("\(name) ✅"); Spacer(); Text("\(score)").bold() }
+                }
+                Text("0 vulnerabilities · 87% coverage · 12,450 lines").font(.caption).foregroundColor(.secondary)
+            }
+        }.navigationTitle("Quality Certificate")
+    }
+}
+
+struct PortfolioProofView: View {
+    let projects = [("TechStart SaaS Platform", "Next.js · Node.js · PostgreSQL · 21 days · ⭐ 5", "12K/mo visitors · 99.9% uptime"), ("Fashion E-commerce", "React · Stripe · MongoDB · 14 days · ⭐ 5", "verified seller")]
+    var body: some View {
+        List(projects, id: \.0) { name, tech, metrics in
+            VStack(alignment: .leading, spacing: 4) {
+                Text("✅ \(name)").font(.headline)
+                Text(tech).font(.caption).foregroundColor(.secondary)
+                Text(metrics).font(.caption).foregroundColor(.accentColor)
+            }.padding(.vertical, 4)
+        }.navigationTitle("Portfolio Proof")
+    }
+}
+
+struct CaseStudiesView: View {
+    let cases = [("TechStart Inc. · SaaS · $24999", "3x user engagement increase · traffic +180% · conversion +45% · revenue +220%", "Grapsee delivered exactly what we needed, on time and on budget."), ("Fashion Boutique · E-commerce · $12999", "Online sales launched in 2 weeks · traffic +250% · conversion +60% · revenue +300%", "Our online store paid for itself in the first month.")]
+    var body: some View {
+        List(cases, id: \.0) { title, results, quote in
+            VStack(alignment: .leading, spacing: 4) {
+                Text("📈 \(title)").font(.headline)
+                Text(results).font(.subheadline).foregroundColor(.accentColor)
+                Text("\"\(quote)\"").font(.caption).foregroundColor(.secondary)
+            }.padding(.vertical, 4)
+        }.navigationTitle("Case Studies")
+    }
+}

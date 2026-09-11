@@ -109,6 +109,7 @@ enum Route: Hashable {    case product(String), list(ListMode), collections, col
     case taxrefund, pricelock, unitprice, smartreorder, giftmatcher, stylequiz, allergy, halal
     case submanager, coloradvisor, sizepredictor, discountstack, dealauth, speccompare
     case smsorder, shopautocomplete, docexpiry, vehicle, legaldocs, formbuilder, resumebuilder, insurance
+    case aiscoper, aicompetitor, aipreview, aiproposal, freeaudit, qualitycert, portfolioproof, casestudies
     case bodytype, usecasematcher, wardrobe, revtokens, trendforecaster, eventstylist
     case aitools, aichat, audits, guides, cicd, envsetup, dbschemas, notion, tutorials
     case category(String, String), search(String), categories
@@ -276,6 +277,14 @@ func appRoute(for path: String) -> Route {
     case "/deal-authenticity": return .dealauth
     case "/spec-compare": return .speccompare
     case "/sms-order": return .smsorder
+    case "/ai-scoper": return .aiscoper
+    case "/ai-competitor": return .aicompetitor
+    case "/ai-preview": return .aipreview
+    case "/ai-proposal": return .aiproposal
+    case "/free-audit": return .freeaudit
+    case "/quality-certificate": return .qualitycert
+    case "/portfolio-proof": return .portfolioproof
+    case "/case-studies": return .casestudies
     case "/shopping-list-autocomplete": return .shopautocomplete
     case "/document-expiry": return .docexpiry
     case "/vehicle-service": return .vehicle

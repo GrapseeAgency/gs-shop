@@ -163,6 +163,14 @@ object Routes {
     const val DEALAUTH = "dealauth"
     const val SPECCOMPARE = "speccompare"
     const val SMSORDER = "smsorder"
+    const val AISCOPER = "aiscoper"
+    const val AICOMPETITOR = "aicompetitor"
+    const val AIPREVIEW = "aipreview"
+    const val AIPROPOSAL = "aiproposal"
+    const val FREEAUDIT = "freeaudit"
+    const val QUALITYCERT = "qualitycert"
+    const val PORTFOLIOPROOF = "portfolioproof"
+    const val CASESTUDIES = "casestudies"
     const val BODYTYPE = "bodytype"
     const val USECASEMATCHER = "usecasematcher"
     const val WARDROBE = "wardrobe"
@@ -374,6 +382,14 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 route == "/deal-authenticity" -> navController.navigate(Routes.DEALAUTH)
                 route == "/spec-compare" -> navController.navigate(Routes.SPECCOMPARE)
                 route == "/sms-order" -> navController.navigate(Routes.SMSORDER)
+                route == "/ai-scoper" -> navController.navigate(Routes.AISCOPER)
+                route == "/ai-competitor" -> navController.navigate(Routes.AICOMPETITOR)
+                route == "/ai-preview" -> navController.navigate(Routes.AIPREVIEW)
+                route == "/ai-proposal" -> navController.navigate(Routes.AIPROPOSAL)
+                route == "/free-audit" -> navController.navigate(Routes.FREEAUDIT)
+                route == "/quality-certificate" -> navController.navigate(Routes.QUALITYCERT)
+                route == "/portfolio-proof" -> navController.navigate(Routes.PORTFOLIOPROOF)
+                route == "/case-studies" -> navController.navigate(Routes.CASESTUDIES)
                 route == "/body-type" -> navController.navigate(Routes.BODYTYPE)
                 route == "/use-case-matcher" -> navController.navigate(Routes.USECASEMATCHER)
                 route == "/wardrobe-planner" -> navController.navigate(Routes.WARDROBE)
@@ -1247,6 +1263,38 @@ fun GrapseeAppRoot(navController: NavHostController) {
                 com.grapsee.shop.features.tools.EventStylistScreen(
                     onBack = { navController.popBackStack() },
                 )
+            }
+
+            composable(Routes.AISCOPER) {
+                com.grapsee.shop.features.tools.AiScoperScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.AICOMPETITOR) {
+                com.grapsee.shop.features.tools.AiCompetitorScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.AIPREVIEW) {
+                com.grapsee.shop.features.tools.AiPreviewScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.AIPROPOSAL) {
+                com.grapsee.shop.features.tools.AiProposalScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.FREEAUDIT) {
+                com.grapsee.shop.features.tools.FreeAuditScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.QUALITYCERT) {
+                com.grapsee.shop.features.tools.QualityCertificateScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.PORTFOLIOPROOF) {
+                com.grapsee.shop.features.tools.PortfolioProofScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.CASESTUDIES) {
+                com.grapsee.shop.features.tools.CaseStudiesScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.SMSORDER) {

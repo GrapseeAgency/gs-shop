@@ -111,6 +111,7 @@ enum Route: Hashable {    case product(String), list(ListMode), collections, col
     case smsorder, shopautocomplete, docexpiry, vehicle, legaldocs, formbuilder, resumebuilder, insurance
     case aiscoper, aicompetitor, aipreview, aiproposal, freeaudit, qualitycert, portfolioproof, casestudies
     case emergencybuy, clipboardbuy, flashback, expiryguar, priceguar, smartupsell, studentbudget, subexpiry, altfinder, assembly
+    case autocoupon, bulkbuy, reorder, pricedroprefund, grocery, recipe, petsup, schoolsup, movingkit, appliance, safety, verifiedphotos
     case bodytype, usecasematcher, wardrobe, revtokens, trendforecaster, eventstylist
     case aitools, aichat, audits, guides, cicd, envsetup, dbschemas, notion, tutorials
     case category(String, String), search(String), categories
@@ -296,6 +297,18 @@ func appRoute(for path: String) -> Route {
     case "/subscription-expiry": return .subexpiry
     case "/alternative-finder": return .altfinder
     case "/assembly-finder": return .assembly
+    case "/auto-coupon": return .autocoupon
+    case "/bulk-buy": return .bulkbuy
+    case "/one-click-reorder": return .reorder
+    case "/price-drop-refund": return .pricedroprefund
+    case "/grocery-list-import": return .grocery
+    case "/recipe-to-cart": return .recipe
+    case "/pet-supplies": return .petsup
+    case "/school-supplies": return .schoolsup
+    case "/moving-kit": return .movingkit
+    case "/appliance-repair": return .appliance
+    case "/safety-recall": return .safety
+    case "/verified-photos": return .verifiedphotos
     case "/shopping-list-autocomplete": return .shopautocomplete
     case "/document-expiry": return .docexpiry
     case "/vehicle-service": return .vehicle
